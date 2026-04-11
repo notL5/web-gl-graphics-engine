@@ -1,13 +1,16 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RIVALS - Hero Shooter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background-color:#09090b;color:#f4f4f5;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;overflow:hidden;user-select:none}
+body{font-family:"Dela Gothic One",-apple-system,BlinkMacSystemFont,sans-serif;background-color:#09090b;color:#f4f4f5;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;overflow:hidden;user-select:none}
 .screen-wrapper{position:relative;z-index:10;width:95vw;max-width:1100px;height:90vh;border-radius:16px;padding:2px;background:linear-gradient(60deg,#ff0055,#ffaa00,#55ff00,#00ffaa,#0055ff,#aa00ff,#ff0055);background-size:300% 300%;animation:rainbowFlow 8s linear infinite}
 @keyframes rainbowFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .screen{display:none;background:#18181b;padding:2vh 2vw;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,0.8);height:100%;box-sizing:border-box;overflow:hidden;}
@@ -283,11 +286,12 @@ getEl('aeroBgUpload').addEventListener('change', e => {
 });
 function clearAeroBg() { myPlayer.customization.aeroBg = null; localStorage.removeItem('rivals_aeroBg'); getEl('aeroBgUpload').value = ''; updateLobbyState(); }
 
-const mCan=document.createElement('canvas'); mCan.width=mCan.height=256; const mCtx=mCan.getContext('2d'); mCtx.fillStyle='#000'; mCtx.fillRect(0,0,256,256); let mDrops=Array(16).fill(0).map(()=>Math.random()*-200);
+const mCan=document.createElement('canvas'); mCan.width=mCan.height=256; const mCtx=mCan.getContext('2d'); mCtx.fillStyle='#000'; mCtx.fillRect(0,0,256,256); let mDrops=Array(16).fill(0).map(()=>Math.random()*-200); let cachedMatrixPattern=null,cachedMatrixPatternAt=0;
 function getMatrixPat() {
+    let now=performance.now(); if(cachedMatrixPattern&&now-cachedMatrixPatternAt<90) return cachedMatrixPattern;
     mCtx.fillStyle='rgba(0,0,0,0.2)'; mCtx.fillRect(0,0,256,256); mCtx.fillStyle='#22c55e'; mCtx.font='16px monospace';
     for(let i=0;i<mDrops.length;i++){ mCtx.fillStyle=Math.random()<0.1?'#86efac':'#22c55e'; mCtx.fillText(String.fromCharCode(0x30A0+Math.random()*96), i*16, mDrops[i]); if(mDrops[i]>256&&Math.random()>0.95)mDrops[i]=0; mDrops[i]+=8; }
-    let p=getEl('gameCanvas').getContext('2d').createPattern(mCan,'repeat'); if(p&&p.setTransform)p.setTransform(new DOMMatrix().scale(0.35,0.35)); return p;
+    let p=ctx.createPattern(mCan,'repeat'); if(p&&p.setTransform)p.setTransform(new DOMMatrix().scale(0.35,0.35)); cachedMatrixPattern=p; cachedMatrixPatternAt=now; return cachedMatrixPattern;
 }
 
 const mapCanvas=document.createElement('canvas'); mapCanvas.width=W; mapCanvas.height=H; const mapCtx=mapCanvas.getContext('2d');
@@ -386,6 +390,18 @@ function resetAllCooldowns() {
 let vfx=[], arrowTrails={};
 const wrap=getEl('screen-wrapper'), gCon=getEl('game-container'), can=getEl('gameCanvas'), ctx=can.getContext('2d'), abUi=getEl('ability-ui'), hlUi=getEl('health-ui');
 let lTime=performance.now(), sMx=0, sMy=0, mDwn=false;
+const abilitySlotEls=Array.from(document.querySelectorAll('.ability-slot'));
+const nameWidthCache=new Map(), aeroBgImageCache=new Map(), speedTrailCooldowns={};
+let lastTraceDashTrailSent=0,lastUiRefresh=0,lastMinimapDraw=0,lastScoreboardHtml='';
+const MAX_VFX=320;
+function updateCanvasSize(){if(!gCon.classList.contains('active'))return;const nextW=Math.max(1,gCon.clientWidth|0),nextH=Math.max(1,gCon.clientHeight|0);if(can.width!==nextW||can.height!==nextH){can.width=nextW;can.height=nextH;}let mw=getEl('minimap-wrapper');if(mw){const mini=getEl('minimapCanvas'),miniW=Math.max(1,mw.clientWidth|0),miniH=Math.max(1,mw.clientHeight|0);if(mini.width!==miniW||mini.height!==miniH){mini.width=miniW;mini.height=miniH;}}}
+function getCachedAeroImage(ownerId,src){if(!src)return null;const key=`${ownerId}:${src.length}:${src.slice(0,32)}`;let img=aeroBgImageCache.get(key);if(!img){img=new Image();img.src=src;aeroBgImageCache.set(key,img);}return img;}
+function getNameWidth(name){const key=name||'Player';if(nameWidthCache.has(key))return nameWidthCache.get(key);ctx.save();ctx.font='11px "Dela Gothic One", sans-serif';const width=ctx.measureText(key).width;ctx.restore();nameWidthCache.set(key,width);return width;}
+function setVisibleAbilities(ids){const visible=new Set(ids.map(id=>`ui-${id}`));abilitySlotEls.forEach(el=>{const shouldShow=visible.has(el.id);if(el.dataset.visible!==(shouldShow?'1':'0')){el.style.display=shouldShow?'flex':'none';el.dataset.visible=shouldShow?'1':'0';}});}
+function isSpawnPointSafe(spawn,playerId,team='none'){if(!spawn)return false;const fixed=gnV(spawn.x,spawn.y);if(iW(fixed.x,fixed.y))return false;for(let id in gameState.players){if(id===playerId)continue;const p=gameState.players[id];if(!p||p.isDead)continue;const minDist=(gameState.isTeamMode&&p.team===team)?110:180;if(Math.hypot(p.x-fixed.x,p.y-fixed.y)<minDist)return false;}for(let c of gameState.clones)if(c&&c.hp>0&&Math.hypot(c.x-fixed.x,c.y-fixed.y)<120)return false;return true;}
+function getSafeSpawn(playerId,team='none'){const scored=SPAWN_POINTS.map(spawn=>{const fixed=gnV(spawn.x,spawn.y);let nearestEnemy=Infinity;for(let id in gameState.players){if(id===playerId)continue;const p=gameState.players[id];if(!p||p.isDead||(gameState.isTeamMode&&p.team===team))continue;nearestEnemy=Math.min(nearestEnemy,Math.hypot(p.x-fixed.x,p.y-fixed.y));}return {spawn:fixed,safe:isSpawnPointSafe(fixed,playerId,team),nearestEnemy};}).sort((a,b)=>Number(b.safe)-Number(a.safe)||b.nearestEnemy-a.nearestEnemy);return (scored[0]&&scored[0].spawn)||gnV(W/2,H/2);}
+function clampVfxPool(){if(vfx.length>MAX_VFX)vfx.splice(0,vfx.length-MAX_VFX);}
+function getCompactState(includeWalls=false){return {players:gameState.players,projectiles:gameState.projectiles,pickups:gameState.pickups,walls:includeWalls?gameState.walls:undefined,shields:gameState.shields||[],clones:gameState.clones||[],isTeamMode:gameState.isTeamMode,healthPacks:gameState.healthPacks||[],train:gameState.train||{phase:'idle',timer:2},koth:gameState.koth,ultOrb:gameState.ultOrb,juggernautId:gameState.juggernautId??null};}
 
 const pCan=getEl('previewCanvas'), pCtx=pCan.getContext('2d');
 function drawPrev() {
@@ -663,6 +679,7 @@ function becomeHost(mode, srvId) {
     peer.on('error', err => { if(err.type === 'unavailable-id') setTimeout(() => connectToServer(mode), 500); });
     peer.on('connection', c => {
         connections.push(c);
+        c.on('open', () => { if(c.open) c.send({type:'state', state:getCompactState(true)}); });
         c.on('data', d => {
             if(d.type === 'player_leaving') {
                 delete gameState.players[d.id]; delete lobbyPlayers[d.id];
@@ -681,10 +698,11 @@ function becomeHost(mode, srvId) {
                     s.invulnerable = d.player.invulnerable || false;
                 } else {
                     // New player joining mid-game: initialize with full data including spawn
-                    let sp = SPAWN_POINTS[Math.floor(Math.random() * SPAWN_POINTS.length)];
+                    let sp = getSafeSpawn(d.player.id, d.player.team || 'none');
                     let baseHp = HERO_DATA[d.player.heroClass]?.hp || 250;
                     if(activeServerMode === 'CHAOS') baseHp *= 12;
                     let np = Object.assign({}, d.player);
+                    np.x = sp.x; np.y = sp.y;
                     np.name = np.name || 'Player';
                     np.color = np.color || HERO_DATA[np.heroClass]?.color || '#fff';
                     np.team = np.team || 'none';
@@ -789,6 +807,7 @@ function startGame() {
     wrap.classList.remove('active'); wrap.classList.add('hidden');
     gCon.classList.add('active'); getEl('scoreboard').style.display = 'block'; getEl('minimap-wrapper').style.display = 'block';
     lBtn.classList.add('active'); abUi.classList.add('active'); hlUi.classList.add('active');
+    updateCanvasSize();
     requestAnimationFrame(gLoop);
 }
 
@@ -805,12 +824,12 @@ function applyExpKbk(ex, ey, r) {
 
 let _interpTargets = {}; // store target positions for lerp
 function syncGS(s) {
-    gameState.projectiles = s.projectiles; gameState.pickups = s.pickups; gameState.walls = s.walls;
+    gameState.projectiles = s.projectiles || []; gameState.pickups = s.pickups || []; if(s.walls) gameState.walls = s.walls;
     gameState.shields = s.shields || []; gameState.clones = s.clones || []; gameState.isTeamMode = s.isTeamMode;
     gameState.healthPacks = s.healthPacks || []; gameState.train = s.train || {phase:'idle', timer:2};
     if(s.koth) gameState.koth = s.koth;
     if(s.ultOrb) gameState.ultOrb = s.ultOrb;
-    if(s.juggernautId) gameState.juggernautId = s.juggernautId;
+    if('juggernautId' in s) gameState.juggernautId = s.juggernautId;
     
     for(let id in gameState.players) { if(!s.players[id] && id !== myId) { delete gameState.players[id]; delete _interpTargets[id]; } }
     for(let id in _interpTargets) { if(!s.players[id]) delete _interpTargets[id]; }
@@ -831,15 +850,15 @@ function syncGS(s) {
             gameState.players[id] = myPlayer;
         } else {
             // Store interpolation target for remote players
-            _interpTargets[id] = { x: s.players[id].x, y: s.players[id].y, angle: s.players[id].angle };
+            _interpTargets[id] = { x: s.players[id].x, y: s.players[id].y, angle: s.players[id].angle, receivedAt: performance.now() };
             if(!gameState.players[id]) {
-                gameState.players[id] = s.players[id];
+                gameState.players[id] = {...s.players[id]};
             } else {
-                // Preserve current visual position, update everything else
-                let curX = gameState.players[id].x, curY = gameState.players[id].y;
-                gameState.players[id] = s.players[id];
+                let curX = gameState.players[id].x, curY = gameState.players[id].y, curA = gameState.players[id].angle || 0;
+                Object.assign(gameState.players[id], s.players[id]);
                 gameState.players[id].x = curX;
                 gameState.players[id].y = curY;
+                gameState.players[id].angle = curA;
             }
         }
     }
@@ -847,7 +866,7 @@ function syncGS(s) {
 
 // Interpolate remote players towards their target positions
 function interpRemotePlayers(dt) {
-    let lerpSpeed = 15; // higher = snappier
+    let lerpSpeed = 18;
     for(let id in _interpTargets) {
         if(id === myId) continue;
         let p = gameState.players[id];
@@ -855,23 +874,27 @@ function interpRemotePlayers(dt) {
         if(!p || !t) continue;
         let dx = t.x - p.x, dy = t.y - p.y;
         let dist = Math.hypot(dx, dy);
-        if(dist > 500) { // teleport if too far
+        if(dist > 380 || p.isDead) {
             p.x = t.x; p.y = t.y;
         } else {
             let f = Math.min(1, lerpSpeed * dt);
             p.x += dx * f;
             p.y += dy * f;
         }
+        if(typeof t.angle === 'number') { let currentAngle = p.angle || 0; let angleDelta = Math.atan2(Math.sin(t.angle - currentAngle), Math.cos(t.angle - currentAngle)); p.angle = currentAngle + angleDelta * Math.min(1, dt * 16); }
     }
 }
 
-let _bdStLast = 0, _bdStInterval = 1000/20; // throttle host broadcast to 20hz
+let _bdStLast = 0, _bdStInterval = 1000/24, _bdStFullStateLast = 0;
 function bdSt() {
     if(!isHost) return;
     let now = performance.now();
     if(now - _bdStLast < _bdStInterval) return;
     _bdStLast = now;
-    connections.forEach(c => { if(c.open) c.send({type:'state', state:gameState}); });
+    const includeWalls = now - _bdStFullStateLast > 3000;
+    if(includeWalls) _bdStFullStateLast = now;
+    const snapshot = getCompactState(includeWalls);
+    connections.forEach(c => { if(c.open) c.send({type:'state', state:snapshot}); });
 }
 
 let _sdUpLast = 0, _sdUpInterval = 1000/30; // throttle to 30hz
@@ -1149,7 +1172,7 @@ function chD(t, id) {
         brK(k, id);
         
         setTimeout(() => {
-            let sp = SPAWN_POINTS[Math.floor(Math.random() * SPAWN_POINTS.length)];
+            let sp = getSafeSpawn(id, t.team || 'none');
             t.maxHp = t.isJuggernaut ? 5000 : (HERO_DATA[t.heroClass].hp * (activeServerMode === 'CHAOS' ? 12 : 1));
             t.hp = t.maxHp; t.x = sp.x; t.y = sp.y; t.isDead = false; t.daggers = 2; t.lastAttacker = null;
             if(gameState.players[id]) {
@@ -1293,7 +1316,9 @@ function updateMovement(dt) {
             myPlayer.x += Math.cos(a) * spd; myPlayer.y += Math.sin(a) * spd;
         }
         
-        if(Math.random() < 0.3) {
+        let now = performance.now();
+        if(now - lastTraceDashTrailSent > 55) {
+            lastTraceDashTrailSent = now;
             let pCol = myPlayer.customization?.traceColors?.neon || '#00ffff';
             vfx.push({type:'speedLine', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle+Math.PI, life:0.2, maxLife:0.2, length:40, color:pCol});
             sdEv({type:'trace_dash_trail', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle+Math.PI, color:pCol});
@@ -1856,24 +1881,26 @@ function updateGameState(dt) {
     }
     
     for(let i=vfx.length-1; i>=0; i--) { vfx[i].life -= dt; if(vfx[i].life <= 0) vfx.splice(i, 1); }
+    clampVfxPool();
 }
 
-function updateUI() {
+function updateUI(now = performance.now()) {
+    if(now - lastUiRefresh < 66) return;
+    lastUiRefresh = now;
     let tHp = myPlayer.hp, tMx = myPlayer.maxHp, hpP = Math.max(0, (tHp / tMx) * 100), hf = getEl('health-fill');
     hf.style.width = `${hpP}%`; getEl('health-text').innerText = `${Math.ceil(tHp)} / ${tMx}`;
     hf.style.background = hpP > 50 ? '#22c55e' : (hpP > 20 ? '#f59e0b' : '#ef4444');
     
-    document.querySelectorAll('.ability-slot').forEach(e => e.style.display = 'none');
     abUi.style.display = 'flex';
     
     if(myPlayer.heroClass === 'blitz') {
         getEl('ult-ui').style.display = 'block'; let uPct = Math.min(100, (myPlayer.ultCharge || 0));
         getEl('ult-fill').style.width = uPct + '%'; getEl('ult-fill').style.background = uPct >= 100 ? '#eab308' : '#a855f7';
         getEl('ult-text').innerText = uPct >= 100 ? 'ULT READY [F]' : `ULT ${Math.floor(uPct)}%`;
-    } else getEl('ult-ui').style.display = 'none';
+    } else { setVisibleAbilities([]); getEl('ult-ui').style.display = 'none'; }
     
     if(myPlayer.heroClass === 'thorfinn') {
-        ['slash','throw','dash'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['slash','throw','dash']);
         getEl('status-dash').innerText = `Charges: ${localCombat.dash.charges}`;
         getEl('cd-dash').style.height = `${Math.max(...localCombat.dash.cds) > 0 ? (Math.max(...localCombat.dash.cds) / 4.0) * 100 : 0}%`;
         getEl('status-slash').innerText = localCombat.slash.cd > 0 ? localCombat.slash.cd.toFixed(1) + 's' : 'Ready';
@@ -1883,7 +1910,7 @@ function updateUI() {
         getEl('ui-slash').style.opacity = myPlayer.daggers > 0 ? "1" : "0.4";
     }
     else if(myPlayer.heroClass === 'kendo') {
-        ['kendo-arrow','kendo-ride','kendo-shield'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['kendo-arrow','kendo-ride','kendo-shield']);
         getEl('status-kendo-arrow').innerText = myPlayer.arrowActive ? 'Active' : 'Ready';
         getEl('ui-kendo-arrow').style.borderColor = myPlayer.arrowActive ? '#ef4444' : '#52525b';
         let rc = localCombat.kendoRide.cd; getEl('cd-kendo-ride').style.height = `${rc > 0 ? (rc / 1.0) * 100 : 0}%`;
@@ -1894,7 +1921,7 @@ function updateUI() {
         getEl('ui-kendo-shield').style.opacity = (sc <= 0 && myPlayer.arrowActive) ? "1" : "0.5";
     }
     else if(myPlayer.heroClass === 'glitch') {
-        ['glitch-shoot','glitch-clone','glitch-swap'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['glitch-shoot','glitch-clone','glitch-swap']);
         let sc = localCombat.glitchShoot.cd; getEl('cd-glitch-shoot').style.height = `${sc > 0 ? (sc / 0.45) * 100 : 0}%`; getEl('status-glitch-shoot').innerText = sc > 0 ? sc.toFixed(1) + 's' : 'Ready';
         let cc = localCombat.glitchClone.cd, ac = gameState.clones.filter(c => c.ownerId === myId).length;
         getEl('cd-glitch-clone').style.height = `${cc > 0 ? (cc / 4.0) * 100 : 0}%`; getEl('status-glitch-clone').innerText = cc > 0 ? cc.toFixed(1) + 's' : `Ready (${ac}/2)`;
@@ -1903,12 +1930,12 @@ function updateUI() {
         getEl('ui-glitch-swap').style.opacity = (wc <= 0 && ac > 0) ? "1" : "0.5";
     }
     else if(myPlayer.heroClass === 'jubilee') {
-        ['jubilee-primary','jubilee-dash'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['jubilee-primary','jubilee-dash']);
         let p1 = localCombat.jubileePrimary.cd; getEl('cd-jubilee-primary').style.height = `${p1 > 0 ? (p1 / 1.2) * 100 : 0}%`; getEl('status-jubilee-primary').innerText = p1 > 0 ? p1.toFixed(1) + 's' : 'Ready';
         let pd = localCombat.jubileeDash.cd; getEl('cd-jubilee-dash').style.height = `${pd > 0 ? (pd / 5.0) * 100 : 0}%`; getEl('status-jubilee-dash').innerText = pd > 0 ? pd.toFixed(1) + 's' : 'Ready';
     }
     else if(myPlayer.heroClass === 'misaki') {
-        ['misaki-shoot','misaki-kisaki','misaki-rotate','misaki-grapple','misaki-flare'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['misaki-shoot','misaki-kisaki','misaki-rotate','misaki-grapple','misaki-flare','misaki-mirror']);
         let ms = localCombat.misakiShoot.cd; getEl('cd-misaki-shoot').style.height = `${ms > 0 ? (ms / 1.8) * 100 : 0}%`; getEl('status-misaki-shoot').innerText = ms > 0 ? ms.toFixed(1) + 's' : 'Ready';
         let mg = localCombat.misakiGrapple.cd; getEl('cd-misaki-grapple').style.height = `${mg > 0 ? (mg / 6.0) * 100 : 0}%`;
         getEl('status-misaki-grapple').innerText = mg > 0 ? mg.toFixed(1) + 's' : (myPlayer.kisakiDeployed ? 'Ready' : 'Req. Deploy');
@@ -1924,7 +1951,7 @@ function updateUI() {
         getEl('ui-misaki-mirror').style.display = 'flex';
     }
     else if(myPlayer.heroClass === 'blitz') {
-        ['blitz-primary','blitz-tp','blitz-grab'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['blitz-primary','blitz-tp','blitz-grab']);
         getEl('name-blitz-primary').innerText = myPlayer.blitzWeapon === 'handgun' ? 'Handgun' : 'Katana';
         if(myPlayer.blitzWeapon === 'handgun') getEl('status-blitz-primary').innerText = localCombat.blitzPrimary.rTm > 0 ? 'Reloading...' : `${myPlayer.blitzAmmo}/8`;
         else getEl('status-blitz-primary').innerText = 'Auto Melee';
@@ -1935,7 +1962,7 @@ function updateUI() {
         getEl('status-blitz-grab').innerText = bg > 0 ? bg.toFixed(1) + 's' : 'Ready';
     }
     else if(myPlayer.heroClass === 'aero') {
-        ['aero-tab','aero-swipe','aero-dash','aero-mode'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['aero-tab','aero-swipe','aero-dash','aero-mode']);
         let tAct = gameState.projectiles.filter(p => p.type === 'aero_tab' && p.ownerId === myId && p.phase === 'active').length;
         getEl('status-aero-tab').innerText = `${tAct}/5 Active`;
         getEl('ui-aero-tab').style.borderColor = tAct >= 5 ? '#ef4444' : '#52525b';
@@ -1945,14 +1972,14 @@ function updateUI() {
         getEl('name-aero-mode').style.color = myPlayer.aeroTabType === 2 ? '#22c55e' : '#0055ff';
     }
     else if(myPlayer.heroClass === 'trace') {
-        ['trace-primary','trace-dash'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['trace-primary','trace-dash']);
         let tp = localCombat.traceShoot.cd; getEl('cd-trace-primary').style.height = `${tp > 0 ? (tp / 1.0) * 100 : 0}%`; getEl('status-trace-primary').innerText = tp > 0 ? tp.toFixed(1) + 's' : 'Ready';
         let td = localCombat.traceDash.cd; getEl('cd-trace-dash').style.height = `${td > 0 ? (td / 4.0) * 100 : 0}%`; getEl('status-trace-dash').innerText = td > 0 ? td.toFixed(1) + 's' : 'Ready';
         if(myPlayer.traceDashing) { getEl('ui-trace-dash').style.borderColor = myPlayer.customization?.traceColors?.neon || '#a855f7'; getEl('status-trace-dash').innerText = 'Drawing...'; } else getEl('ui-trace-dash').style.borderColor = '#52525b';
         if(myPlayer.traceShooting) { getEl('ui-trace-primary').style.borderColor = myPlayer.customization?.traceColors?.neon || '#a855f7'; getEl('status-trace-primary').innerText = 'Drawing...'; } else getEl('ui-trace-primary').style.borderColor = '#52525b';
     }
     else if(myPlayer.heroClass === 'copycat') {
-        ['copycat-execute','copycat-steal'].forEach(x => getEl(`ui-${x}`).style.display = 'flex');
+        setVisibleAbilities(['copycat-execute','copycat-steal']);
         let ec = localCombat.copycatExecute.cd; getEl('cd-copycat-execute').style.height = `${ec > 0 ? (ec/0.8)*100 : 0}%`;
         getEl('status-copycat-execute').innerText = ec > 0 ? ec.toFixed(1)+'s' : `Ready (${myPlayer.copycatWeapons.length}/4)`;
         let sc = localCombat.copycatSteal.cd; getEl('cd-copycat-steal').style.height = `${sc > 0 ? (sc/5.0)*100 : 0}%`;
@@ -1983,7 +2010,7 @@ function updateUI() {
         }
         html += `<div class="sb-row"><div>${d}${p.name}</div><div><span style="color:#22c55e">${p.kills||0} K</span> <span style="color:#71717a">|</span> <span style="color:#ef4444">${p.deaths||0} D</span></div></div>`;
     });
-    sb.innerHTML = html;
+    if(html !== lastScoreboardHtml) { sb.innerHTML = html; lastScoreboardHtml = html; }
 }
 
 function drawTrains() {
@@ -2172,7 +2199,7 @@ function drawEnts() {
                 let img = null;
                 if(isH) img = healImg;
                 else if(gameState.players[p.ownerId] && gameState.players[p.ownerId].customization?.aeroBg) {
-                    let cI = new Image(); cI.src = gameState.players[p.ownerId].customization.aeroBg; img = cI;
+                    img = getCachedAeroImage(p.ownerId, gameState.players[p.ownerId].customization.aeroBg);
                 } else img = aeroImgs[p.bgIdx % aeroImgs.length];
                 
                 if(img && img.complete && img.naturalWidth > 0) {
@@ -2296,7 +2323,7 @@ function drawShields() {
 }
 
 function drawPlayers() {
-    let mp = getMatrixPat(), ents = [...gameState.clones, ...Object.values(gameState.players).filter(p => !p.isDead)];
+    let ents = [...gameState.clones, ...Object.values(gameState.players).filter(p => !p.isDead)], mp = ents.some(e => (e.ownerId !== undefined ? gameState.players[e.ownerId] : e)?.heroClass === 'glitch') ? getMatrixPat() : null;
     const vW = can.width/cam.zoom, vH = can.height/cam.zoom;
     const iV = (x, y, p=150) => (x > cam.x - p && x < cam.x + vW + p && y > cam.y - p && y < cam.y + vH + p);
     
@@ -2398,7 +2425,7 @@ function drawPlayers() {
         }
         ctx.restore();
         
-        let tw = ctx.measureText(o.name).width, bg = 'rgba(24,24,27,0.8)';
+        let tw = getNameWidth(o.name), bg = 'rgba(24,24,27,0.8)';
         if(o.isJuggernaut) bg = 'rgba(234,179,8,0.85)';
         else if(gameState.isTeamMode) {
             if(o.team === 'red') bg = 'rgba(185,28,28,0.85)';
@@ -2408,7 +2435,7 @@ function drawPlayers() {
         ctx.fillStyle = bg; ctx.beginPath();
         let yO = o.isJuggernaut ? 95 : 56;
         ctx.roundRect(e.x - (tw / 2) - 8, e.y - yO, tw + 16, 18, 4); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff'; ctx.font = '11px "Dela Gothic One", sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(o.name, e.x, e.y - (yO - 12));
     });
 }
@@ -2495,7 +2522,7 @@ function drawVFX() {
         } else if(e.type === 'damageText') {
             let a = Math.max(0, e.life / e.maxLife); ctx.translate(e.x, e.y); e.y += e.vy * 0.016;
             ctx.fillStyle = e.color.replace('rgb', 'rgba').replace(')', `,${a})`);
-            ctx.strokeStyle = `rgba(0,0,0,${a})`; ctx.lineWidth = 3; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'center';
+            ctx.strokeStyle = `rgba(0,0,0,${a})`; ctx.lineWidth = 3; ctx.font = '24px "Dela Gothic One", sans-serif'; ctx.textAlign = 'center';
             ctx.strokeText(e.text, 0, 0); ctx.fillText(e.text, 0, 0);
         }
         ctx.restore();
@@ -2540,7 +2567,7 @@ function gLoop(t) {
         localHitStop -= dt; requestAnimationFrame(gLoop); return;
     }
     
-    updateMovement(dt); updateGameState(dt); if(!isHost) interpRemotePlayers(dt); updateUI();
+    updateMovement(dt); updateGameState(dt); if(!isHost) interpRemotePlayers(dt); updateUI(t);
     
     let isF = (Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y) > 10) || myPlayer.isFlying || localCombat.jubileeDash?.dTm > 0 || localCombat.misakiGrapple?.dTm > 0 || myPlayer.traceDashing;
     cam.targetZoom = myPlayer.isJuggernaut ? 0.45 : (isF ? 0.55 : 0.65);
@@ -2552,7 +2579,9 @@ function gLoop(t) {
         let dx = p.x - (p.lastX !== undefined ? p.lastX : p.x), dy = p.y - (p.lastY !== undefined ? p.lastY : p.y);
         p.lastX = p.x; p.lastY = p.y;
         if(Math.hypot(dx, dy) > 7 || p.isFlying) {
-            if(Math.random() < 0.6 && p.heroClass !== 'aero' && p.heroClass !== 'trace') {
+            const trailKey = p.id || id;
+            if(t - (speedTrailCooldowns[trailKey] || 0) > 80 && Math.random() < 0.28 && p.heroClass !== 'aero' && p.heroClass !== 'trace') {
+                speedTrailCooldowns[trailKey] = t;
                 vfx.push({type:'speedLine', x:p.x + (Math.random() - 0.5) * 80, y:p.y + (Math.random() - 0.5) * 80, angle:(p.isFlying ? p.angle : Math.atan2(dy, dx)) + Math.PI, life:0.25, maxLife:0.25, length:30 + Math.random() * 50});
             }
         }
@@ -2563,7 +2592,6 @@ function gLoop(t) {
     cam.x += (tX - cam.x) * 10 * dt;
     cam.y += (tY - cam.y) * 10 * dt;
     
-    can.width = gCon.clientWidth; can.height = gCon.clientHeight;
     ctx.clearRect(0, 0, can.width, can.height); ctx.save();
     
     if(sShake.timer > 0) {
@@ -2576,7 +2604,7 @@ function gLoop(t) {
     
     drawGrid(); drawShields(); drawHPs(); drawEnts(); drawPlayers(); drawVFX(); 
     
-    ctx.restore(); drawMinimap();
+    ctx.restore(); if(t - lastMinimapDraw > 90) { drawMinimap(); lastMinimapDraw = t; }
     
     if(myPlayer.isDead) {
         ctx.fillStyle = 'rgba(9,9,11,0.8)'; ctx.fillRect(0, 0, can.width, can.height);
@@ -2600,20 +2628,11 @@ setInterval(() => {
 }, 5000);
 
 window.addEventListener('resize', () => {
-    if(gCon.classList.contains('active')) {
-        can.width = gCon.clientWidth; can.height = gCon.clientHeight;
-    }
-    let mw = getEl('minimap-wrapper');
-    if(mw) {
-        getEl('minimapCanvas').width = mw.clientWidth; getEl('minimapCanvas').height = mw.clientHeight;
-    }
+    updateCanvasSize();
 });
 
 setTimeout(() => {
-    let mw = getEl('minimap-wrapper');
-    if(mw) {
-        getEl('minimapCanvas').width = mw.clientWidth; getEl('minimapCanvas').height = mw.clientHeight;
-    }
+    updateCanvasSize();
 }, 100);
 
 </script>
