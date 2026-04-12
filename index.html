@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,10 +11,10 @@
 <style>
 body{font-family:"Dela Gothic One",-apple-system,BlinkMacSystemFont,sans-serif;background-color:#09090b;color:#f4f4f5;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;overflow:hidden;user-select:none}
 .screen-wrapper{position:relative;z-index:10;width:95vw;max-width:1100px;height:90vh;border-radius:16px;padding:2px;background:linear-gradient(60deg,#ff0055,#ffaa00,#55ff00,#00ffaa,#0055ff,#aa00ff,#ff0055);background-size:300% 300%;animation:rainbowFlow 8s linear infinite}
-@keyframes rainbowFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes rainbowStroke{0%{-webkit-text-stroke-color:#ff0055}20%{-webkit-text-stroke-color:#ffaa00}40%{-webkit-text-stroke-color:#55ff00}60%{-webkit-text-stroke-color:#00f0ff}80%{-webkit-text-stroke-color:#aa00ff}100%{-webkit-text-stroke-color:#ff0055}}
 .screen{display:none;background:#18181b;padding:2vh 2vw;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,0.8);height:100%;box-sizing:border-box;overflow:hidden;}
 .screen-wrapper.active .screen{display:flex;flex-direction:column;}.screen-wrapper.hidden{display:none}
-.lobby-title{text-align:center;font-style:italic;font-size:3rem;margin:0 0 2vh 0;font-weight:900;letter-spacing:2px;background:linear-gradient(to right,#a855f7,#ec4899,#f43f5e);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lobby-title{text-align:center;font-style:italic;font-size:3.8rem;margin:0 0 1vh 0;font-weight:900;letter-spacing:1px;line-height:1;color:#000;-webkit-text-stroke:0.01px #ff0055;animation:rainbowStroke 8s linear infinite;text-shadow:3px 3px 0px rgba(0,0,0,0.5)}
 .lobby-container{display:flex;gap:1.5vw;text-align:left;align-items:stretch;flex-grow:1;min-height:0;}
 .lobby-col{flex:1;display:flex;flex-direction:column;gap:1.5vh;min-height:0;overflow-y:auto;}
 .col-box{background:#27272a;border:1px solid #3f3f46;border-radius:12px;display:flex;flex-direction:column;padding:1.5vh 1vw;box-sizing:border-box;}
@@ -56,12 +55,27 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 #ult-ui {display:none;position:absolute;bottom:4vh;left:50%;transform:translateX(-50%);width:14vw;min-width:140px;height:1.2vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:6px;overflow:hidden;z-index:40;}
 #ult-fill {width:0%;height:100%;background:#a855f7;transition:width 0.2s ease-out, background-color 0.2s;}
 #ult-text {position:absolute;top:0;left:0;width:100%;height:100%;text-align:center;font-size:0.75vw;font-weight:bold;display:flex;align-items:center;justify-content:center;color:white;pointer-events:none;}
+
+#aero-context-menu{display:none;position:absolute;z-index:200;background:#f0f0f0;border:1px solid #a0a0a0;box-shadow:2px 2px 6px rgba(0,0,0,0.3);font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-size:12px;color:#222;min-width:100px;padding:2px 0;border-radius:2px;user-select:none;}
+#aero-context-menu .ctx-item{display:flex;align-items:center;padding:3px 16px 3px 24px;cursor:default;white-space:nowrap;position:relative;}
+#aero-context-menu .ctx-item:hover{background:#91c9f7;color:#000;}
+#aero-context-menu .ctx-item.disabled{color:#aaa;}
+#aero-context-menu .ctx-item.disabled:hover{background:transparent;}
+#aero-context-menu .ctx-item .ctx-icon{position:absolute;left:4px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:12px;}
+#aero-context-menu .ctx-item .ctx-shortcut{margin-left:auto;padding-left:20px;color:#888;font-size:11px;}
+#aero-context-menu .ctx-separator{height:1px;background:#d0d0d0;margin:2px 2px;}
 </style>
 </head>
 <body>
 
 <div id="game-container">
     <canvas id="gameCanvas" width="800" height="600" oncontextmenu="return false;"></canvas>
+    <div id="aero-context-menu">
+        <div class="ctx-item disabled"><span class="ctx-icon">✂</span>Cut<span class="ctx-shortcut">Ctrl+X</span></div>
+        <div class="ctx-item" id="ctx-copy-btn"><span class="ctx-icon">📋</span>Copy<span class="ctx-shortcut">Ctrl+C</span></div>
+        <div class="ctx-item disabled"><span class="ctx-icon">📄</span>Paste<span class="ctx-shortcut">Ctrl+V</span></div>
+    </div>
+
     <div id="scoreboard"></div><div id="kill-feed"></div>
     <div id="chat-wrapper">
         <div id="chat-messages"></div>
@@ -84,8 +98,9 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 
         <div class="ability-slot" id="ui-aero-tab"><div class="key">L-CLICK</div><div class="name">Draw Tab</div><div class="status" id="status-aero-tab">0/5 Active</div></div>
         <div class="ability-slot" id="ui-aero-swipe"><div class="key">CLICK EDGE</div><div class="name">Close Tab</div><div class="status" id="status-aero-swipe">Ready</div></div>
-        <div class="ability-slot" id="ui-aero-dash"><div class="key">SPACE</div><div class="name">Dash</div><div class="status" id="status-aero-dash">Charges: 3</div><div class="cooldown-overlay" id="cd-aero-dash"></div></div>
         <div class="ability-slot" id="ui-aero-mode"><div class="key">1 / 2</div><div class="name" id="name-aero-mode">Damage</div><div class="status">Mode</div></div>
+        <div class="ability-slot" id="ui-aero-copy"><div class="key">R-CLICK</div><div class="name">Copy</div><div class="status" id="status-aero-copy">0/4 Weapons</div></div>
+        <div class="ability-slot" id="ui-aero-paste"><div class="key">HOLD L-CLICK</div><div class="name">Paste</div><div class="status" id="status-aero-paste">No Weapons</div><div class="cooldown-overlay" id="cd-aero-paste"></div></div>
 
         <div class="ability-slot" id="ui-blitz-primary"><div class="key">L-CLICK/Q</div><div class="name" id="name-blitz-primary">Handgun</div><div class="status" id="status-blitz-primary">8/8</div><div class="cooldown-overlay" id="cd-blitz-primary"></div></div>
         <div class="ability-slot" id="ui-blitz-tp"><div class="key">SPACE</div><div class="name">Spatial Shift</div><div class="status" id="status-blitz-tp">Ch: 3</div><div class="cooldown-overlay" id="cd-blitz-tp"></div></div>
@@ -109,8 +124,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
         <div class="ability-slot" id="ui-jubilee-primary"><div class="key">L-CLICK</div><div class="name">Fireworks</div><div class="status" id="status-jubilee-primary">Ready</div><div class="cooldown-overlay" id="cd-jubilee-primary"></div></div>
         <div class="ability-slot" id="ui-jubilee-dash"><div class="key">SPACE</div><div class="name">Blast Dash</div><div class="status" id="status-jubilee-dash">Ready</div><div class="cooldown-overlay" id="cd-jubilee-dash"></div></div>
         
-        <div class="ability-slot" id="ui-copycat-execute"><div class="key">L-CLICK</div><div class="name">execute.exe</div><div class="status" id="status-copycat-execute">Ready</div><div class="cooldown-overlay" id="cd-copycat-execute"></div></div>
-        <div class="ability-slot" id="ui-copycat-steal"><div class="key">Q</div><div class="name">Steal Code</div><div class="status" id="status-copycat-steal">Ready</div><div class="cooldown-overlay" id="cd-copycat-steal"></div></div>
+
     </div>
     <div id="health-ui"><div id="health-fill"></div><div id="health-text">150 / 150</div></div>
 </div>
@@ -159,7 +173,6 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                     <h3 style="margin:0 0 1.5vh 0;color:#a1a1aa;font-size:0.9rem;">Roster</h3>
                     <div style="display:flex;flex-direction:column;gap:0.5vh;">
                         <button class="class-list-btn selected" id="btn-thorfinn" onclick="selectHero('thorfinn')">Thorfinn</button>
-                        <button class="class-list-btn" id="btn-copycat" onclick="selectHero('copycat')">C0PY-CAT</button>
                         <button class="class-list-btn" id="btn-trace" onclick="selectHero('trace')">Trace</button>
                         <button class="class-list-btn" id="btn-blitz" onclick="selectHero('blitz')">Blitz</button>
                         <button class="class-list-btn" id="btn-misaki" onclick="selectHero('misaki')">Misaki</button>
@@ -212,10 +225,10 @@ const hexToRgb = hex => {
 
 const aeroImgs = [];
 const aeroUrls = [
-    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1557672172-298e090bd0f1?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?auto=format&fit=crop&w=400&q=80',
+    '',
+    '',
+'data:image/jpeg;base64,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',
+    'data:image/jpeg;base64,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',
     'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=400&q=80'
 ];
 aeroUrls.forEach(src => { let img = new Image(); img.crossOrigin="anonymous"; img.src = src; aeroImgs.push(img); });
@@ -236,15 +249,14 @@ const SERVER_IDS = { 'FFA': 'rvls-pub-ffa-v10', 'RVB': 'rvls-pub-rvb-v10', 'KOTH
 const SPAWN_POINTS = [ {x: 300, y: 300}, {x: 2900, y: 300}, {x: 300, y: 2100}, {x: 2900, y: 2100}, {x: 1600, y: 300}, {x: 1600, y: 2100}, {x: 800, y: 1200}, {x: 2400, y: 1200}, {x: 300, y: 1200}, {x: 2900, y: 1200} ];
 
 const HERO_DATA = {
-    copycat:{name:'C0PY-CAT',role:'Assassin',hp:275,speed:'Fast',color:'#06b6d4',desc:'Steals up to 4 enemy weapons and fires them all simultaneously.',abilities:['execute.exe (L-Click)', 'Steal Code (Q)']},
-    trace:{name:'Trace',role:'Assassin',hp:200,speed:'Fast',color:'#a855f7',desc:'High-speed precision flanker utilizing geometric light arrows and unpredictable pathing.',abilities:['Vector Arrow (Hold L-Click to Draw Nodes)','Slipstream Dash (Hold Space to Draw Nodes)']},
+    trace:{name:'Trace',role:'Assassin',hp:250,speed:'Fast',color:'#a855f7',desc:'High-speed precision flanker utilizing geometric light arrows and unpredictable pathing.',abilities:['Vector Arrow (Hold L-Click to Draw Nodes)','Slipstream Dash (Hold Space to Draw Nodes)']},
     thorfinn:{name:'Thorfinn',role:'Assassin',hp:250,speed:'Fast',color:'#f59e0b',desc:'Dual-dagger close quarters high-mobility assassin.',abilities:['X-Slash','Throw Dagger','Dash']},
     blitz:{name:'Blitz',role:'Assassin',hp:200,speed:'Fast',color:'#ffffff',desc:'Spatial illusionist capable of teleportation and stance swaps.',abilities:['Swap Stance','Handgun/Katana','Spatial Shift','Displace Grab','[ULT] Paradox Rift']},
     kendo:{name:'Kendo',role:'Sniper',hp:250,speed:'Medium',color:'#ef4444',desc:'Tactical sniper with a ridable arrow and modular shield.',abilities:['Y-Arrow','Arrow Ride','Subsonic Shield']},
     glitch:{name:'Glitch',role:'Support',hp:350,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
     jubilee:{name:'Jubilee',role:'Damage',hp:200,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
-    misaki:{name:'Misaki',role:'Sniper',hp:300,speed:'Medium',color:'#dc2626',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
-    aero:{name:'Aero',role:'Support',hp:250,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web Core Mage who dominates the arena by managing and weaponizing draggable browser tabs.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Dash']}
+    misaki:{name:'Misaki',role:'Sniper',hp:300,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
+    aero:{name:'Aero',role:'Support',hp:250,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']}
 };
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
@@ -265,7 +277,8 @@ let myPlayer = {
     x:W/2, y:H/2, angle:0, hp:250, maxHp:250, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol},
     kisakiDeployed:false, kisakiMirrorOn:false, kisakiMirrorAngle:0, blitzWeapon:'handgun', blitzAmmo:8, grabbedLocked:false, flicker:false,
     ultCharge: 0, hasUltAura: false, auraTimer: 0, isJuggernaut: false, aeroDrawing: false, aeroTabType: 1, traceShooting: false, traceNodes:[], traceDashing: false, traceDashNodes:[], traceFreeze: false,
-    copycatWeapons: []
+    copycatWeapons: [],
+    aeroContextMenu: false, aeroContextMenuTimer: 0, aeroContextMenuX: 0, aeroContextMenuY: 0, aeroContextMenuWorldX: 0, aeroContextMenuWorldY: 0, aeroPasting: false, aeroPasteFirstShot: false, aeroPasteTimers: {}
 };
 
 let savedAeroBg = localStorage.getItem('rivals_aeroBg'); if(savedAeroBg) myPlayer.customization.aeroBg = savedAeroBg;
@@ -296,6 +309,25 @@ function getMatrixPat() {
 
 const mapCanvas=document.createElement('canvas'); mapCanvas.width=W; mapCanvas.height=H; const mapCtx=mapCanvas.getContext('2d');
 
+// Halftone dot pattern canvas (baked once)
+const halftoneCanvas=document.createElement('canvas'); halftoneCanvas.width=W; halftoneCanvas.height=H;
+function bakeHalftone(){
+    const hCtx=halftoneCanvas.getContext('2d');
+    hCtx.clearRect(0,0,W,H);
+    hCtx.fillStyle='rgba(0,0,0,0.3)';
+    const spacing=6;
+    for(let y=0;y<H;y+=spacing){
+        for(let x=(y/spacing%2===0?0:spacing/2);x<W;x+=spacing){
+            hCtx.beginPath();hCtx.arc(x,y,1.8,0,6.28);hCtx.fill();
+        }
+    }
+}
+bakeHalftone();
+
+function drawRoundedRect(c,x,y,w,h,r){
+    c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();
+}
+
 function bakeMap() {
     mapCtx.fillStyle='#a9a9a9'; 
     mapCtx.fillRect(0,0,W,H);
@@ -310,11 +342,20 @@ function bakeMap() {
                 let x = (i % 64) * GRID; 
                 let y = Math.floor(i / 64) * GRID; 
                 mapCtx.fillStyle = cell.color || '#000000'; 
-                mapCtx.fillRect(x, y, GRID, GRID); 
+                drawRoundedRect(mapCtx, x+1, y+1, GRID-2, GRID-2, 6);
+                mapCtx.fill();
+                // Only outline dark/black wall blocks
+                let cLow = (cell.color||'').toLowerCase();
+                let isBlackWall = (cLow === '#000000' || cLow === '#000' || cLow === '#09090b' || cLow === '#0f172a');
+                if(isBlackWall){
+                    mapCtx.strokeStyle = 'rgba(255,255,255,0.6)';
+                    mapCtx.lineWidth = 1;
+                    mapCtx.stroke();
+                }
                 if(cell.outlineColor){
                     mapCtx.strokeStyle = cell.outlineColor;
                     mapCtx.lineWidth = cell.outlineWidth || 1;
-                    mapCtx.strokeRect(x, y, GRID, GRID);
+                    mapCtx.stroke();
                 } 
             }
         };
@@ -330,13 +371,20 @@ function bakeMap() {
         
         genProcWalls().forEach(w=>{
             mapCtx.fillStyle = w.type==='black_gloss' ? '#09090b' : (w.type==='pearl_white' ? '#f8fafc' : '#64748b'); 
-            mapCtx.fillRect(w.x, w.y, 50, 50);
-            mapCtx.strokeStyle = w.type==='black_gloss' ? '#27272a' : (w.type==='pearl_white' ? '#cbd5e1' : '#334155'); 
-            mapCtx.lineWidth=2; 
-            mapCtx.strokeRect(w.x, w.y, 50, 50);
+            drawRoundedRect(mapCtx, w.x+1, w.y+1, 48, 48, 8);
+            mapCtx.fill();
+            // Only outline black wall blocks - thin smooth One Piece style
+            if(w.type === 'black_gloss') {
+                mapCtx.strokeStyle = 'rgba(255,255,255,0.55)';
+                mapCtx.lineWidth = 100;
+                mapCtx.lineJoin = 'round';
+                mapCtx.stroke();
+            }
         });
     }
-} 
+    // Overlay halftone dot texture
+    mapCtx.drawImage(halftoneCanvas, 0, 0);
+}
 bakeMap();
 
 function genProcWalls() {
@@ -370,7 +418,7 @@ let localCombat = {
     blitzPrimary:{cd:0,rTm:0}, blitzTp:{ch:3,maxCh:3,cds:[0,0,0],maxCd:4.0,dTm:0,dx:0,dy:0}, blitzGrab:{cd:0,maxCd:10.0}, 
     mQ:false, m1:false,
     traceShoot:{cd:0,maxCd:1.0}, traceDash:{cd:0,maxCd:4.0,active:false,path:[],idx:0},
-    copycatExecute:{cd:0,maxCd:0.8}, copycatSteal:{cd:0,maxCd:5.0}
+    aeroPaste:{cd:0,maxCd:0.8}, aeroCopy:{cd:0,maxCd:0}
 };
 
 function resetAllCooldowns() {
@@ -387,7 +435,7 @@ function resetAllCooldowns() {
     myPlayer.daggers = 2;
 }
 
-let vfx=[], arrowTrails={};
+let vfx=[], arrowTrails={}, impactFlashTimer=0;
 const wrap=getEl('screen-wrapper'), gCon=getEl('game-container'), can=getEl('gameCanvas'), ctx=can.getContext('2d'), abUi=getEl('ability-ui'), hlUi=getEl('health-ui');
 let lTime=performance.now(), sMx=0, sMy=0, mDwn=false;
 const abilitySlotEls=Array.from(document.querySelectorAll('.ability-slot'));
@@ -427,12 +475,7 @@ function drawPrev() {
         getEl('aero-custom-panel').style.display='block'; pCtx.scale(2.5,2.5);
         pCtx.fillStyle='#0ea5e9'; pCtx.beginPath(); pCtx.arc(0,0,16,0,6.28); pCtx.fill(); pCtx.strokeStyle='#fff'; pCtx.lineWidth=2; pCtx.stroke();
         pCtx.fillStyle = '#f1f5f9'; pCtx.fillRect(6, -12, 18, 14); pCtx.fillStyle = '#3b82f6'; pCtx.fillRect(6, -12, 18, 4); pCtx.strokeStyle = '#3b82f6'; pCtx.lineWidth = 1; pCtx.strokeRect(6, -12, 18, 14);
-    } else if(myPlayer.heroClass==='copycat') {
-        getEl('generic-custom-panel').style.display='block'; pCtx.scale(2,2); 
-        pCtx.fillStyle='#06b6d4'; 
-        pCtx.beginPath(); pCtx.moveTo(-10,-10); pCtx.lineTo(-20,-25); pCtx.lineTo(-2,-15); pCtx.fill();
-        pCtx.beginPath(); pCtx.moveTo(10,-10); pCtx.lineTo(20,-25); pCtx.lineTo(2,-15); pCtx.fill();
-        pCtx.beginPath(); pCtx.arc(0,0,16,0,6.28); pCtx.fill(); pCtx.strokeStyle='#fff'; pCtx.lineWidth=2; pCtx.stroke();
+
     } else {
         getEl('generic-custom-panel').style.display='block'; pCtx.scale(2,2); pCtx.fillStyle=myPlayer.heroClass==='blitz'?'#fff':myPlayer.color; pCtx.beginPath(); pCtx.arc(0,0,16,0,6.28); pCtx.fill(); pCtx.strokeStyle=myPlayer.heroClass==='blitz'?'#000':'#fff'; pCtx.lineWidth=myPlayer.heroClass==='blitz'?3:2; pCtx.stroke();
     } 
@@ -491,10 +534,10 @@ function selectHero(id) {
     myPlayer.blitzWeapon='handgun'; myPlayer.blitzAmmo=8; myPlayer.grabbedLocked=false; myPlayer.flicker=false;
     myPlayer.aeroDrawing=false; myPlayer.aeroTabType=1; 
     myPlayer.traceShooting=false; myPlayer.traceDashing=false; myPlayer.traceFreeze=false;
-    myPlayer.copycatWeapons=[];
+    myPlayer.copycatWeapons=[]; myPlayer.aeroContextMenu=false; myPlayer.aeroPasting=false; myPlayer.aeroPasteFirstShot=false;
     
     localCombat.traceShoot={cd:0,maxCd:1.0}; localCombat.traceDash={cd:0,maxCd:4.0,active:false,path:[],idx:0};
-    localCombat.copycatSteal={cd:0,maxCd:5.0}; localCombat.copycatExecute={cd:0,maxCd:0.8};
+    localCombat.aeroPaste={cd:0,maxCd:0.8}; localCombat.aeroCopy={cd:0,maxCd:0};
     
     getEl('info-name').innerText=HERO_DATA[id].name; 
     getEl('info-role').innerText=HERO_DATA[id].role; 
@@ -800,6 +843,8 @@ function sendHitmarker(aId, t, d) {
 function spawnHitmarker(x, y, d) {
     let dmg = Math.min(d, 200), bVal = Math.floor(255 - (dmg/200)*255);
     vfx.push({type:'damageText', x:x+(Math.random()*30-15), y:y-20, text:Math.ceil(d), color:`rgb(255,255,${bVal})`, life:0.8, maxLife:0.8, vy:-50});
+    // Trigger impact flash on big hits (ult-level damage 50+)
+    if(d >= 50) impactFlashTimer = 0.12;
 }
 
 function startGame() {
@@ -908,8 +953,8 @@ function sdUp() {
         grabbedLocked:myPlayer.grabbedLocked, daggers:myPlayer.daggers, kills:myPlayer.kills, deaths:myPlayer.deaths, 
         slashAnimTimer:myPlayer.slashAnimTimer, arrowActive:myPlayer.arrowActive, targetX:myPlayer.targetX, targetY:myPlayer.targetY, 
         kisakiDeployed:myPlayer.kisakiDeployed, kisakiMirrorOn:myPlayer.kisakiMirrorOn, kisakiMirrorAngle:myPlayer.kisakiMirrorAngle, 
-        blitzWeapon:myPlayer.blitzWeapon, blitzAmmo:myPlayer.blitzAmmo, aeroDrawing:myPlayer.aeroDrawing, aeroTabType:myPlayer.aeroTabType, 
-        invulnerable:myPlayer.invulnerable||false, copycatWeapons:myPlayer.copycatWeapons,
+        blitzWeapon:myPlayer.blitzWeapon, blitzAmmo:myPlayer.blitzAmmo, aeroDrawing:myPlayer.aeroDrawing, aeroTabType:myPlayer.aeroTabType, aeroContextMenu:myPlayer.aeroContextMenu||false, aeroContextMenuWorldX:myPlayer.aeroContextMenuWorldX||0, aeroContextMenuWorldY:myPlayer.aeroContextMenuWorldY||0, 
+        invulnerable:myPlayer.invulnerable||false, copycatWeapons:myPlayer.copycatWeapons, aeroContextMenu:myPlayer.aeroContextMenu||false,
         name:myPlayer.name, color:myPlayer.color, team:myPlayer.team, customization:myPlayer.customization
     };
     if(!isHost && hostConnection && hostConnection.open) hostConnection.send({type:'update', player:minP});
@@ -948,7 +993,6 @@ window.addEventListener('keydown', e => {
     
     if(k === '2' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
         if(myPlayer.heroClass === 'misaki') trMisF();
-        else if(myPlayer.heroClass === 'aero') { myPlayer.aeroTabType = 2; sdUp(); }
     }
     
     if(k === 'f' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
@@ -963,26 +1007,19 @@ window.addEventListener('keydown', e => {
             sdUp();
         } else if(myPlayer.heroClass === 'blitz' && !localCombat.mQ) {
             localCombat.mQ = true; myPlayer.blitzWeapon = myPlayer.blitzWeapon === 'handgun' ? 'katana' : 'handgun'; sdUp();
-        } else if(myPlayer.heroClass === 'copycat' && localCombat.copycatSteal.cd <= 0) {
-            let cId = null, cD = 120;
-            for(let id in gameState.players) {
-                if(id === myId || gameState.players[id].isDead) continue;
-                let d = Math.hypot(gameState.players[id].x - myPlayer.x, gameState.players[id].y - myPlayer.y);
-                if(d < cD && cDm(myId, id) && gameState.players[id].heroClass !== 'aero') { cD = d; cId = id; }
-            }
-            let isCl = false;
-            for(let c of gameState.clones) {
-                let d = Math.hypot(c.x - myPlayer.x, c.y - myPlayer.y);
-                if(d < cD && cDm(myId, c.ownerId)) { cD = d; cId = c.id; isCl = true; }
-            }
-            if(cId) {
-                localCombat.copycatSteal.cd = (activeServerMode==='CHAOS') ? 0.05 : 5.0;
-                let sCls = isCl ? 'glitch' : gameState.players[cId].heroClass;
-                if(sCls === 'copycat') sCls = 'thorfinn';
-                myPlayer.copycatWeapons.push(sCls);
-                if(myPlayer.copycatWeapons.length > 4) myPlayer.copycatWeapons.shift();
-                vfx.push({type:'stealLink', targetId:cId, sourceId:myId, life:0.4, maxLife:0.4});
-                sdEv({type:'copycat_steal_vfx', targetId:cId}); sdUp();
+        } else if(myPlayer.heroClass === 'aero' && !localCombat.mQ) {
+            localCombat.mQ = true;
+            if(!myPlayer.aeroContextMenu) {
+                let wx = (sMx/cam.zoom) + cam.x, wy = (sMy/cam.zoom) + cam.y;
+                myPlayer.aeroContextMenu = true;
+                myPlayer.aeroContextMenuTimer = 3.0;
+                myPlayer.aeroContextMenuWorldX = wx;
+                myPlayer.aeroContextMenuWorldY = wy;
+                aeroCtxEl.style.left = sMx + 'px';
+                aeroCtxEl.style.top = sMy + 'px';
+                aeroCtxEl.style.display = 'block';
+                sdEv({type:'aero_context_menu_open', x:wx, y:wy});
+                sdUp();
             }
         }
     }
@@ -996,7 +1033,6 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'jubilee') trJubD();
             else if(myPlayer.heroClass === 'misaki') trMisG();
             else if(myPlayer.heroClass === 'blitz') trBlTp();
-            else if(myPlayer.heroClass === 'aero') trAeroDsh();
             else if(myPlayer.heroClass === 'trace') {
                 if(localCombat.traceDash.cd <= 0 && !myPlayer.traceDashing && !localCombat.traceDash.active) {
                     myPlayer.traceDashing = true; myPlayer.traceFreeze = true; let wx = (sMx/cam.zoom) + cam.x, wy = (sMy/cam.zoom) + cam.y; myPlayer.traceDashNodes = [{x: wx, y: wy}];
@@ -1052,34 +1088,25 @@ can.addEventListener('mousedown', e => {
     if(!myPlayer.isDead && e.button === 0 && myPlayer.stunTimer <= 0 && gCon.classList.contains('active')) {
         let wx = (sMx/cam.zoom) + cam.x, wy = (sMy/cam.zoom) + cam.y;
         
-        if(myPlayer.heroClass === 'copycat') {
-            if(localCombat.copycatExecute.cd <= 0 && myPlayer.copycatWeapons.length > 0) {
-                localCombat.copycatExecute.cd = (activeServerMode==='CHAOS') ? 0.05 : 0.8;
-                applyShake(5, 0.15); myPlayer.slashAnimTimer = 0.2;
-                let dM = [1.0, 0.65, 0.55, 0.45, 0.35][myPlayer.copycatWeapons.length - 1] || 1.0;
-                myPlayer.copycatWeapons.forEach(w => {
-                    setTimeout(() => {
-                        if(w==='thorfinn') sdEv({type:'slash', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, daggerCount:2, dmgMult:dM});
-                        else if(w==='blitz') sdEv({type:'blitz_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
-                        else if(w==='misaki') sdEv({type:'misaki_shoot', angle:myPlayer.angle, dmgMult:dM});
-                        else if(w==='jubilee') sdEv({type:'jubilee_shoot', targetX:myPlayer.targetX, targetY:myPlayer.targetY, x:myPlayer.x, y:myPlayer.y, dmgMult:dM});
-                        else if(w==='glitch') sdEv({type:'glitch_shoot', targetX:myPlayer.targetX, targetY:myPlayer.targetY, dmgMult:dM});
-                        else if(w==='trace') { let dist=Math.hypot(myPlayer.targetX-myPlayer.x, myPlayer.targetY-myPlayer.y); let n1={x:myPlayer.x+Math.cos(myPlayer.angle)*dist*0.33, y:myPlayer.y+Math.sin(myPlayer.angle)*dist*0.33}, n2={x:myPlayer.x+Math.cos(myPlayer.angle)*dist*0.66, y:myPlayer.y+Math.sin(myPlayer.angle)*dist*0.66}, n3={x:myPlayer.x+Math.cos(myPlayer.angle)*dist, y:myPlayer.y+Math.sin(myPlayer.angle)*dist}; sdEv({type:'trace_shoot', nodes:[n1,n2,n3], x:myPlayer.x, y:myPlayer.y, dmgMult:dM}); }
-                        else if(w==='kendo') sdEv({type:'copycat_kendo_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
-                    }, 0);
-                });
+        if(myPlayer.heroClass === 'aero' && !myPlayer.aeroContextMenu) {
+            // Check for tab edge click first
+            let eD2 = getAeroTabEdgeAt(wx, wy);
+            if(eD2) { sdEv({type: 'aero_tab_close', tabId: eD2.tab.id, edge: eD2.edge}); return; }
+            // Single-click paste: fire ALL copied weapons simultaneously (no hold)
+            if(myPlayer.copycatWeapons.length > 0 && localCombat.aeroPaste.cd <= 0) {
+                let dM = [1.0, 0.70, 0.50, 0.30][myPlayer.copycatWeapons.length - 1] || 0.30;
+                applyShake(8, 0.2); myPlayer.slashAnimTimer = 0.2;
+                myPlayer.copycatWeapons.forEach(w => { fireAeroCopiedWeapon(w, dM); });
+                localCombat.aeroPaste.cd = (activeServerMode==='CHAOS') ? 0.05 : 0.8;
                 sdUp();
             }
+            // Start tab drawing (hold to draw)
+            myPlayer.aeroDrawing = true; myPlayer.aeroStartX = wx; myPlayer.aeroStartY = wy;
             return;
         }
         
         if(myPlayer.heroClass === 'trace') { if(localCombat.traceShoot.cd <= 0) { myPlayer.traceShooting = true; myPlayer.traceNodes = [{x: wx, y: wy}]; } return; }
-        if(myPlayer.heroClass === 'aero') {
-            let eD = getAeroTabEdgeAt(wx, wy);
-            if(eD) sdEv({type: 'aero_tab_close', tabId: eD.tab.id, edge: eD.edge});
-            else { myPlayer.aeroDrawing = true; myPlayer.aeroStartX = wx; myPlayer.aeroStartY = wy; }
-            return;
-        }
+
         
         if(myPlayer.heroClass === 'thorfinn') trSl();
         else if(myPlayer.heroClass === 'kendo') tgKndA();
@@ -1107,12 +1134,7 @@ window.addEventListener('mouseup', () => {
     }
 });
 
-function trAeroDsh() {
-    if(localCombat.dash.charges > 0) {
-        localCombat.dash.charges--; let s = localCombat.dash.cds.findIndex(c => c <= 0); if(s !== -1) localCombat.dash.cds[s] = localCombat.dash.maxCd;
-        localCombat.dash.v.x = Math.cos(myPlayer.angle) * 25; localCombat.dash.v.y = Math.sin(myPlayer.angle) * 25;
-    }
-}
+
 function trBlTp(){let b=localCombat.blitzTp;if(b.ch>0&&b.dTm<=0&&!myPlayer.grabbedLocked){if(Math.hypot(myPlayer.targetX-myPlayer.x,myPlayer.targetY-myPlayer.y)>350)return;b.ch--;let s=b.cds.findIndex(c=>c<=0);if(s!==-1)b.cds[s]=b.maxCd;let p=gnV(myPlayer.targetX,myPlayer.targetY);b.dTm=0.085;b.dx=p.x;b.dy=p.y;sdEv({type:'blitz_tp_windup',x:myPlayer.x,y:myPlayer.y});}}
 function trBlG(){if(localCombat.blitzGrab.cd<=0&&!myPlayer.grabbedLocked){let cI=null,cD=60,iC=false;for(let id in gameState.players){if(id===myId||gameState.players[id].isDead)continue;let d=Math.hypot(gameState.players[id].x-myPlayer.targetX,gameState.players[id].y-myPlayer.targetY);if(d<cD){cD=d;cI=id;}}for(let c of gameState.clones){let d=Math.hypot(c.x-myPlayer.targetX,c.y-myPlayer.targetY);if(d<cD){cD=d;cI=c.id;iC=true;}}if(cI!==null){localCombat.blitzGrab.cd=(activeServerMode==='CHAOS')?0.05:localCombat.blitzGrab.maxCd;myPlayer.grabbedLocked=true;sdEv({type:'blitz_grab_init',targetId:cI,isClone:iC,angle:myPlayer.angle});}}}
 function trBlSh(){if(localCombat.blitzPrimary.cd<=0&&localCombat.blitzPrimary.rTm<=0&&!myPlayer.grabbedLocked&&myPlayer.blitzAmmo>0){localCombat.blitzPrimary.cd=(activeServerMode==='CHAOS')?0.05:0.35;myPlayer.blitzAmmo--;myPlayer.slashAnimTimer=0.15;applyShake(3,0.1);sdEv({type:'blitz_shoot',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});if(myPlayer.blitzAmmo<=0)localCombat.blitzPrimary.rTm=(activeServerMode==='CHAOS')?0.05:0.8;}}
@@ -1220,8 +1242,8 @@ function processCombatEvent(sId, e) {
     else if(e.type==='deploy_arrow'){let x=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(!x)gameState.projectiles.push({type:'kinetic_arrow',mode:'normal',id:Math.random().toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns:{}});}
     else if(e.type==='kendo_ride_recall'){let a=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(a&&(a.mode==='normal'||!a.mode))a.mode='recalling';}
     else if(e.type==='kendo_shield_start'){let a=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(a&&(a.mode==='normal'||!a.mode)){a.mode='building_shield';a.buildTimer=1.5;a.shieldTarget={x:e.targetX,y:e.targetY};}}
-    else if(e.type==='copycat_kendo_shoot'){gameState.projectiles.push({type:'kinetic_arrow',mode:'copycat',id:Math.random().toString(),ownerId:sId,x:s.x,y:s.y,vx:Math.cos(e.angle)*750,vy:Math.sin(e.angle)*750,angle:e.angle,life:1.5,hitCooldowns:{},dmgMult:e.dmgMult||1.0});}
-    else if(e.type==='glitch_shoot'){let c=gameState.clones.filter(x=>x.ownerId===sId),bs=(60/(c.length+0.01))*(e.dmgMult||1),bf=(42/(c.length+0.01))*(e.dmgMult||1),pa=Math.atan2(e.targetY-s.y,e.targetX-s.x);gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:false,id:Math.random().toString(),x:s.x,y:s.y,angle:pa,life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});c.forEach(C=>{gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:true,id:Math.random().toString(),x:C.x,y:C.y,angle:Math.atan2(e.targetY-C.y,e.targetX-C.x),life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});});}
+    else if(e.type==='copycat_kendo_shoot'){gameState.projectiles.push({type:'kinetic_arrow',mode:'copycat_cursor',id:Math.random().toString(),ownerId:sId,x:s.x,y:s.y,speed:750,angle:e.angle,life:3.0,hitCooldowns:{},dmgMult:e.dmgMult||1.0,deactivated:false});}
+    else if(e.type==='glitch_shoot'){let c=gameState.clones.filter(x=>x.ownerId===sId),bs=(60/(c.length+0.01))*(e.dmgMult||0.01),bf=(42/(c.length+0.01))*(e.dmgMult||1),pa=Math.atan2(e.targetY-s.y,e.targetX-s.x);gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:false,id:Math.random().toString(),x:s.x,y:s.y,angle:pa,life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});c.forEach(C=>{gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:true,id:Math.random().toString(),x:C.x,y:C.y,angle:Math.atan2(e.targetY-C.y,e.targetX-C.x),life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});});}
     else if(e.type==='glitch_clone'){let c=gameState.clones.filter(x=>x.ownerId===sId);if(c.length>=100)gameState.clones=gameState.clones.filter(x=>x.id!==c[0].id);gameState.clones.push({id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,hp:s.maxHp,maxHp:s.maxHp});}
     else if(e.type==='glitch_swap'){let c=gameState.clones.find(x=>x.id===e.cloneId);if(c){c.x=e.newCloneX;c.y=e.newCloneY;}}
     else if(e.type==='jubilee_shoot'){const C=['#ff0044','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff','#ffffff'];let ba=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(let i=-1;i<=1;i++)gameState.projectiles.push({type:'firework',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,startAngle:ba,angle:ba,speed:550,life:0.6,index:i,state:'straight',color:C[Math.floor(Math.random()*C.length)],dmgMult:e.dmgMult||1.0});}
@@ -1239,8 +1261,8 @@ function processCombatEvent(sId, e) {
     else if(e.type==='blitz_grab_init'){s.grabbedLocked=true;gameState.projectiles.push({type:'blitz_grab_manager',id:Math.random().toString(),ownerId:sId,targetId:e.targetId,isClone:e.isClone,originalX:s.x,originalY:s.y,originalAngle:e.angle,phase:1,timer:0.085});}
     else if(e.type==='blitz_ult'){s.slashAnimTimer=0.5;gameState.projectiles.push({type:'paradox_rift',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:3.0});connections.forEach(c=>{if(c.open)c.send({type:'blitz_ult_vfx',x:e.x,y:e.y});});if(sId!==myId)applyShake(10,0.4);}
     else if(e.type==='copycat_steal_vfx'){connections.forEach(c=>{if(c.open)c.send({type:'copycat_steal_vfx',targetId:e.targetId,sourceId:sId});});if(sId!==myId)vfx.push({type:'stealLink',targetId:e.targetId,sourceId:sId,life:0.4,maxLife:0.4});}
+    else if(e.type==='aero_context_menu_open'){ /* broadcast handled via player state */ }
     else if(e.type==='aero_tab_create'){
-        if(e.tabType===2) gameState.projectiles=gameState.projectiles.filter(p=>!(p.type==='aero_tab'&&p.ownerId===sId&&p.tabType===2));
         let aT = gameState.projectiles.filter(p=>p.type==='aero_tab'&&p.ownerId===sId);
         if(aT.length >= 5) {
             let o = aT.reduce((pv,cv)=>(pv.createTime<cv.createTime?pv:cv));
@@ -1451,12 +1473,13 @@ function updateMovement(dt) {
         }
     }
     
-    if(md || isHost || myPlayer.slashAnimTimer > 0 || myPlayer.arrowActive || myPlayer.isFlying || myPlayer.flicker || myPlayer.aeroDrawing || myPlayer.traceShooting || myPlayer.traceDashing) sdUp();
+    updateAeroContextMenu(dt);
+    if(md || isHost || myPlayer.slashAnimTimer > 0 || myPlayer.arrowActive || myPlayer.isFlying || myPlayer.flicker || myPlayer.aeroDrawing || myPlayer.traceShooting || myPlayer.traceDashing || myPlayer.aeroContextMenu) sdUp();
 }
 
 function updateGameState(dt) {
     let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','traceShoot','traceDash','copycatSteal','copycatExecute'].forEach(k => {
+    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','traceShoot','traceDash','aeroPaste','aeroCopy'].forEach(k => {
         if(localCombat[k] && localCombat[k].cd > 0) localCombat[k].cd -= dt * cdM;
     });
     
@@ -1653,12 +1676,7 @@ function updateGameState(dt) {
                 if(p.phase === 'active') {
                     p.life -= dt;
                     if(p.life <= 0) { p.phase = 'expiring'; p.expireTimer = 0.1; }
-                    if(p.tabType === 2) {
-                        for(let id in gameState.players) {
-                            let t = gameState.players[id];
-                            if(!t.isDead && !cDm(p.ownerId, id) && t.x >= p.x && t.x <= p.x + p.w && t.y >= p.y && t.y <= p.y + p.h) t.hp = Math.min(t.maxHp, t.hp + 4 * dt);
-                        }
-                    } else {
+                    {
                         for(let id in gameState.players) {
                             let t = gameState.players[id];
                             if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && t.x >= p.x && t.x <= p.x + p.w && t.y >= p.y && t.y <= p.y + p.h) {
@@ -1676,7 +1694,7 @@ function updateGameState(dt) {
                     const gD = (tx, ty) => { if(p.closeEdge === 'left') return (tx - p.x) / p.w; if(p.closeEdge === 'right') return (p.x + p.w - tx) / p.w; if(p.closeEdge === 'top') return (ty - p.y) / p.h; if(p.closeEdge === 'bottom') return (p.y + p.h - ty) / p.h; return 0; };
                     const iS = (tx, ty) => { if(tx < p.x || tx > p.x + p.w || ty < p.y || ty > p.y + p.h) return false; if(p.closeEdge === 'left') return tx >= p.x + nP * p.w; if(p.closeEdge === 'right') return tx <= p.x + (1 - nP) * p.w; if(p.closeEdge === 'top') return ty >= p.y + nP * p.h; if(p.closeEdge === 'bottom') return ty <= p.y + (1 - nP) * p.h; return false; };
                     
-                    if(p.tabType !== 2) {
+                    {
                         for(let id in gameState.players) {
                             let t = gameState.players[id];
                             if(!t.isDead && iS(t.x, t.y) && !p.hitIds[id] && !t.invulnerable) {
@@ -1830,6 +1848,12 @@ function updateGameState(dt) {
                 } else if(p.mode === 'building_shield') {
                     p.buildTimer -= dt; let r = 90, oa = ((1.2 - p.buildTimer) / 1.2) * 18.84; p.x = p.shieldTarget.x + Math.cos(oa) * r; p.y = p.shieldTarget.y + Math.sin(oa) * r; p.angle = oa + 1.57;
                     if(p.buildTimer <= 0) { p.mode = 'normal'; gameState.shields.push({id:Math.random().toString(), ownerId:p.ownerId, x:p.shieldTarget.x, y:p.shieldTarget.y, radius:r, life:14.0, maxLife:14.0}); }
+                } else if(p.mode === 'copycat_cursor') {
+                    // Follows cursor like real Kendo arrow, deactivates on hit
+                    if(p.deactivated) { gameState.projectiles.splice(i, 1); continue; }
+                    let da = Math.atan2((o.targetY !== undefined ? o.targetY : o.y) - p.y, (o.targetX !== undefined ? o.targetX : o.x) - p.x), df = Math.atan2(Math.sin(da - p.angle), Math.cos(da - p.angle)), tr = 6.0 * dt;
+                    if(Math.abs(df) > tr) { p.angle += Math.sign(df) * tr; p.speed = Math.max(200, p.speed - 600 * dt); } else { p.angle = da; p.speed = Math.min(750, p.speed + 400 * dt); }
+                    p.x += Math.cos(p.angle) * p.speed * sm * dt; p.y += Math.sin(p.angle) * p.speed * sm * dt;
                 } else if(p.mode === 'copycat') {
                     p.x += p.vx * sm * dt; p.y += p.vy * sm * dt;
                 } else {
@@ -1838,15 +1862,17 @@ function updateGameState(dt) {
                     p.x += Math.cos(p.angle) * p.speed * sm * dt; p.y += Math.sin(p.angle) * p.speed * sm * dt;
                 }
                 if(!p.hitCooldowns) p.hitCooldowns = {};
+                let copycatHit = false;
                 for(let c of gameState.clones) {
-                    if(cDm(p.ownerId, c.ownerId) && Math.hypot(c.x - p.x, c.y - p.y) < 25) { if(!p.hitCooldowns[c.id] && !c.invulnerable) { let dmg=40*(p.dmgMult||1.0); dmgTk(c, dmg, p.ownerId); sendHitmarker(p.ownerId, c, dmg); p.hitCooldowns[c.id] = true; } } else if(Math.hypot(c.x - p.x, c.y - p.y) > 45) p.hitCooldowns[c.id] = false;
+                    if(cDm(p.ownerId, c.ownerId) && Math.hypot(c.x - p.x, c.y - p.y) < 25) { if(!p.hitCooldowns[c.id] && !c.invulnerable) { let dmg=40*(p.dmgMult||1.0); dmgTk(c, dmg, p.ownerId); sendHitmarker(p.ownerId, c, dmg); p.hitCooldowns[c.id] = true; if(p.mode==='copycat_cursor') copycatHit = true; } } else if(Math.hypot(c.x - p.x, c.y - p.y) > 45) p.hitCooldowns[c.id] = false;
                 }
                 for(let id in gameState.players) {
                     let t = gameState.players[id], d = Math.hypot(t.x - p.x, t.y - p.y);
                     if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable) {
-                        if(d < 25) { if(!p.hitCooldowns[id]) { let dHP = t.maxHp * 0.15 * (p.dmgMult||1.0); dmgTk(t, dHP, p.ownerId); sendHitmarker(p.ownerId, t, dHP); p.hitCooldowns[id] = true; t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id); } } else if(d > 45) p.hitCooldowns[id] = false;
+                        if(d < 25) { if(!p.hitCooldowns[id]) { let dHP = t.maxHp * 0.15 * (p.dmgMult||1.0); dmgTk(t, dHP, p.ownerId); sendHitmarker(p.ownerId, t, dHP); p.hitCooldowns[id] = true; t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id); if(p.mode==='copycat_cursor') copycatHit = true; } } else if(d > 45) p.hitCooldowns[id] = false;
                     }
                 }
+                if(p.mode==='copycat_cursor' && copycatHit) { p.deactivated = true; }
                 if(p.mode==='copycat' && (iW(p.x,p.y) || p.life<=0)) gameState.projectiles.splice(i,1);
             } else if(p.type === 'matrix_beam') {
                 p.lastX = p.x; p.lastY = p.y;
@@ -1962,14 +1988,16 @@ function updateUI(now = performance.now()) {
         getEl('status-blitz-grab').innerText = bg > 0 ? bg.toFixed(1) + 's' : 'Ready';
     }
     else if(myPlayer.heroClass === 'aero') {
-        setVisibleAbilities(['aero-tab','aero-swipe','aero-dash','aero-mode']);
+        setVisibleAbilities(['aero-tab','aero-swipe','aero-mode','aero-copy','aero-paste']);
         let tAct = gameState.projectiles.filter(p => p.type === 'aero_tab' && p.ownerId === myId && p.phase === 'active').length;
         getEl('status-aero-tab').innerText = `${tAct}/5 Active`;
         getEl('ui-aero-tab').style.borderColor = tAct >= 5 ? '#ef4444' : '#52525b';
-        getEl('status-aero-dash').innerText = `Charges: ${localCombat.dash.charges}`;
-        getEl('cd-aero-dash').style.height = `${Math.max(...localCombat.dash.cds) > 0 ? (Math.max(...localCombat.dash.cds) / 4.0) * 100 : 0}%`;
-        getEl('name-aero-mode').innerText = myPlayer.aeroTabType === 2 ? 'Healing' : 'Damage';
-        getEl('name-aero-mode').style.color = myPlayer.aeroTabType === 2 ? '#22c55e' : '#0055ff';
+        getEl('name-aero-mode').innerText = 'Damage';
+        getEl('name-aero-mode').style.color = '#0055ff';
+        getEl('status-aero-copy').innerText = `${myPlayer.copycatWeapons.length}/4 Weapons`;
+        getEl('ui-aero-copy').style.borderColor = myPlayer.aeroContextMenu ? '#22c55e' : '#52525b';
+        let pc = localCombat.aeroPaste.cd; getEl('cd-aero-paste').style.height = `${pc > 0 ? (pc/0.8)*100 : 0}%`;
+        getEl('status-aero-paste').innerText = myPlayer.copycatWeapons.length > 0 ? `${myPlayer.copycatWeapons.length} Ready` : 'No Weapons';
     }
     else if(myPlayer.heroClass === 'trace') {
         setVisibleAbilities(['trace-primary','trace-dash']);
@@ -1978,13 +2006,7 @@ function updateUI(now = performance.now()) {
         if(myPlayer.traceDashing) { getEl('ui-trace-dash').style.borderColor = myPlayer.customization?.traceColors?.neon || '#a855f7'; getEl('status-trace-dash').innerText = 'Drawing...'; } else getEl('ui-trace-dash').style.borderColor = '#52525b';
         if(myPlayer.traceShooting) { getEl('ui-trace-primary').style.borderColor = myPlayer.customization?.traceColors?.neon || '#a855f7'; getEl('status-trace-primary').innerText = 'Drawing...'; } else getEl('ui-trace-primary').style.borderColor = '#52525b';
     }
-    else if(myPlayer.heroClass === 'copycat') {
-        setVisibleAbilities(['copycat-execute','copycat-steal']);
-        let ec = localCombat.copycatExecute.cd; getEl('cd-copycat-execute').style.height = `${ec > 0 ? (ec/0.8)*100 : 0}%`;
-        getEl('status-copycat-execute').innerText = ec > 0 ? ec.toFixed(1)+'s' : `Ready (${myPlayer.copycatWeapons.length}/4)`;
-        let sc = localCombat.copycatSteal.cd; getEl('cd-copycat-steal').style.height = `${sc > 0 ? (sc/5.0)*100 : 0}%`;
-        getEl('status-copycat-steal').innerText = sc > 0 ? sc.toFixed(1)+'s' : 'Ready';
-    }
+
     
     if(activeServerMode === 'KOTH' && gameState.koth && gCon.classList.contains('active')) {
         getEl('koth-ui').style.display = 'block'; getEl('koth-score-red').innerText = Math.floor(gameState.koth.points.red); getEl('koth-score-blue').innerText = Math.floor(gameState.koth.points.blue);
@@ -2147,6 +2169,61 @@ function drawDag(c, s=1) {
     c.fillStyle = '#3f3f46'; c.beginPath(); c.arc(-11*S, 0, 2*S, 0, 6.28); c.fill(); c.stroke();
 }
 
+function drawAeroTabs() {
+    const vW = can.width/cam.zoom, vH = can.height/cam.zoom;
+    gameState.projectiles.forEach(p => {
+        if(p.type !== 'aero_tab') return;
+        if(!(p.x > cam.x - 400 && p.x < cam.x + vW + 400 && p.y > cam.y - 400 && p.y < cam.y + vH + 400)) return;
+        ctx.save(); ctx.translate(p.x, p.y);
+        if(p.phase === 'expiring') ctx.globalAlpha = Math.max(0, p.expireTimer / 0.1);
+        let tw = p.w, th = p.h, ox = 0, oy = 0;
+        if(p.phase === 'closing') {
+            let pr = p.closeTimer / 0.3;
+            if(p.closeEdge === 'left') { ox = (1 - pr) * tw; tw *= pr; }
+            else if(p.closeEdge === 'right') { tw *= pr; }
+            else if(p.closeEdge === 'top') { oy = (1 - pr) * th; th *= pr; }
+            else if(p.closeEdge === 'bottom') { th *= pr; }
+        }
+        if(tw > 0 && th > 0) {
+            ctx.translate(ox, oy);
+            ctx.strokeStyle = '#0055ff'; ctx.lineWidth = 3; ctx.fillStyle = '#f1f5f9'; ctx.fillRect(0, 0, tw, th);
+            ctx.save(); ctx.beginPath(); ctx.rect(0, 0, tw, th); ctx.clip();
+            let img = null;
+            if(gameState.players[p.ownerId] && gameState.players[p.ownerId].customization?.aeroBg) {
+                img = getCachedAeroImage(p.ownerId, gameState.players[p.ownerId].customization.aeroBg);
+            } else img = aeroImgs[p.bgIdx % aeroImgs.length];
+            if(img && img.complete && img.naturalWidth > 0) {
+                let s = Math.max(tw / img.width, th / img.height), iw = img.width * s, ih = img.height * s;
+                ctx.drawImage(img, (tw - iw) / 2, (th - ih) / 2, iw, ih);
+            } else { ctx.fillStyle = '#bae6fd'; ctx.fillRect(0, 0, tw, th); }
+            ctx.restore();
+            ctx.fillStyle = '#0055ff'; ctx.fillRect(0, 0, tw, Math.min(20, th)); ctx.strokeRect(0, 0, tw, th);
+            if(tw > 15 && th > 15) {
+                ctx.fillStyle = (p.phase === 'expiring') ? '#7f1d1d' : '#ef4444'; ctx.fillRect(tw - 15, 2, 13, 13);
+                ctx.strokeStyle = (p.phase === 'expiring') ? '#fca5a5' : '#fff'; ctx.lineWidth = 1.5; ctx.beginPath();
+                ctx.moveTo(tw - 13, 4); ctx.lineTo(tw - 4, 13); ctx.moveTo(tw - 4, 4); ctx.lineTo(tw - 13, 13); ctx.stroke();
+            }
+        }
+        ctx.restore();
+    });
+}
+
+function drawWallsOverlay() {
+    const vW = can.width/cam.zoom, vH = can.height/cam.zoom;
+    for(let w of gameState.walls) {
+        if(w.x + GRID < cam.x || w.x > cam.x + vW || w.y + GRID < cam.y || w.y > cam.y + vH) continue;
+        let col = '#09090b';
+        if(w.type === 'pearl_white') col = '#f8fafc';
+        else if(w.type === 'titanium_pillar') col = '#64748b';
+        ctx.fillStyle = col;
+        drawRoundedRect(ctx, w.x+1, w.y+1, GRID-2, GRID-2, 6);
+        ctx.fill();
+        if(w.type === 'black_gloss' || w.type === 'invisible_solid') {
+            ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1; ctx.stroke();
+        }
+    }
+}
+
 function drawEnts() {
     const vW = can.width/cam.zoom, vH = can.height/cam.zoom;
     const iV = (x, y, p=150) => (x > cam.x - p && x < cam.x + vW + p && y > cam.y - p && y < cam.y + vH + p);
@@ -2181,7 +2258,7 @@ function drawEnts() {
             ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1; ctx.setLineDash([]);
             for(let i = -200; i <= 200; i += 40) { ctx.beginPath(); ctx.moveTo(i, -250); ctx.lineTo(i, 250); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-250, i); ctx.lineTo(250, i); ctx.stroke(); }
             ctx.restore();
-        } else if(p.type === 'aero_tab') {
+        } else if(p.type === 'aero_tab') { return; /* drawn separately in drawAeroTabs */
             ctx.save(); ctx.translate(p.x, p.y);
             if(p.phase === 'expiring') ctx.globalAlpha = Math.max(0, p.expireTimer / 0.1);
             let tw = p.w, th = p.h, ox = 0, oy = 0;
@@ -2193,7 +2270,7 @@ function drawEnts() {
                 else if(p.closeEdge === 'bottom') { th *= pr; }
             }
             if(tw > 0 && th > 0) {
-                ctx.translate(ox, oy); let isH = p.tabType === 2;
+                ctx.translate(ox, oy); let isH = false;
                 ctx.strokeStyle = isH ? '#22c55e' : '#0055ff'; ctx.lineWidth = 3; ctx.fillStyle = '#f1f5f9'; ctx.fillRect(0, 0, tw, th);
                 ctx.save(); ctx.beginPath(); ctx.rect(0, 0, tw, th); ctx.clip();
                 let img = null;
@@ -2336,8 +2413,34 @@ function drawPlayers() {
             if(k) { ctx.save(); ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2; ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(k.x, k.y); ctx.stroke(); ctx.restore(); }
         }
         
+        // Calculate velocity for smear frame
+        let velX = (e.lastX !== undefined) ? (e.x - e.lastX) : 0;
+        let velY = (e.lastY !== undefined) ? (e.y - e.lastY) : 0;
+        let speed = Math.hypot(velX, velY);
+        let isSmearing = speed > 1 || e.isFlying;
+        
         ctx.save(); ctx.translate(e.x, e.y);
         if(o.isJuggernaut) ctx.scale(1.8, 1.8);
+        
+        // Exaggerated smear frame: anime-style stretch along movement direction
+        if(isSmearing && speed > 1) {
+            let moveAngle = Math.atan2(velY, velX);
+            let smearFactor = Math.min(speed / 1200, 3.5);
+            let squashFactor = 1 / (1 + (smearFactor - 1) * 0.5);
+            ctx.rotate(moveAngle);
+            ctx.scale(1 + (smearFactor - 1) * 0.7, squashFactor);
+            ctx.rotate(-moveAngle);
+            // Draw motion ghost trail behind
+            if(speed > 8) {
+                let ghostAlpha = Math.min(0.3, speed / 80);
+                ctx.save(); ctx.globalAlpha = ghostAlpha;
+                let gx = -velX * 0.6, gy = -velY * 0.6;
+                ctx.fillStyle = o.color || '#fff';
+                ctx.beginPath(); ctx.arc(gx, gy, 14, 0, 6.28); ctx.fill();
+                if(speed > 14) { ctx.beginPath(); ctx.arc(gx*1.6, gy*1.6, 10, 0, 6.28); ctx.fill(); }
+                ctx.restore();
+            }
+        }
         
         if(o.hasUltAura) {
             let hue = (Date.now() / 2) % 360;
@@ -2346,7 +2449,12 @@ function drawPlayers() {
             ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI*2); ctx.fill();
         }
         
-        ctx.save(); ctx.fillStyle = '#991b1b'; ctx.fillRect(-20, -35, 40, 5); ctx.fillStyle = '#22c55e'; ctx.fillRect(-20, -35, 40 * (o.hp / o.maxHp), 5); ctx.restore();
+        // Health bar with boiling jitter
+        let hbx = (Math.random() - 0.5) * 1.2, hby = (Math.random() - 0.5) * 1.2;
+        ctx.save(); ctx.translate(hbx, hby);
+        ctx.fillStyle = '#991b1b'; ctx.fillRect(-20, -35, 40, 5); ctx.fillStyle = '#22c55e'; ctx.fillRect(-20, -35, 40 * (o.hp / o.maxHp), 5);
+        ctx.strokeStyle = 'rgba(50,50,50,0.6)'; ctx.lineWidth = 0.7; ctx.strokeRect(-20, -35, 40, 5);
+        ctx.restore();
         
         if(!iC && e.stunTimer > 0) {
             ctx.fillStyle = '#f59e0b';
@@ -2354,16 +2462,31 @@ function drawPlayers() {
         }
         
         ctx.globalAlpha = e.flicker ? (Math.random() < 0.5 ? 0.2 : 0.8) : 1.0;
+        
+        // Impact flash: draw everything as black silhouette
+        let isImpactFlash = impactFlashTimer > 0;
+        
         ctx.rotate(e.angle || 0);
         
+        // Boiling line outline - subtle hand-drawn jitter (no offset, just wobble)
+        let bx = (Math.random() - 0.5) * 1.6;
+        let by = (Math.random() - 0.5) * 1.6;
+        ctx.save();
+        ctx.translate(bx, by);
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.strokeStyle = isImpactFlash ? '#000' : 'rgba(30,30,30,0.85)';
+        ctx.lineWidth = 5.8;
+        ctx.beginPath(); ctx.arc(0, 0, 17.5, 0, 6.28); ctx.stroke();
+        ctx.restore();
+        
         if(!iC && o.heroClass === 'trace') {
-            ctx.fillStyle = '#a855f7'; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
-            let nC = o.customization?.traceColors?.neon || '#a855f7'; ctx.strokeStyle = nC; ctx.lineWidth = 2; ctx.stroke();
-            ctx.save(); ctx.translate(15, 0); let bC = o.customization?.traceColors?.bow || '#3b0764'; ctx.strokeStyle = bC; ctx.lineWidth = 4; ctx.lineCap = 'round';
+            ctx.fillStyle = isImpactFlash ? '#000' : '#a855f7'; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
+            let nC = o.customization?.traceColors?.neon || '#a855f7'; ctx.strokeStyle = isImpactFlash ? '#000' : nC; ctx.lineWidth = 2; ctx.stroke();
+            ctx.save(); ctx.translate(15, 0); let bC = o.customization?.traceColors?.bow || '#3b0764'; ctx.strokeStyle = isImpactFlash ? '#000' : bC; ctx.lineWidth = 4; ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(-5, -20); ctx.quadraticCurveTo(5, 0, -5, 20); ctx.stroke();
-            ctx.strokeStyle = nC; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-5, -20); ctx.lineTo(-15, 0); ctx.lineTo(-5, 20); ctx.stroke(); ctx.restore();
+            ctx.strokeStyle = isImpactFlash ? '#000' : nC; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-5, -20); ctx.lineTo(-15, 0); ctx.lineTo(-5, 20); ctx.stroke(); ctx.restore();
         } else if(o.heroClass === 'glitch') {
-            ctx.fillStyle = mp; let tm = Date.now() % 4000, st = Math.floor(tm / 800), lt = tm % 800, n1 = [3, 4, 5, 6, 8][st], n2 = [3, 4, 5, 6, 8][(st + 1) % 5], f = 0;
+            ctx.fillStyle = isImpactFlash ? '#000' : mp; let tm = Date.now() % 4000, st = Math.floor(tm / 800), lt = tm % 800, n1 = [3, 4, 5, 6, 8][st], n2 = [3, 4, 5, 6, 8][(st + 1) % 5], f = 0;
             if(lt > 400) { f = (lt - 400) / 400; f = f < 0.5 ? 4 * f * f * f : 1 - Math.pow(-2 * f + 2, 3) / 2; }
             ctx.beginPath();
             for(let i = 0; i <= 90; i++) {
@@ -2372,46 +2495,41 @@ function drawPlayers() {
                 let r = r1 + (r2 - r1) * f, px = Math.cos(t - 1.57) * r, py = Math.sin(t - 1.57) * r;
                 if(i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
             }
-            ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.closePath(); ctx.fill(); ctx.strokeStyle = isImpactFlash ? '#000' : '#fff'; ctx.lineWidth = 2; ctx.stroke();
         } else if(!iC && o.heroClass === 'misaki') {
-            ctx.fillStyle = o.color; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = isImpactFlash ? '#000' : o.color; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); ctx.strokeStyle = isImpactFlash ? '#000' : '#fff'; ctx.lineWidth = 2; ctx.stroke();
             let rc = o.slashAnimTimer > 0 ? (o.slashAnimTimer / 0.15) * 8 : 0;
-            ctx.save(); ctx.translate(12 - rc, 10); ctx.fillStyle = '#18181b'; ctx.beginPath(); ctx.moveTo(-25, -2); ctx.lineTo(-15, -2); ctx.lineTo(-15, 6); ctx.lineTo(-22, 6); ctx.closePath(); ctx.fill();
-            ctx.fillStyle = '#27272a'; ctx.fillRect(-15, -4, 25, 8); ctx.fillStyle = '#09090b'; ctx.fillRect(10, -2, 35, 4); ctx.fillStyle = '#3f3f46'; ctx.fillRect(45, -3, 6, 6);
-            ctx.fillStyle = '#18181b'; ctx.fillRect(-5, -10, 14, 4); ctx.fillStyle = '#06b6d4'; ctx.fillRect(7, -9, 2, 2); ctx.fillStyle = '#71717a'; ctx.fillRect(-8, -4, 6, 3); ctx.fillStyle = '#3f3f46'; ctx.fillRect(-5, -6, 2, 4); ctx.restore();
+            ctx.save(); ctx.translate(12 - rc, 10); ctx.fillStyle = isImpactFlash ? '#000' : '#18181b'; ctx.beginPath(); ctx.moveTo(-25, -2); ctx.lineTo(-15, -2); ctx.lineTo(-15, 6); ctx.lineTo(-22, 6); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = isImpactFlash ? '#000' : '#27272a'; ctx.fillRect(-15, -4, 25, 8); ctx.fillStyle = isImpactFlash ? '#000' : '#09090b'; ctx.fillRect(10, -2, 35, 4); ctx.fillStyle = isImpactFlash ? '#000' : '#3f3f46'; ctx.fillRect(45, -3, 6, 6);
+            ctx.fillStyle = isImpactFlash ? '#000' : '#18181b'; ctx.fillRect(-5, -10, 14, 4); ctx.fillStyle = isImpactFlash ? '#000' : '#06b6d4'; ctx.fillRect(7, -9, 2, 2); ctx.fillStyle = isImpactFlash ? '#000' : '#71717a'; ctx.fillRect(-8, -4, 6, 3); ctx.fillStyle = isImpactFlash ? '#000' : '#3f3f46'; ctx.fillRect(-5, -6, 2, 4); ctx.restore();
         } else if(!iC && o.heroClass === 'blitz') {
-            ctx.fillStyle = o.color; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.stroke();
+            ctx.fillStyle = isImpactFlash ? '#000' : o.color; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); ctx.strokeStyle = isImpactFlash ? '#000' : '#000'; ctx.lineWidth = 3; ctx.stroke();
             let wp = o.blitzWeapon || 'handgun'; ctx.save(); ctx.translate(15, 10);
-            if(wp === 'handgun') { let rc = o.slashAnimTimer > 0 ? (o.slashAnimTimer / 0.15) * 5 : 0; ctx.translate(-rc, 0); ctx.fillStyle = '#111'; ctx.fillRect(2, -2, 6, 12); ctx.fillStyle = '#333'; ctx.fillRect(2, -6, 18, 6); ctx.fillStyle = '#94a3b8'; ctx.fillRect(18, -5, 4, 4); }
-            else if(wp === 'katana') { let sw = o.slashAnimTimer > 0 ? (1 - (o.slashAnimTimer / 0.3)) * 2 : 0; ctx.translate(5, -10); ctx.rotate(-1 + sw); ctx.fillStyle = '#111'; ctx.fillRect(-5, -2, 10, 4); ctx.fillStyle = '#eab308'; ctx.fillRect(4, -4, 2, 8); ctx.fillStyle = '#e5e7eb'; ctx.beginPath(); ctx.moveTo(6, -2); ctx.quadraticCurveTo(20, -5, 40, -1); ctx.lineTo(40, 1); ctx.lineTo(6, 2); ctx.fill(); }
+            if(wp === 'handgun') { let rc = o.slashAnimTimer > 0 ? (o.slashAnimTimer / 0.15) * 5 : 0; ctx.translate(-rc, 0); ctx.fillStyle = isImpactFlash ? '#000' : '#111'; ctx.fillRect(2, -2, 6, 12); ctx.fillStyle = isImpactFlash ? '#000' : '#333'; ctx.fillRect(2, -6, 18, 6); ctx.fillStyle = isImpactFlash ? '#000' : '#94a3b8'; ctx.fillRect(18, -5, 4, 4); }
+            else if(wp === 'katana') { let sw = o.slashAnimTimer > 0 ? (1 - (o.slashAnimTimer / 0.3)) * 2 : 0; ctx.translate(5, -10); ctx.rotate(-1 + sw); ctx.fillStyle = isImpactFlash ? '#000' : '#111'; ctx.fillRect(-5, -2, 10, 4); ctx.fillStyle = isImpactFlash ? '#000' : '#eab308'; ctx.fillRect(4, -4, 2, 8); ctx.fillStyle = isImpactFlash ? '#000' : '#e5e7eb'; ctx.beginPath(); ctx.moveTo(6, -2); ctx.quadraticCurveTo(20, -5, 40, -1); ctx.lineTo(40, 1); ctx.lineTo(6, 2); ctx.fill(); }
             ctx.restore();
         } else if(!iC && o.heroClass === 'aero') {
-            ctx.fillStyle = '#0ea5e9'; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-            ctx.fillStyle = '#f1f5f9'; ctx.fillRect(6, -12, 18, 14);ctx.fillStyle = '#3b82f6'; ctx.fillRect(6, -12, 18, 4); 
-            ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.strokeRect(6, -12, 18, 14);
-        } else if(!iC && o.heroClass === 'copycat') {
-            ctx.fillStyle = o.color || '#06b6d4'; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-            ctx.fillStyle = o.color || '#06b6d4';
-            ctx.beginPath(); ctx.moveTo(-10, -10); ctx.lineTo(-20, -25); ctx.lineTo(-2, -15); ctx.fill(); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(10, -10); ctx.lineTo(20, -25); ctx.lineTo(2, -15); ctx.fill(); ctx.stroke();
-            if(o.copycatWeapons && o.copycatWeapons.length > 0) {
-                let t = Date.now() / 800;
-                o.copycatWeapons.forEach((w, idx) => {
-                    let a = t + (idx * (Math.PI * 2 / o.copycatWeapons.length)), ox = Math.cos(a) * 35, oy = Math.sin(a) * 35;
-                    ctx.save(); ctx.translate(ox, oy); ctx.scale(0.6, 0.6); ctx.rotate(a + Math.PI/2);
-                    if(w==='thorfinn') drawDag(ctx, 1);
-                    else if(w==='trace') { ctx.fillStyle='#a855f7'; ctx.beginPath(); ctx.arc(0,0,10,0,6.28); ctx.fill(); ctx.strokeStyle='#3b0764'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-5,-15); ctx.quadraticCurveTo(5,0,-5,15); ctx.stroke(); }
-                    else if(w==='blitz') { ctx.fillStyle='#111'; ctx.fillRect(-3,-6,6,12); ctx.fillStyle='#333'; ctx.fillRect(-3,-12,18,6); }
-                    else if(w==='misaki') { ctx.fillStyle='#18181b'; ctx.fillRect(-15,-4,25,8); ctx.fillStyle='#09090b'; ctx.fillRect(10,-2,35,4); }
-                    else if(w==='kendo') { ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-8,6); ctx.lineTo(-5,0); ctx.lineTo(-8,-6); ctx.fill(); }
-                    else if(w==='glitch') { ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(0,0,10,0,6.28); ctx.fill(); }
-                    else if(w==='jubilee') { ctx.fillStyle='#ec4899'; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(5,0); ctx.lineTo(0,10); ctx.lineTo(-5,0); ctx.fill(); }
-                    ctx.restore();
-                });
-            }
+            ctx.fillStyle = isImpactFlash ? '#000' : '#0ea5e9'; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); ctx.strokeStyle = isImpactFlash ? '#000' : '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = isImpactFlash ? '#000' : '#f1f5f9'; ctx.fillRect(6, -12, 18, 14);ctx.fillStyle = isImpactFlash ? '#000' : '#3b82f6'; ctx.fillRect(6, -12, 18, 4); 
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#3b82f6'; ctx.lineWidth = 1; ctx.strokeRect(6, -12, 18, 14);
+        } else if(!iC && o.heroClass === 'aero' && o.copycatWeapons && o.copycatWeapons.length > 0) {
+            // Show orbiting stolen weapons around aero
+            let t = Date.now() / 800;
+            o.copycatWeapons.forEach((w, idx) => {
+                let a = t + (idx * (Math.PI * 2 / o.copycatWeapons.length)), ox2 = Math.cos(a) * 35, oy2 = Math.sin(a) * 35;
+                ctx.save(); ctx.translate(ox2, oy2); ctx.scale(0.6, 0.6); ctx.rotate(a + Math.PI/2);
+                if(w==='thorfinn') drawDag(ctx, 1);
+                else if(w==='trace') { ctx.fillStyle=isImpactFlash?'#000':'#a855f7'; ctx.beginPath(); ctx.arc(0,0,10,0,6.28); ctx.fill(); }
+                else if(w==='blitz') { ctx.fillStyle=isImpactFlash?'#000':'#111'; ctx.fillRect(-3,-6,6,12); ctx.fillStyle=isImpactFlash?'#000':'#333'; ctx.fillRect(-3,-12,18,6); }
+                else if(w==='misaki') { ctx.fillStyle=isImpactFlash?'#000':'#18181b'; ctx.fillRect(-15,-4,25,8); }
+                else if(w==='kendo') { ctx.fillStyle=isImpactFlash?'#000':'#ef4444'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-8,6); ctx.lineTo(-5,0); ctx.lineTo(-8,-6); ctx.fill(); }
+                else if(w==='glitch') { ctx.fillStyle=isImpactFlash?'#000':'#22c55e'; ctx.beginPath(); ctx.arc(0,0,10,0,6.28); ctx.fill(); }
+                else if(w==='jubilee') { ctx.fillStyle=isImpactFlash?'#000':'#ec4899'; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(5,0); ctx.lineTo(0,10); ctx.lineTo(-5,0); ctx.fill(); }
+                ctx.restore();
+            });
         } else {
-            ctx.fillStyle = o.color; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); 
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = isImpactFlash ? '#000' : o.color; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); 
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#fff'; ctx.lineWidth = 2; ctx.stroke();
         }
         
         if(!iC && o.heroClass === 'thorfinn') {
@@ -2419,7 +2537,7 @@ function drawPlayers() {
             if(o.daggers >= 1) { ctx.save(); ctx.translate(12, -12); ctx.rotate(0.4 - sw); drawDag(ctx); ctx.restore(); }
             if(o.daggers >= 2) { ctx.save(); ctx.translate(12, 12); ctx.rotate(-0.4 + sw); drawDag(ctx); ctx.restore(); }
         } else if(!iC && o.heroClass === 'jubilee') {
-            ctx.fillStyle = '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#ec4899';
+            ctx.fillStyle = isImpactFlash ? '#000' : '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#ec4899';
             let ro = (Date.now() / 150) % 6.28;
             ctx.beginPath(); ctx.arc(Math.cos(ro) * 20, Math.sin(ro) * 20, 3, 0, 6.28); ctx.fill();
         }
@@ -2592,7 +2710,16 @@ function gLoop(t) {
     cam.x += (tX - cam.x) * 10 * dt;
     cam.y += (tY - cam.y) * 10 * dt;
     
+    // Decrement impact flash timer
+    if(impactFlashTimer > 0) impactFlashTimer -= dt;
+    
     ctx.clearRect(0, 0, can.width, can.height); ctx.save();
+    
+    // Impact flash: white background for the flash frame
+    if(impactFlashTimer > 0) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, can.width, can.height);
+    }
     
     if(sShake.timer > 0) {
         let m = sShake.mag * (sShake.timer / sShake.maxTimer);
@@ -2602,7 +2729,9 @@ function gLoop(t) {
     
     ctx.scale(cam.zoom, cam.zoom); ctx.translate(-cam.x, -cam.y);
     
-    drawGrid(); drawShields(); drawHPs(); drawEnts(); drawPlayers(); drawVFX(); 
+    // During impact flash, skip drawing the map/grid (white bg already drawn)
+    if(impactFlashTimer <= 0) drawGrid();
+    drawAeroTabs(); drawWallsOverlay(); drawShields(); drawHPs(); drawEnts(); drawPlayers(); drawAeroContextMenuWorld(ctx); drawAeroGlobalCursor(ctx, cam); drawVFX(); 
     
     ctx.restore(); if(t - lastMinimapDraw > 90) { drawMinimap(); lastMinimapDraw = t; }
     
@@ -2634,6 +2763,141 @@ window.addEventListener('resize', () => {
 setTimeout(() => {
     updateCanvasSize();
 }, 100);
+
+
+// === AERO CONTEXT MENU (Right-Click Copy) ===
+let aeroCtxEl = document.getElementById('aero-context-menu');
+let aeroCtxCopyBtn = document.getElementById('ctx-copy-btn');
+
+can.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
+
+can.addEventListener('mousedown', e => {
+    if(e.button === 2 && myPlayer.heroClass === 'aero' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && gCon.classList.contains('active')) {
+        e.preventDefault();
+        if(myPlayer.aeroContextMenu) return; // only one at a time
+        let wx = (sMx/cam.zoom) + cam.x, wy = (sMy/cam.zoom) + cam.y;
+        myPlayer.aeroContextMenu = true;
+        myPlayer.aeroContextMenuTimer = 3.0;
+        myPlayer.aeroContextMenuWorldX = wx;
+        myPlayer.aeroContextMenuWorldY = wy;
+        // Position the HTML context menu at screen coords
+        aeroCtxEl.style.left = sMx + 'px';
+        aeroCtxEl.style.top = sMy + 'px';
+        aeroCtxEl.style.display = 'block';
+        // Broadcast context menu spawn
+        sdEv({type:'aero_context_menu_open', x:wx, y:wy});
+        sdUp();
+    }
+});
+
+if(aeroCtxCopyBtn) {
+    aeroCtxCopyBtn.addEventListener('click', e => {
+        if(!myPlayer.aeroContextMenu || myPlayer.heroClass !== 'aero') return;
+        // Check if enemy is inside context menu area (200x200 around world pos)
+        let cmX = myPlayer.aeroContextMenuWorldX, cmY = myPlayer.aeroContextMenuWorldY;
+        let cId = null, cD = 120, isCl = false;
+        for(let id in gameState.players) {
+            if(id === myId || gameState.players[id].isDead) continue;
+            let d = Math.hypot(gameState.players[id].x - cmX, gameState.players[id].y - cmY);
+            if(d < cD && cDm(myId, id)) { cD = d; cId = id; }
+        }
+        for(let c of gameState.clones) {
+            let d = Math.hypot(c.x - cmX, c.y - cmY);
+            if(d < cD && cDm(myId, c.ownerId)) { cD = d; cId = c.id; isCl = true; }
+        }
+        if(cId) {
+            let sCls = isCl ? 'glitch' : gameState.players[cId].heroClass;
+            if(sCls === 'aero') sCls = 'thorfinn'; // can't copy self
+            myPlayer.copycatWeapons.push(sCls);
+            if(myPlayer.copycatWeapons.length > 4) myPlayer.copycatWeapons.shift();
+            vfx.push({type:'stealLink', targetId:cId, sourceId:myId, life:0.4, maxLife:0.4});
+            sdEv({type:'copycat_steal_vfx', targetId:cId});
+        }
+        // Close menu
+        myPlayer.aeroContextMenu = false;
+        aeroCtxEl.style.display = 'none';
+        sdUp();
+    });
+    // Prevent the copy button click from being treated as a game click
+    aeroCtxCopyBtn.addEventListener('mousedown', e => { e.stopPropagation(); });
+}
+
+function updateAeroContextMenu(dt) {
+    if(myPlayer.heroClass !== 'aero' || !myPlayer.aeroContextMenu) return;
+    myPlayer.aeroContextMenuTimer -= dt;
+    if(myPlayer.aeroContextMenuTimer <= 0) {
+        myPlayer.aeroContextMenu = false;
+        aeroCtxEl.style.display = 'none';
+        sdUp();
+    }
+}
+
+// === AERO PASTE: Fire Copied Weapons ===
+function fireAeroCopiedWeapon(w, dM) {
+    if(w==='thorfinn') sdEv({type:'slash', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, daggerCount:2, dmgMult:dM});
+    else if(w==='blitz') sdEv({type:'blitz_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
+    else if(w==='misaki') sdEv({type:'misaki_shoot', angle:myPlayer.angle, dmgMult:dM});
+    else if(w==='jubilee') sdEv({type:'jubilee_shoot', targetX:myPlayer.targetX, targetY:myPlayer.targetY, x:myPlayer.x, y:myPlayer.y, dmgMult:dM});
+    else if(w==='glitch') sdEv({type:'glitch_shoot', targetX:myPlayer.targetX, targetY:myPlayer.targetY, dmgMult:dM});
+    else if(w==='trace') { let dist=Math.hypot(myPlayer.targetX-myPlayer.x, myPlayer.targetY-myPlayer.y); let n1={x:myPlayer.x+Math.cos(myPlayer.angle)*dist*0.33, y:myPlayer.y+Math.sin(myPlayer.angle)*dist*0.33}, n2={x:myPlayer.x+Math.cos(myPlayer.angle)*dist*0.66, y:myPlayer.y+Math.sin(myPlayer.angle)*dist*0.66}, n3={x:myPlayer.x+Math.cos(myPlayer.angle)*dist, y:myPlayer.y+Math.sin(myPlayer.angle)*dist}; sdEv({type:'trace_shoot', nodes:[n1,n2,n3], x:myPlayer.x, y:myPlayer.y, dmgMult:dM}); }
+    else if(w==='kendo') sdEv({type:'copycat_kendo_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
+}
+
+// === GLOBAL CURSOR (Passive) - Draw pixel cursor at Aero's aim position ===
+function drawAeroGlobalCursor(ctx2, cam2) {
+    for(let id in gameState.players) {
+        let p = gameState.players[id];
+        if(p.isDead || p.heroClass !== 'aero') continue;
+        let tx = p.targetX, ty = p.targetY;
+        if(tx === undefined || ty === undefined) continue;
+        ctx2.save();
+        ctx2.translate(tx, ty);
+        ctx2.scale(1.2, 1.2);
+        ctx2.fillStyle = '#fff';
+        ctx2.strokeStyle = '#000';
+        ctx2.lineWidth = 2;
+        ctx2.beginPath();
+        ctx2.moveTo(0, 0);
+        ctx2.lineTo(0, 21);
+        ctx2.lineTo(4.5, 16.5);
+        ctx2.lineTo(8, 24);
+        ctx2.lineTo(11, 22.5);
+        ctx2.lineTo(7.5, 15);
+        ctx2.lineTo(13.5, 15);
+        ctx2.closePath();
+        ctx2.fill();
+        ctx2.stroke();
+        ctx2.font = 'bold 10px sans-serif';
+        ctx2.fillStyle = p.color || '#0ea5e9';
+        ctx2.fillText(p.name || 'Aero', 18, 14);
+        ctx2.restore();
+    }
+}
+
+// === Draw context menu in world space (visible to all) ===
+function drawAeroContextMenuWorld(ctx2) {
+    for(let id in gameState.players) {
+        let p = gameState.players[id];
+        if(p.isDead || p.heroClass !== 'aero' || !p.aeroContextMenu) continue;
+        let wx = p.aeroContextMenuWorldX || p.targetX, wy = p.aeroContextMenuWorldY || p.targetY;
+        if(!wx || !wy) continue;
+        ctx2.save();
+        ctx2.translate(wx, wy);
+        ctx2.fillStyle = 'rgba(240,240,240,0.95)';
+        ctx2.strokeStyle = '#a0a0a0';
+        ctx2.lineWidth = 1;
+        let mW = 80, mH = 48;
+        ctx2.fillRect(0, 0, mW, mH);
+        ctx2.strokeRect(0, 0, mW, mH);
+        ctx2.fillStyle = '#aaa'; ctx2.font = '9px sans-serif';
+        ctx2.fillText('✂ Cut', 6, 12);
+        ctx2.fillStyle = '#000'; ctx2.font = 'bold 9px sans-serif';
+        ctx2.fillText('📋 Copy', 6, 28);
+        ctx2.fillStyle = '#aaa'; ctx2.font = '9px sans-serif';
+        ctx2.fillText('📄 Paste', 6, 44);
+        ctx2.restore();
+    }
+}
 
 </script>
 </body>
