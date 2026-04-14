@@ -278,7 +278,8 @@ let myPlayer = {
     kisakiDeployed:false, kisakiMirrorOn:false, kisakiMirrorAngle:0, blitzWeapon:'handgun', blitzAmmo:8, grabbedLocked:false, flicker:false,
     ultCharge: 0, hasUltAura: false, auraTimer: 0, isJuggernaut: false, aeroDrawing: false, aeroTabType: 1, traceShooting: false, traceNodes:[], traceDashing: false, traceDashNodes:[], traceFreeze: false,
     copycatWeapons: [],
-    aeroContextMenu: false, aeroContextMenuTimer: 0, aeroContextMenuX: 0, aeroContextMenuY: 0, aeroContextMenuWorldX: 0, aeroContextMenuWorldY: 0, aeroPasting: false, aeroPasteFirstShot: false, aeroPasteTimers: {}
+    aeroContextMenu: false, aeroContextMenuTimer: 0, aeroContextMenuX: 0, aeroContextMenuY: 0, aeroContextMenuWorldX: 0, aeroContextMenuWorldY: 0, aeroPasting: false, aeroPasteFirstShot: false, aeroPasteTimers: {},
+    thorfinnStrands: []
 };
 
 let savedAeroBg = localStorage.getItem('rivals_aeroBg'); if(savedAeroBg) myPlayer.customization.aeroBg = savedAeroBg;
@@ -298,6 +299,69 @@ getEl('aeroBgUpload').addEventListener('change', e => {
     }
 });
 function clearAeroBg() { myPlayer.customization.aeroBg = null; localStorage.removeItem('rivals_aeroBg'); getEl('aeroBgUpload').value = ''; updateLobbyState(); }
+
+// Advanced Thorfinn Hair Physics System (22 Independent Strands)
+class SpringNode {
+    constructor(x, y) {
+        this.x = x; this.y = y;
+        this.vx = 0; this.vy = 0;
+    }
+    update(targetX, targetY, stiffness, damping, maxStretch) {
+        this.vx += (targetX - this.x) * stiffness;
+        this.vy += (targetY - this.y) * stiffness;
+        this.vx *= damping;
+        this.vy *= damping;
+        this.x += this.vx;
+        this.y += this.vy;
+        if (maxStretch !== undefined) {
+            const dx = this.x - targetX;
+            const dy = this.y - targetY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > maxStretch) {
+                this.x = targetX + (dx / dist) * maxStretch;
+                this.y = targetY + (dy / dist) * maxStretch;
+            }
+        }
+    }
+}
+// Hair color palette with streak variations (HSL-based color wheel)
+const cDark = { shadow: 'rgba(0,0,0,0.6)', base: '#5c4b31', mid: '#8a744e', high: '#b39862', streak: '#6b5a42' };
+const cMid  = { shadow: 'rgba(0,0,0,0.5)', base: '#7a663e', mid: '#b39862', high: '#d4b872', streak: '#8a7652' };
+const cTop  = { shadow: 'rgba(0,0,0,0.4)', base: '#9c8452', mid: '#d4b872', high: '#f7eaba', streak: '#c4a66a' };
+const tConfigs = [
+    { offset: Math.PI, len: 25, width: 11, stiff: 0.2, damp: 0.65, palette: cDark },
+    { offset: 2.8, len: 22, width: 11, stiff: 0.18, damp: 0.66, palette: cDark },
+    { offset: -2.8, len: 22, width: 10, stiff: 1.18, damp: 0.66, palette: cDark },
+    { offset: 2.4, len: 20, width: 10, stiff: 1.15, damp: 0.68, palette: cDark },
+    { offset: -2.4, len: 20, width: 10, stiff: 1.15, damp: 0.68, palette: cDark },
+    { offset: 1.9, len: 18, width: 10, stiff: 1.12, damp: 0.7, palette: cDark },
+    { offset: -1.9, len: 18, width: 9, stiff: 1.12, damp: 0.7, palette: cDark },
+    { offset: 3.0, len: 22, width: 9, stiff: 0.3, damp: 0.7, palette: cMid },
+    { offset: -3.0, len: 22, width: 9, stiff: 0.3, damp: 0.7, palette: cMid },
+    { offset: 2.5, len: 18, width: 8, stiff: 0.28, damp: 0.72, palette: cMid },
+    { offset: -2.5, len: 18, width: 8, stiff: 0.28, damp: 0.72, palette: cMid },
+    { offset: 2.0, len: 16, width: 9, stiff: 0.25, damp: 0.74, palette: cMid },
+    { offset: -2.0, len: 16, width: 9, stiff: 0.25, damp: 0.74, palette: cMid },
+    { offset: 1.5, len: 12, width: 8, stiff: 0.22, damp: 0.76, palette: cMid },
+    { offset: -1.5, len: 12, width: 8, stiff: 0.22, damp: 0.76, palette: cMid },
+    { offset: 1.0, len: 15, width: 6, stiff: 0.4, damp: 0.78, palette: cTop },
+    { offset: -1.0, len: 15, width: 6, stiff: 0.4, damp: 0.78, palette: cTop },
+    { offset: 0.6, len: 12, width: 5, stiff: 0.38, damp: 0.8, palette: cTop },
+    { offset: -0.6, len: 12, width: 6, stiff: 0.38, damp: 0.8, palette: cTop },
+    { offset: 0.2, len: 10, width: 5, stiff: 0.35, damp: 0.82, palette: cTop },
+    { offset: -0.2, len: 10, width: 6, stiff: 0.35, damp: 0.82, palette: cTop },
+    { offset: 0.0, len: 11, width: 5, stiff: 0.45, damp: 0.75, palette: cTop }
+];
+// Initialize hair strands for a player (reusable for remote players too)
+function initThorfinnHair(player) {
+    if (!player.thorfinnStrands) player.thorfinnStrands = [];
+    player.thorfinnStrands = tConfigs.map((cfg, idx) => ({
+        nodes: [new SpringNode(0,0), new SpringNode(0,0), new SpringNode(0,0)],
+        cfg: cfg,
+        streakIntensity: (Math.sin(idx * 0.5) + 1) * 0.5 // 0-1: how much color streak to apply
+    }));
+}
+initThorfinnHair(myPlayer);
 
 const mCan=document.createElement('canvas'); mCan.width=mCan.height=256; const mCtx=mCan.getContext('2d'); mCtx.fillStyle='#000'; mCtx.fillRect(0,0,256,256); let mDrops=Array(16).fill(0).map(()=>Math.random()*-200); let cachedMatrixPattern=null,cachedMatrixPatternAt=0;
 function getMatrixPat() {
@@ -452,35 +516,305 @@ function clampVfxPool(){if(vfx.length>MAX_VFX)vfx.splice(0,vfx.length-MAX_VFX);}
 function getCompactState(includeWalls=false){return {players:gameState.players,projectiles:gameState.projectiles,pickups:gameState.pickups,walls:includeWalls?gameState.walls:undefined,shields:gameState.shields||[],clones:gameState.clones||[],isTeamMode:gameState.isTeamMode,healthPacks:gameState.healthPacks||[],train:gameState.train||{phase:'idle',timer:2},koth:gameState.koth,ultOrb:gameState.ultOrb,juggernautId:gameState.juggernautId??null};}
 
 const pCan=getEl('previewCanvas'), pCtx=pCan.getContext('2d');
-function drawPrev() {
-    if(wrap.classList.contains('hidden'))return; 
-    pCtx.clearRect(0,0,160,160); pCtx.save(); pCtx.translate(80,80);
-    ['trace','kisaki','kendo','aero','generic'].forEach(i=>getEl(i+'-custom-panel').style.display='none');
-    
-    if(myPlayer.heroClass==='trace') {
-        getEl('trace-custom-panel').style.display='block'; pCtx.scale(2,2); pCtx.translate(0, Math.sin(Date.now()/150)*3);
-        pCtx.fillStyle='#a855f7'; pCtx.beginPath(); pCtx.arc(0,0,16,0,6.28); pCtx.fill(); pCtx.strokeStyle=tCol.neon; pCtx.lineWidth=2; pCtx.stroke();
-        pCtx.save(); pCtx.translate(15,0); pCtx.strokeStyle=tCol.bow; pCtx.lineWidth=4; pCtx.lineCap='round'; pCtx.beginPath(); pCtx.moveTo(-5,-20); pCtx.quadraticCurveTo(5,0,-5,20); pCtx.stroke();
-        pCtx.strokeStyle=tCol.neon; pCtx.lineWidth=1; pCtx.beginPath(); pCtx.moveTo(-5,-20); pCtx.lineTo(-15,0); pCtx.lineTo(-5,20); pCtx.stroke(); pCtx.restore();
-    } else if(myPlayer.heroClass==='misaki') {
-        getEl('kisaki-custom-panel').style.display='block'; let f=Math.sin(Date.now()/40)*0.5; pCtx.scale(2,2); pCtx.translate(0,Math.sin(Date.now()/150)*5); pCtx.rotate(-Math.PI/2);
-        pCtx.fillStyle=kCol.body; pCtx.beginPath(); pCtx.moveTo(-10,-5); pCtx.lineTo(-40,0); pCtx.lineTo(-10,5); pCtx.fill(); pCtx.fillStyle=kCol.w3; pCtx.beginPath(); pCtx.moveTo(-25,-2); pCtx.lineTo(-45,0); pCtx.lineTo(-25,2); pCtx.fill();
-        pCtx.save(); pCtx.rotate(f); pCtx.fillStyle=kCol.body; pCtx.beginPath(); pCtx.ellipse(0,12,10,5,0,0,6.28); pCtx.fill(); pCtx.fillStyle=kCol.w2; pCtx.beginPath(); pCtx.ellipse(-2,15,8,4,-0.2,0,6.28); pCtx.fill(); pCtx.fillStyle=kCol.w3; pCtx.beginPath(); pCtx.ellipse(-5,18,8,3,-0.4,0,6.28); pCtx.fill(); pCtx.restore();
-        pCtx.save(); pCtx.rotate(-f); pCtx.fillStyle=kCol.body; pCtx.beginPath(); pCtx.ellipse(0,-12,10,5,0,0,6.28); pCtx.fill(); pCtx.fillStyle=kCol.w2; pCtx.beginPath(); pCtx.ellipse(-2,-15,8,4,0.2,0,6.28); pCtx.fill(); pCtx.fillStyle=kCol.w3; pCtx.beginPath(); pCtx.ellipse(-5,-18,8,3,0.4,0,6.28); pCtx.fill(); pCtx.restore();
-        pCtx.fillStyle=kCol.body; pCtx.beginPath(); pCtx.ellipse(0,0,12,7,0,0,6.28); pCtx.fill(); pCtx.fillStyle='#f8fafc'; pCtx.beginPath(); pCtx.arc(8,0,6,0,6.28); pCtx.fill(); pCtx.fillStyle='#0f172a'; pCtx.beginPath(); pCtx.arc(10,2,1.5,0,6.28); pCtx.arc(10,-2,1.5,0,6.28); pCtx.fill(); pCtx.beginPath(); pCtx.moveTo(12,-3); pCtx.lineTo(20,0); pCtx.lineTo(12,3); pCtx.fill();
-    } else if(myPlayer.heroClass==='kendo') {
-        getEl('kendo-custom-panel').style.display='block'; pCtx.translate(0,Math.sin(Date.now()/150)*5); pCtx.rotate(-Math.PI/4); pCtx.scale(2.5,2.5);
-        pCtx.fillStyle=kndCol.primary; pCtx.shadowBlur=15; pCtx.shadowColor=kndCol.glow; pCtx.beginPath(); pCtx.moveTo(12,0); pCtx.lineTo(-8,6); pCtx.lineTo(-5,0); pCtx.lineTo(-8,-6); pCtx.closePath(); pCtx.fill(); pCtx.fillStyle='#fff'; pCtx.shadowBlur=0; pCtx.beginPath(); pCtx.arc(4,0,3,0,6.28); pCtx.fill();
-    } else if(myPlayer.heroClass==='aero') {
-        getEl('aero-custom-panel').style.display='block'; pCtx.scale(2.5,2.5);
-        pCtx.fillStyle='#0ea5e9'; pCtx.beginPath(); pCtx.arc(0,0,16,0,6.28); pCtx.fill(); pCtx.strokeStyle='#fff'; pCtx.lineWidth=2; pCtx.stroke();
-        pCtx.fillStyle = '#f1f5f9'; pCtx.fillRect(6, -12, 18, 14); pCtx.fillStyle = '#3b82f6'; pCtx.fillRect(6, -12, 18, 4); pCtx.strokeStyle = '#3b82f6'; pCtx.lineWidth = 1; pCtx.strokeRect(6, -12, 18, 14);
 
-    } else {
-        getEl('generic-custom-panel').style.display='block'; pCtx.scale(2,2); pCtx.fillStyle=myPlayer.heroClass==='blitz'?'#fff':myPlayer.color; pCtx.beginPath(); pCtx.arc(0,0,16,0,6.28); pCtx.fill(); pCtx.strokeStyle=myPlayer.heroClass==='blitz'?'#000':'#fff'; pCtx.lineWidth=myPlayer.heroClass==='blitz'?3:2; pCtx.stroke();
-    } 
-    pCtx.restore(); requestAnimationFrame(drawPrev);
-} 
+function drawPrev() {
+    if(wrap.classList.contains('hidden')) return;
+    
+    // Clear and fresh start
+    pCtx.clearRect(0, 0, 160, 160);
+    pCtx.save();
+    pCtx.translate(80, 80);
+    pCtx.scale(2.2, 2.2);
+    
+    const o = myPlayer;
+    
+    // Hide all custom panels
+    ['trace','kisaki','kendo','aero','thorfinn','glitch','generic'].forEach(i => {
+        let el = getEl(i+'-custom-panel');
+        if(el) el.style.display = 'none';
+    });
+    
+    // Draw outline
+    pCtx.lineJoin = 'round';
+    pCtx.lineCap = 'round';
+    pCtx.strokeStyle = 'rgba(30,30,30,0.85)';
+    pCtx.lineWidth = 5.8;
+    pCtx.beginPath();
+    pCtx.arc(0, 0, 17.5, 0, 6.28);
+    pCtx.stroke();
+    
+    // Draw based on hero class
+    const heroClass = o.heroClass || 'thorfinn';
+    const bob = Math.sin(Date.now() / 150) * 2;
+    
+    if(heroClass === 'trace') {
+        getEl('trace-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        pCtx.fillStyle = '#a855f7';
+        pCtx.beginPath();
+        pCtx.arc(0, 0, 16, 0, 6.28);
+        pCtx.fill();
+        let nC = o.customization?.traceColors?.neon || '#a855f7';
+        pCtx.strokeStyle = nC;
+        pCtx.lineWidth = 2;
+        pCtx.stroke();
+        pCtx.save();
+        pCtx.translate(15, 0);
+        let bC = o.customization?.traceColors?.bow || '#3b0764';
+        pCtx.strokeStyle = bC;
+        pCtx.lineWidth = 4;
+        pCtx.lineCap = 'round';
+        pCtx.beginPath();
+        pCtx.moveTo(-5, -20);
+        pCtx.quadraticCurveTo(5, 0, -5, 20);
+        pCtx.stroke();
+        pCtx.strokeStyle = nC;
+        pCtx.lineWidth = 1;
+        pCtx.beginPath();
+        pCtx.moveTo(-5, -20);
+        pCtx.lineTo(-15, 0);
+        pCtx.lineTo(-5, 20);
+        pCtx.stroke();
+        pCtx.restore();
+    } else if(heroClass === 'glitch') {
+        pCtx.translate(0, bob);
+        const mp = getMatrixPat();
+        let tm = Date.now() % 4000, st = Math.floor(tm / 800), lt = tm % 800;
+        let n1 = [3, 4, 5, 6, 8][st], n2 = [3, 4, 5, 6, 8][(st + 1) % 5];
+        let f = 0;
+        if(lt > 400) {
+            f = (lt - 400) / 400;
+            f = f < 0.5 ? 4 * f * f * f : 1 - Math.pow(-2 * f + 2, 3) / 2;
+        }
+        pCtx.fillStyle = mp;
+        pCtx.beginPath();
+        for(let i = 0; i <= 90; i++) {
+            let t = (6.28 * i) / 90;
+            let s1 = 6.28 / n1, l1 = ((t % s1) + s1) % s1 - s1 / 2;
+            let r1 = 16 * Math.cos(s1 / 2) / Math.cos(l1);
+            let s2 = 6.28 / n2, l2 = ((t % s2) + s2) % s2 - s2 / 2;
+            let r2 = 16 * Math.cos(s2 / 2) / Math.cos(l2);
+            let r = r1 + (r2 - r1) * f;
+            let px = Math.cos(t - 1.57) * r, py = Math.sin(t - 1.57) * r;
+            if(i === 0) pCtx.moveTo(px, py);
+            else pCtx.lineTo(px, py);
+        }
+        pCtx.closePath();
+        pCtx.fill();
+        pCtx.strokeStyle = '#fff';
+        pCtx.lineWidth = 2;
+        pCtx.stroke();
+    } else if(heroClass === 'misaki') {
+        getEl('kisaki-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        pCtx.fillStyle = o.color;
+        pCtx.beginPath();
+        pCtx.arc(0, 0, 16, 0, 6.28);
+        pCtx.fill();
+        pCtx.strokeStyle = '#fff';
+        pCtx.lineWidth = 2;
+        pCtx.stroke();
+        let rc = o.slashAnimTimer > 0 ? (o.slashAnimTimer / 0.15) * 8 : 0;
+        pCtx.save();
+        pCtx.translate(12 - rc, 10);
+        pCtx.fillStyle = '#18181b';
+        pCtx.beginPath();
+        pCtx.moveTo(-25, -2);
+        pCtx.lineTo(-15, -2);
+        pCtx.lineTo(-15, 6);
+        pCtx.lineTo(-22, 6);
+        pCtx.closePath();
+        pCtx.fill();
+        pCtx.fillStyle = '#27272a';
+        pCtx.fillRect(-15, -4, 25, 8);
+        pCtx.fillStyle = '#09090b';
+        pCtx.fillRect(10, -2, 35, 4);
+        pCtx.fillStyle = '#3f3f46';
+        pCtx.fillRect(45, -3, 6, 6);
+        pCtx.fillStyle = '#18181b';
+        pCtx.fillRect(-5, -10, 14, 4);
+        pCtx.fillStyle = '#06b6d4';
+        pCtx.fillRect(7, -9, 2, 2);
+        pCtx.fillStyle = '#71717a';
+        pCtx.fillRect(-8, -4, 6, 3);
+        pCtx.fillStyle = '#3f3f46';
+        pCtx.fillRect(-5, -6, 2, 4);
+        pCtx.restore();
+    } else if(heroClass === 'blitz') {
+        pCtx.translate(0, bob);
+        pCtx.fillStyle = o.color;
+        pCtx.beginPath();
+        pCtx.arc(0, 0, 16, 0, 6.28);
+        pCtx.fill();
+        pCtx.strokeStyle = '#000';
+        pCtx.lineWidth = 3;
+        pCtx.stroke();
+        let wp = o.blitzWeapon || 'handgun';
+        pCtx.save();
+        pCtx.translate(15, 10);
+        if(wp === 'handgun') {
+            let rc = o.slashAnimTimer > 0 ? (o.slashAnimTimer / 0.15) * 5 : 0;
+            pCtx.translate(-rc, 0);
+            pCtx.fillStyle = '#111';
+            pCtx.fillRect(2, -2, 6, 12);
+            pCtx.fillStyle = '#333';
+            pCtx.fillRect(2, -6, 18, 6);
+            pCtx.fillStyle = '#94a3b8';
+            pCtx.fillRect(18, -5, 4, 4);
+        } else if(wp === 'katana') {
+            let sw = o.slashAnimTimer > 0 ? (1 - (o.slashAnimTimer / 0.3)) * 2 : 0;
+            pCtx.translate(5, -10);
+            pCtx.rotate(-1 + sw);
+            pCtx.fillStyle = '#111';
+            pCtx.fillRect(-5, -2, 10, 4);
+            pCtx.fillStyle = '#eab308';
+            pCtx.fillRect(4, -4, 2, 8);
+            pCtx.fillStyle = '#e5e7eb';
+            pCtx.beginPath();
+            pCtx.moveTo(6, -2);
+            pCtx.quadraticCurveTo(20, -5, 40, -1);
+            pCtx.lineTo(40, 1);
+            pCtx.lineTo(6, 2);
+            pCtx.fill();
+        }
+        pCtx.restore();
+    } else if(heroClass === 'aero') {
+        getEl('aero-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        pCtx.fillStyle = '#0ea5e9';
+        pCtx.beginPath();
+        pCtx.arc(0, 0, 16, 0, 6.28);
+        pCtx.fill();
+        pCtx.strokeStyle = '#fff';
+        pCtx.lineWidth = 2;
+        pCtx.stroke();
+        pCtx.fillStyle = '#f1f5f9';
+        pCtx.fillRect(6, -12, 18, 14);
+        pCtx.fillStyle = '#3b82f6';
+        pCtx.fillRect(6, -12, 18, 4);
+        pCtx.strokeStyle = '#3b82f6';
+        pCtx.lineWidth = 1;
+        pCtx.strokeRect(6, -12, 18, 14);
+    } else if(heroClass === 'thorfinn') {
+        pCtx.translate(0, bob);
+        pCtx.fillStyle = '#e8b4a8';
+        pCtx.beginPath();
+        pCtx.arc(0, 0, 16, 0, 6.28);
+        pCtx.fill();
+        pCtx.strokeStyle = '#d4956a';
+        pCtx.lineWidth = 2;
+        pCtx.stroke();
+        let sw = o.slashAnimTimer > 0 ? (1 - (o.slashAnimTimer / 0.15)) * 2.8 : 0;
+        if(o.daggers >= 1) {
+            pCtx.save();
+            pCtx.translate(12, -12);
+            pCtx.rotate(0.4 - sw);
+            drawDag(pCtx);
+            pCtx.restore();
+        }
+        if(o.daggers >= 2) {
+            pCtx.save();
+            pCtx.translate(12, 12);
+            pCtx.rotate(-0.4 + sw);
+            drawDag(pCtx);
+            pCtx.restore();
+        }
+        // Draw hair if available
+        if(o.thorfinnStrands && o.thorfinnStrands.length > 0) {
+            drawThorfinnHairPreview(o, pCtx);
+        }
+    } else if(heroClass === 'kendo') {
+        getEl('kendo-custom-panel').style.display = 'block';
+        pCtx.translate(0, Math.sin(Date.now()/150)*3);
+        pCtx.rotate(Math.sin(Date.now()/300) * 0.3);
+        let kc = o.customization?.kendoColors || {primary:'#ef4444', glow:'#ef4444'};
+        pCtx.fillStyle = kc.primary;
+        pCtx.shadowBlur = 15;
+        pCtx.shadowColor = kc.glow;
+        pCtx.beginPath();
+        pCtx.moveTo(12, 0);
+        pCtx.lineTo(-8, 6);
+        pCtx.lineTo(-5, 0);
+        pCtx.lineTo(-8, -6);
+        pCtx.closePath();
+        pCtx.fill();
+        pCtx.fillStyle = '#fff';
+        pCtx.shadowBlur = 0;
+        pCtx.beginPath();
+        pCtx.arc(4, 0, 3, 0, 6.28);
+        pCtx.fill();
+    } else if(heroClass === 'jubilee') {
+        getEl('generic-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        pCtx.fillStyle = '#fff';
+        pCtx.shadowBlur = 10;
+        pCtx.shadowColor = '#ec4899';
+        let ro = (Date.now() / 150) % 6.28;
+        pCtx.beginPath();
+        pCtx.arc(Math.cos(ro) * 20, Math.sin(ro) * 20, 3, 0, 6.28);
+        pCtx.fill();
+    }
+    
+    pCtx.restore();
+    requestAnimationFrame(drawPrev);
+}
+
+// Helper to draw Thorfinn hair on preview canvas
+function drawThorfinnHairPreview(p, pctx) {
+    if(p.heroClass !== 'thorfinn' || !p.thorfinnStrands) return;
+    const outlineColor = '#5c3a21';
+    const saveCtx = ctx; ctx = pctx; // Temporarily replace global ctx for helper functions
+    const backStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cDark);
+    const midStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cMid);
+    const topStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cTop);
+    const crownX = 0, crownY = 0;
+    pctx.fillStyle = cDark.base;
+    pctx.strokeStyle = outlineColor;
+    pctx.lineWidth = 6;
+    pctx.lineJoin = 'round';
+    pctx.lineCap = 'round';
+    pctx.beginPath();
+    pctx.arc(crownX, crownY, 17, 1.5, -1.5, false);
+    pctx.lineTo(crownX + 10, crownY); 
+    pctx.fill();
+    pctx.stroke();
+    drawAnimeHairLayerPreview(backStrands, outlineColor, pctx);
+    drawAnimeHairLayerPreview(midStrands, outlineColor, pctx);
+    drawAnimeHairLayerPreview(topStrands, outlineColor, pctx);
+    ctx = saveCtx;
+}
+
+function drawAnimeHairLayerPreview(strands, outlineCol, pctx) {
+    if (!strands || strands.length === 0) return;
+    const baseColor = strands[0].cfg.palette;
+    pctx.strokeStyle = outlineCol;
+    pctx.lineWidth = 6;
+    pctx.lineJoin = 'round';
+    pctx.lineCap = 'round';
+    pctx.beginPath();
+    strands.forEach(s => traceSpikePath(pctx, s.nodes[0], s.nodes[1], s.nodes[2], s.cfg.width));
+    pctx.stroke();
+    strands.forEach((s, idx) => {
+        const useStreak = s.streakIntensity > 0.5;
+        pctx.fillStyle = useStreak && baseColor.streak ? baseColor.streak : baseColor.base;
+        pctx.beginPath();
+        traceSpikePath(pctx, s.nodes[0], s.nodes[1], s.nodes[2], s.cfg.width);
+        pctx.fill();
+    });
+    strands.forEach((s, idx) => {
+        const useStreak = s.streakIntensity > 0.7;
+        pctx.fillStyle = useStreak && baseColor.streak ? baseColor.streak : baseColor.mid;
+        pctx.globalAlpha = 0.85;
+        pctx.beginPath();
+        traceSpikePath(pctx, s.nodes[0], s.nodes[1], s.nodes[2], s.cfg.width * 0.65);
+        pctx.fill();
+        pctx.globalAlpha = 1.0;
+    });
+    pctx.fillStyle = baseColor.high;
+    pctx.beginPath();
+    strands.forEach(s => traceSpikePath(pctx, s.nodes[0], s.nodes[1], s.nodes[2], s.cfg.width * 0.25));
+    pctx.fill();
+}
 requestAnimationFrame(drawPrev);
 
 const lBtn=getEl('leave-btn-container'), lFill=getEl('leave-fill'), lTxt=getEl('leave-text'); let lTm=null, lPrg=0;
@@ -523,7 +857,12 @@ function selectHero(id) {
     document.querySelectorAll('.class-list-btn').forEach(b=>b.classList.remove('selected')); 
     getEl('btn-'+id).classList.add('selected');
     localStorage.setItem('rivals_lastHero', id);
-    myPlayer.heroClass = id; myPlayer.color = HERO_DATA[id].color; 
+    myPlayer.heroClass = id; myPlayer.color = HERO_DATA[id].color;
+    
+    // Initialize Thorfinn hair if switching to Thorfinn
+    if(id === 'thorfinn') {
+        initThorfinnHair(myPlayer);
+    }
     
     let baseHp = HERO_DATA[id].hp;
     if (activeServerMode === 'CHAOS') baseHp *= 12;
@@ -753,6 +1092,7 @@ function becomeHost(mode, srvId) {
                     np.maxHp = np.maxHp || baseHp;
                     np.kills = 0; np.deaths = 0;
                     np.isDead = false;
+                    if(np.heroClass === 'thorfinn') initThorfinnHair(np);
                     gameState.players[d.player.id] = np;
                     // Also add to lobby list
                     lobbyPlayers[d.player.id] = {name:np.name, heroClass:np.heroClass, team:np.team, isHost:false, customization:np.customization};
@@ -927,6 +1267,33 @@ function interpRemotePlayers(dt) {
             p.y += dy * f;
         }
         if(typeof t.angle === 'number') { let currentAngle = p.angle || 0; let angleDelta = Math.atan2(Math.sin(t.angle - currentAngle), Math.cos(t.angle - currentAngle)); p.angle = currentAngle + angleDelta * Math.min(1, dt * 16); }
+    }
+}
+
+function updateThorfinnHair(player, dt) {
+    if(player.isDead || !player.thorfinnStrands || player.thorfinnStrands.length === 0) return;
+    const crownX = player.x - Math.cos(player.angle) * 8; 
+    const crownY = player.y - Math.sin(player.angle) * 8;
+    player.thorfinnStrands.forEach(strand => {
+        const restAngle = player.angle + strand.cfg.offset;
+        const target1X = crownX + Math.cos(restAngle) * (strand.cfg.len * 0.35);
+        const target1Y = crownY + Math.sin(restAngle) * (strand.cfg.len * 0.35);
+        strand.nodes[0].update(crownX, crownY, 0.9, 0.5); 
+        strand.nodes[1].update(target1X, target1Y, strand.cfg.stiff, strand.cfg.damp, strand.cfg.len * 0.5);
+        const target2X = strand.nodes[1].x + Math.cos(restAngle) * (strand.cfg.len * 0.65);
+        const target2Y = strand.nodes[1].y + Math.sin(restAngle) * (strand.cfg.len * 0.65);
+        strand.nodes[2].update(target2X, target2Y, strand.cfg.stiff * 0.6, strand.cfg.damp + 0.05, strand.cfg.len * 0.6);
+    });
+}
+
+function updateHair(dt) {
+    if(myPlayer.heroClass !== 'thorfinn') return;
+    updateThorfinnHair(myPlayer, dt);
+    // Update remote Thorfinn players' hair
+    for(let id in gameState.players) {
+        if(id !== myId && gameState.players[id].heroClass === 'thorfinn') {
+            updateThorfinnHair(gameState.players[id], dt);
+        }
     }
 }
 
@@ -2468,6 +2835,8 @@ function drawPlayers() {
         
         ctx.rotate(e.angle || 0);
         
+        // Don't draw hair yet - draw body first
+        
         // Boiling line outline - subtle hand-drawn jitter (no offset, just wobble)
         let bx = (Math.random() - 0.5) * 1.6;
         let by = (Math.random() - 0.5) * 1.6;
@@ -2527,12 +2896,11 @@ function drawPlayers() {
                 else if(w==='jubilee') { ctx.fillStyle=isImpactFlash?'#000':'#ec4899'; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(5,0); ctx.lineTo(0,10); ctx.lineTo(-5,0); ctx.fill(); }
                 ctx.restore();
             });
-        } else {
-            ctx.fillStyle = isImpactFlash ? '#000' : o.color; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); 
-            ctx.strokeStyle = isImpactFlash ? '#000' : '#fff'; ctx.lineWidth = 2; ctx.stroke();
-        }
-        
-        if(!iC && o.heroClass === 'thorfinn') {
+        } else if(!iC && o.heroClass === 'thorfinn') {
+            // Natural peachy skin tone for Thorfinn
+            ctx.fillStyle = isImpactFlash ? '#000' : '#e8b4a8'; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill(); 
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#d4956a'; ctx.lineWidth = 2; ctx.stroke();
+            // Draw daggers
             let sw = o.slashAnimTimer > 0 ? (1 - (o.slashAnimTimer / 0.15)) * 2.8 : 0;
             if(o.daggers >= 1) { ctx.save(); ctx.translate(12, -12); ctx.rotate(0.4 - sw); drawDag(ctx); ctx.restore(); }
             if(o.daggers >= 2) { ctx.save(); ctx.translate(12, 12); ctx.rotate(-0.4 + sw); drawDag(ctx); ctx.restore(); }
@@ -2542,6 +2910,11 @@ function drawPlayers() {
             ctx.beginPath(); ctx.arc(Math.cos(ro) * 20, Math.sin(ro) * 20, 3, 0, 6.28); ctx.fill();
         }
         ctx.restore();
+        
+        // Draw hair on top (in world space) AFTER body
+        if(!iC && o.heroClass === 'thorfinn') {
+            drawHair(o);
+        }
         
         let tw = getNameWidth(o.name), bg = 'rgba(24,24,27,0.8)';
         if(o.isJuggernaut) bg = 'rgba(234,179,8,0.85)';
@@ -2556,6 +2929,85 @@ function drawPlayers() {
         ctx.fillStyle = '#fff'; ctx.font = '11px "Dela Gothic One", sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(o.name, e.x, e.y - (yO - 12));
     });
+}
+
+function drawHair(p) {
+    if(p.heroClass !== 'thorfinn' || !p.thorfinnStrands || p.isDead) return;
+    const outlineColor = '#5c3a21';
+    const backStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cDark);
+    const midStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cMid);
+    const topStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cTop);
+    const crownX = p.x - Math.cos(p.angle) * 8; 
+    const crownY = p.y - Math.sin(p.angle) * 8;
+    ctx.fillStyle = cDark.base;
+    ctx.strokeStyle = outlineColor;
+    ctx.lineWidth = 6;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(crownX, crownY, 17, p.angle + 1.5, p.angle - 1.5, false);
+    ctx.lineTo(crownX + Math.cos(p.angle)*10, crownY + Math.sin(p.angle)*10); 
+    ctx.fill();
+    ctx.stroke();
+    drawAnimeHairLayer(backStrands, outlineColor);
+    drawAnimeHairLayer(midStrands, outlineColor);
+    drawAnimeHairLayer(topStrands, outlineColor);
+}
+function drawAnimeHairLayer(strands, outlineCol) {
+    if (!strands || strands.length === 0) return;
+    const baseColor = strands[0].cfg.palette;
+    
+    // Draw outlines for all strands
+    ctx.strokeStyle = outlineCol;
+    ctx.lineWidth = 6;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    strands.forEach(s => traceSpikePath(ctx, s.nodes[0], s.nodes[1], s.nodes[2], s.cfg.width));
+    ctx.stroke();
+    
+    // Draw base color with streak variation
+    strands.forEach((s, idx) => {
+        const useStreak = s.streakIntensity > 0.5; // Use streak for some strands
+        ctx.fillStyle = useStreak && baseColor.streak ? baseColor.streak : baseColor.base;
+        ctx.beginPath();
+        traceSpikePath(ctx, s.nodes[0], s.nodes[1], s.nodes[2], s.cfg.width);
+        ctx.fill();
+    });
+    
+    // Draw mid-tone layer with streak
+    strands.forEach((s, idx) => {
+        const useStreak = s.streakIntensity > 0.7; // Different threshold for accent
+        ctx.fillStyle = useStreak && baseColor.streak ? baseColor.streak : baseColor.mid;
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        traceSpikePath(ctx, s.nodes[0], s.nodes[1], s.nodes[2], s.cfg.width * 0.65);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    });
+    
+    // Draw highlight layer
+    ctx.fillStyle = baseColor.high;
+    ctx.beginPath();
+    strands.forEach(s => traceSpikePath(ctx, s.nodes[0], s.nodes[1], s.nodes[2], s.cfg.width * 0.25));
+    ctx.fill();
+}
+function traceSpikePath(context, n0, n1, n2, width) {
+    const a1 = Math.atan2(n1.y - n0.y, n1.x - n0.x);
+    const a2 = Math.atan2(n2.y - n1.y, n2.x - n1.x);
+    const wBase = width * 0.5;
+    const wMid = width * 0.25;
+    const p1x = n0.x + Math.cos(a1 + Math.PI/2) * wBase;
+    const p1y = n0.y + Math.sin(a1 + Math.PI/2) * wBase;
+    const p2x = n0.x + Math.cos(a1 - Math.PI/2) * wBase;
+    const p2y = n0.y + Math.sin(a1 - Math.PI/2) * wBase;
+    const m1x = n1.x + Math.cos(a2 + Math.PI/2) * wMid;
+    const m1y = n1.y + Math.sin(a2 + Math.PI/2) * wMid;
+    const m2x = n1.x + Math.cos(a2 - Math.PI/2) * wMid;
+    const m2y = n1.y + Math.sin(a2 - Math.PI/2) * wMid;
+    context.moveTo(p1x, p1y);
+    context.quadraticCurveTo(m1x, m1y, n2.x, n2.y); 
+    context.quadraticCurveTo(m2x, m2y, p2x, p2y);
 }
 
 if(!CanvasRenderingContext2D.prototype.roundRect) {
@@ -2685,7 +3137,7 @@ function gLoop(t) {
         localHitStop -= dt; requestAnimationFrame(gLoop); return;
     }
     
-    updateMovement(dt); updateGameState(dt); if(!isHost) interpRemotePlayers(dt); updateUI(t);
+    updateMovement(dt); updateGameState(dt); if(!isHost) interpRemotePlayers(dt); updateHair(dt); updateUI(t);
     
     let isF = (Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y) > 10) || myPlayer.isFlying || localCombat.jubileeDash?.dTm > 0 || localCombat.misakiGrapple?.dTm > 0 || myPlayer.traceDashing;
     cam.targetZoom = myPlayer.isJuggernaut ? 0.45 : (isF ? 0.55 : 0.65);
