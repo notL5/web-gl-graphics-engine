@@ -494,7 +494,7 @@ let localCombat = {
     mQ:false, m1:false,
     traceShoot:{cd:0,maxCd:1.0}, traceDash:{cd:0,maxCd:4.0,active:false,path:[],idx:0},
     aeroPaste:{cd:0,maxCd:0.8}, aeroCopy:{cd:0,maxCd:0},
-    corsairPrimary:{cd:0,maxCd:2.2}, corsairParry:{cd:0,maxCd:6.0}, corsairCombo:{cd:0,maxCd:0.4}
+    corsairPrimary:{cd:0,maxCd:2.0}, corsairParry:{cd:0,maxCd:6.0}, corsairCombo:{cd:0,maxCd:0.4}
 };
 
 function resetAllCooldowns() {
@@ -1197,7 +1197,7 @@ function processVFX(d) {
     else if(d.type==='blitz_grab_finish') { if(myId===d.blitzId || myId===d.targetId){ myPlayer.grabbedLocked = false; localCombat.dash.rec = 0.1; } }
     else if(d.type==='knockback_apply') { if(myId===d.targetId){ localCombat.dash.v.x += Math.cos(d.angle)*d.force; localCombat.dash.v.y += Math.sin(d.angle)*d.force; localCombat.dash.rec = 0.3; } }
     else if(d.type==='corsair_melee_vfx') vfx.push({type:'corsairMelee',x:d.x,y:d.y,angle:d.angle,step:d.step,life:0.2,maxLife:0.2});
-    else if(d.type==='corsair_boom_vfx') { vfx.push({type:'corsairExplosion',x:d.x,y:d.y,life:0.8,maxLife:0.8,radius:170}); for(let s=0;s<10;s++) vfx.push({type:'corsairSmoke',x:d.x+(Math.random()-0.5)*100,y:d.y+(Math.random()-0.5)*100,life:1.0+Math.random()*0.8,maxLife:1.8,size:15+Math.random()*35}); applyExpKbk(d.x,d.y,120); }
+    else if(d.type==='corsair_boom_vfx') { vfx.push({type:'corsairExplosion',x:d.x,y:d.y,life:0.8,maxLife:0.8,radius:240}); for(let s=0;s<10;s++) vfx.push({type:'corsairSmoke',x:d.x+(Math.random()-0.5)*100,y:d.y+(Math.random()-0.5)*100,life:1.0+Math.random()*0.8,maxLife:1.8,size:15+Math.random()*35}); applyExpKbk(d.x,d.y,120); }
     else if(d.type==='corsair_parry_success') { if(myId===d.targetId){localCombat.corsairCombo.cd=0; myPlayer.corsairComboStep=2; myPlayer.corsairParryActive=false; applyShake(8,0.2);} }
     else if(d.type==='trace_dash_trail') vfx.push({type:'speedLine', x:d.x, y:d.y, angle:d.angle, life:0.2, maxLife:0.2, length:40, color:d.color});
     else if(d.type==='blitz_ult_vfx') applyShake(10, 0.4);
@@ -1442,7 +1442,7 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'corsair') {
         setVisibleAbilities(['corsair-primary','corsair-stance','corsair-parry']);
         let cp = localCombat.corsairPrimary.cd; 
-        getEl('cd-corsair-primary').style.height = `${cp > 0 ? (cp / 4.0) * 100 : 0}%`;
+        getEl('cd-corsair-primary').style.height = `${cp > 0 ? (cp / 2.0) * 100 : 0}%`;
         if(myPlayer.corsairStance === 'cannon') {
             getEl('name-corsair-primary').innerText = 'Broadside';
             getEl('status-corsair-primary').innerText = cp > 0 ? cp.toFixed(1) + 's' : 'Ready';
@@ -1507,7 +1507,7 @@ window.addEventListener('keyup', e => {
         keys.space = false;
         if(myPlayer.heroClass === 'trace' && myPlayer.traceDashing) {
             myPlayer.traceDashing = false; myPlayer.traceFreeze = false;
-            if(myPlayer.traceDashNodes.length > 0) { localCombat.traceDash.active = true; localCombat.traceDash.path = myPlayer.traceDashNodes; localCombat.traceDash.idx = 0; myPlayer.invulnerable = true; localCombat.traceDash.cd = (activeServerMode === 'CHAOS') ? 0.05 : 4.0; }
+            if(myPlayer.traceDashNodes.length > 0) { localCombat.traceDash.active = true; localCombat.traceDash.path = myPlayer.traceDashNodes; localCombat.traceDash.idx = 0; myPlayer.invulnerable = true; localCombat.traceDash.cd = (activeServerMode === 'CHAOS') ? 0.05 : 2.0; }
         }
     }
     
@@ -1560,7 +1560,7 @@ can.addEventListener('mousedown', e => {
         else if(myPlayer.heroClass === 'glitch') trGlSh();
         else if(myPlayer.heroClass === 'corsair') {
             if(myPlayer.corsairStance === 'cannon' && localCombat.corsairPrimary.cd <= 0) {
-                localCombat.corsairPrimary.cd = (activeServerMode==='CHAOS')?0.05:4.0;
+                localCombat.corsairPrimary.cd = (activeServerMode==='CHAOS')?0.05:2.0;
                 // Recoil: knock backward opposite to shot direction
                 let recoilForce = 56;
                 localCombat.dash.v.x -= Math.cos(myPlayer.angle) * recoilForce;
@@ -2573,7 +2573,7 @@ function updateUI(now = performance.now()) {
     else if(myPlayer.heroClass === 'corsair') {
         setVisibleAbilities(['corsair-primary','corsair-stance','corsair-parry']);
         let cp = localCombat.corsairPrimary.cd; 
-        getEl('cd-corsair-primary').style.height = `${cp > 0 ? (cp / 4.0) * 100 : 0}%`;
+        getEl('cd-corsair-primary').style.height = `${cp > 0 ? (cp / 2.0) * 100 : 0}%`;
         if(myPlayer.corsairStance === 'cannon') {
             getEl('name-corsair-primary').innerText = 'Broadside';
             getEl('status-corsair-primary').innerText = cp > 0 ? cp.toFixed(1) + 's' : 'Ready';
