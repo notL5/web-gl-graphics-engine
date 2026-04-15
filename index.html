@@ -262,7 +262,7 @@ const HERO_DATA = {
     glitch:{name:'Glitch',role:'Support',hp:350,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
     jubilee:{name:'Jubilee',role:'Damage',hp:200,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
     misaki:{name:'Misaki',role:'Sniper',hp:300,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
-    corsair:{name:'Corsair',role:'Heavy Tank / Brawler',hp:600,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
+    corsair:{name:'Corsair',role:'Heavy Tank / Brawler',hp:450,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
     aero:{name:'Aero',role:'Support',hp:250,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']}
 };
 
@@ -1562,7 +1562,7 @@ can.addEventListener('mousedown', e => {
             if(myPlayer.corsairStance === 'cannon' && localCombat.corsairPrimary.cd <= 0) {
                 localCombat.corsairPrimary.cd = (activeServerMode==='CHAOS')?0.05:4.0;
                 // Recoil: knock backward opposite to shot direction
-                let recoilForce = 15;
+                let recoilForce = 56;
                 localCombat.dash.v.x -= Math.cos(myPlayer.angle) * recoilForce;
                 localCombat.dash.v.y -= Math.sin(myPlayer.angle) * recoilForce;
                 localCombat.dash.rec = 0.4;
