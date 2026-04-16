@@ -739,19 +739,28 @@ function drawPrev() {
         getEl('corsair-custom-panel').style.display = 'block';
         pCtx.translate(0, bob);
         let trimC = o.customization?.corsairColors?.trim || '#dc2626';
-        // Brown body
-        pCtx.fillStyle = '#8B4513';
+        // Hat brim
+        pCtx.fillStyle = '#2A2A3A';
+        pCtx.beginPath(); pCtx.ellipse(0, -1, 22, 10, 0, 0, 6.28); pCtx.fill();
+        pCtx.strokeStyle = '#D4A04A'; pCtx.lineWidth = 1.5; pCtx.stroke();
+        // Hat crown
+        pCtx.fillStyle = '#2A2A3A';
+        pCtx.beginPath(); pCtx.ellipse(0, -6, 12, 9, 0, Math.PI, 0); pCtx.fill();
+        // Hat band
+        pCtx.fillStyle = trimC; pCtx.fillRect(-12, -8, 24, 3);
+        // Body
+        pCtx.fillStyle = '#C47A4A';
         pCtx.beginPath(); pCtx.arc(0, 0, 16, 0, 6.28); pCtx.fill();
         pCtx.strokeStyle = trimC; pCtx.lineWidth = 2; pCtx.stroke();
-        // Cannon on top
-        pCtx.save(); pCtx.translate(10, 0);
-        pCtx.fillStyle = '#71717a'; pCtx.fillRect(0, -5, 20, 10);
-        pCtx.fillStyle = '#52525b'; pCtx.beginPath(); pCtx.arc(0, 0, 7, 0, 6.28); pCtx.fill();
-        // Trim ring
+        // Cannon in front
+        pCtx.save(); pCtx.translate(14, 0);
+        pCtx.fillStyle = '#A8B8C8'; pCtx.fillRect(0, -5, 16, 10);
+        pCtx.strokeStyle = '#5A6A7A'; pCtx.lineWidth = 1.5; pCtx.strokeRect(0, -5, 16, 10);
+        pCtx.fillStyle = '#8898A8'; pCtx.beginPath(); pCtx.arc(0, 0, 7, 0, 6.28); pCtx.fill();
         pCtx.strokeStyle = trimC; pCtx.lineWidth = 1.5; pCtx.beginPath(); pCtx.arc(0, 0, 8, 0, 6.28); pCtx.stroke();
         pCtx.restore();
         // Wheels
-        pCtx.fillStyle = '#3f3f46';
+        pCtx.fillStyle = '#606878';
         pCtx.beginPath(); pCtx.arc(-8, 14, 4, 0, 6.28); pCtx.fill();
         pCtx.beginPath(); pCtx.arc(8, 14, 4, 0, 6.28); pCtx.fill();
     } else if(heroClass === 'kendo') {
@@ -901,7 +910,7 @@ function selectHero(id) {
     myPlayer.ultCharge = 0;
     
     myPlayer.corsairStance='cannon'; myPlayer.corsairComboStep=0; myPlayer.corsairParryActive=false; myPlayer.corsairParryTimer=0;
-    if(id==='corsair'){myPlayer.corsairCannonX=myPlayer.x; myPlayer.corsairCannonY=myPlayer.y;}
+    if(id==='corsair'){myPlayer.corsairCannonX=myPlayer.x; myPlayer.corsairCannonY=myPlayer.y; gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==myId); gameState.corsairCannons.push({ownerId:myId||'local',x:myPlayer.x,y:myPlayer.y,trimColor:myPlayer.customization?.corsairColors?.trim||'#dc2626'});}
     myPlayer.kisakiDeployed=false; myPlayer.kisakiMirrorOn=false; myPlayer.kisakiMirrorAngle=0; 
     myPlayer.blitzWeapon='handgun'; myPlayer.blitzAmmo=8; myPlayer.grabbedLocked=false; myPlayer.flicker=false;
     myPlayer.aeroDrawing=false; myPlayer.aeroTabType=1; 
@@ -1670,12 +1679,13 @@ function chD(t, id) {
             let sp = getSafeSpawn(id, t.team || 'none');
             t.maxHp = t.isJuggernaut ? 5000 : (HERO_DATA[t.heroClass].hp * (activeServerMode === 'CHAOS' ? 12 : 1));
             t.hp = t.maxHp; t.x = sp.x; t.y = sp.y; t.isDead = false; t.daggers = 2; t.lastAttacker = null;
+                if(t.heroClass==='corsair'){gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==id);gameState.corsairCannons.push({ownerId:id,x:sp.x,y:sp.y,trimColor:t.customization?.corsairColors?.trim||'#dc2626'});}
             if(gameState.players[id]) {
                 gameState.players[id].grabbedLocked = gameState.players[id].flicker = false;
                 gameState.players[id].aeroDrawing = false;
                 gameState.players[id].traceShooting = gameState.players[id].traceDashing = gameState.players[id].traceFreeze = gameState.players[id].invulnerable = false;
                 gameState.players[id].stunTimer = 0; gameState.players[id].hasUltAura = false;
-                if(t.heroClass==='corsair'){t.corsairStance='cannon';gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==id);}
+                if(t.heroClass==='corsair'){t.corsairStance='cannon';}
             }
         }, 3000);
     }
@@ -2630,33 +2640,158 @@ function drawTrains() {
     let p = (6.0 - gameState.train.timer) / 6.0, L = 12000, yp = -L + (p * (H + L));
     ctx.save();
     const dT = x => {
-        ctx.save(); ctx.translate(x, yp); ctx.shadowBlur = 15;
-        for(let e=0; e<30; e++) {
-            ctx.strokeStyle = Math.random() > 0.5 ? '#fef08a' : '#0ea5e9';
-            ctx.lineWidth = 1 + Math.random() * 5; ctx.beginPath();
-            let ty = Math.random() * L;
-            ctx.moveTo(-20 + Math.random() * 40, ty); ctx.lineTo(-20 + Math.random() * 40, ty + 50 + Math.random() * 150); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(220 + Math.random() * 40, ty); ctx.lineTo(220 + Math.random() * 40, ty + 50 + Math.random() * 150); ctx.stroke();
-        }
-        ctx.shadowBlur = 0; let cL = 800, g = 40, nC = Math.floor(L / (cL + g));
-        for(let i=0; i<nC; i++) {
+        ctx.save(); ctx.translate(x, yp);
+        // === TOKYO BULLET TRAIN - One Piece Egghead Style ===
+        // True top-down 2D, flat bold colors, no shadows/gradients, soft outlines
+        const cL = 600, g = 25, nC = Math.floor(L / (cL + g));
+        const bodyW = 160, halfW = bodyW / 2;
+        
+        for(let i = 0; i < nC; i++) {
             let cy = i * (cL + g); if(cy > L) break;
-            if(i > 0) { ctx.fillStyle = '#0f172a'; ctx.fillRect(25, cy - g, 150, g); ctx.fillStyle = '#1e293b'; ctx.fillRect(35, cy - g, 130, g); }
-            let grd = ctx.createLinearGradient(0, cy, 200, cy);
-            grd.addColorStop(0, '#94a3b8'); grd.addColorStop(0.2, '#ffffff'); grd.addColorStop(0.8, '#ffffff'); grd.addColorStop(1, '#64748b');
-            ctx.fillStyle = grd;
-            if(i === nC - 1) {
-                ctx.beginPath(); ctx.moveTo(10, cy); ctx.lineTo(190, cy); ctx.quadraticCurveTo(100, cy + cL, 100, cy + cL); ctx.fill();
-            } else if(i === 0) {
-                ctx.beginPath(); ctx.moveTo(100, cy); ctx.quadraticCurveTo(100, cy + 250, 10, cy + 250); ctx.lineTo(10, cy + cL); ctx.lineTo(190, cy + cL); ctx.lineTo(190, cy + 250); ctx.quadraticCurveTo(100, cy + 250, 100, cy); ctx.fill();
-                ctx.fillStyle = '#020617'; ctx.beginPath(); ctx.moveTo(100, cy + 60); ctx.quadraticCurveTo(100, cy + 160, 30, cy + 200); ctx.lineTo(170, cy + 200); ctx.quadraticCurveTo(100, cy + 160, 100, cy + 60); ctx.fill();
-                ctx.shadowBlur = 20; ctx.shadowColor = '#00ffff'; ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(100, cy); ctx.lineTo(100 + (Math.random() - 0.5) * 150, cy - 100); ctx.stroke(); ctx.shadowBlur = 0;
-            } else {
-                ctx.fillRect(10, cy, 180, cL);
+            
+            // Connector between cars - warm dark gray
+            if(i > 0) {
+                ctx.fillStyle = '#5A4A3A';
+                ctx.fillRect(halfW - 60, cy - g, 120, g);
+                ctx.strokeStyle = '#3A2A1A'; ctx.lineWidth = 2;
+                ctx.strokeRect(halfW - 60, cy - g, 120, g);
             }
-            let sS = i === 0 ? cy + 250 : cy, sL = i === (nC - 1) ? cL - 250 : (i === 0 ? cL - 250 : cL);
-            ctx.fillStyle = '#0284c7'; ctx.fillRect(15, sS, 170, sL); ctx.fillStyle = '#fff'; ctx.fillRect(25, sS, 150, sL);
-            ctx.fillStyle = '#020617'; for(let wy = sS + 30; wy < sS + sL - 30; wy += 60) { ctx.fillRect(15, wy, 5, 40); ctx.fillRect(180, wy, 5, 40); }
+            
+            if(i === 0) {
+                // === NOSE CAR (bullet nose) ===
+                // Aerodynamic nose cone - warm white with blue stripe
+                ctx.fillStyle = '#F8F0E8';
+                ctx.beginPath();
+                ctx.moveTo(halfW, cy);
+                ctx.quadraticCurveTo(halfW + 10, cy + 120, halfW + halfW - 10, cy + 200);
+                ctx.lineTo(halfW + halfW - 10, cy + cL);
+                ctx.lineTo(halfW - halfW + 10, cy + cL);
+                ctx.lineTo(halfW - halfW + 10, cy + 200);
+                ctx.quadraticCurveTo(halfW - 10, cy + 120, halfW, cy);
+                ctx.closePath(); ctx.fill();
+                // Bold outline
+                ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.stroke();
+                
+                // Blue racing stripe down center
+                ctx.fillStyle = '#2E8BC0';
+                ctx.beginPath();
+                ctx.moveTo(halfW, cy + 20);
+                ctx.quadraticCurveTo(halfW + 4, cy + 120, halfW + 15, cy + 200);
+                ctx.lineTo(halfW + 15, cy + cL);
+                ctx.lineTo(halfW - 15, cy + cL);
+                ctx.lineTo(halfW - 15, cy + 200);
+                ctx.quadraticCurveTo(halfW - 4, cy + 120, halfW, cy + 20);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = '#1A6A90'; ctx.lineWidth = 2; ctx.stroke();
+                
+                // Windshield - dark warm tint
+                ctx.fillStyle = '#1A2030';
+                ctx.beginPath();
+                ctx.moveTo(halfW, cy + 50);
+                ctx.quadraticCurveTo(halfW + 8, cy + 100, halfW + 30, cy + 150);
+                ctx.lineTo(halfW - 30, cy + 150);
+                ctx.quadraticCurveTo(halfW - 8, cy + 100, halfW, cy + 50);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = '#F0C040'; ctx.lineWidth = 3; ctx.stroke();
+                
+                // Warm yellow accent line at nose tip
+                ctx.strokeStyle = '#F0C040'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(halfW - 6, cy + 30); ctx.lineTo(halfW + 6, cy + 30); ctx.stroke();
+                
+                // Side windows - warm tone
+                for(let wy = cy + 220; wy < cy + cL - 40; wy += 55) {
+                    ctx.fillStyle = '#3A4A5A';
+                    // Left window
+                    ctx.beginPath(); ctx.roundRect(halfW - halfW + 16, wy, 12, 35, 4); ctx.fill();
+                    ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 2; ctx.stroke();
+                    // Right window
+                    ctx.beginPath(); ctx.roundRect(halfW + halfW - 28, wy, 12, 35, 4); ctx.fill();
+                    ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 2; ctx.stroke();
+                }
+                
+                // Coral/salmon accent stripe (One Piece Egghead)
+                ctx.strokeStyle = '#F08070'; ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(halfW - halfW + 14, cy + 200);
+                ctx.lineTo(halfW - halfW + 14, cy + cL);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(halfW + halfW - 14, cy + 200);
+                ctx.lineTo(halfW + halfW - 14, cy + cL);
+                ctx.stroke();
+                
+            } else if(i === nC - 1) {
+                // === TAIL CAR ===
+                ctx.fillStyle = '#F8F0E8';
+                ctx.beginPath();
+                ctx.moveTo(halfW - halfW + 10, cy);
+                ctx.lineTo(halfW + halfW - 10, cy);
+                ctx.lineTo(halfW + halfW - 10, cy + cL - 150);
+                ctx.quadraticCurveTo(halfW + 10, cy + cL - 50, halfW, cy + cL);
+                ctx.quadraticCurveTo(halfW - 10, cy + cL - 50, halfW - halfW + 10, cy + cL - 150);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.stroke();
+                
+                // Blue stripe
+                ctx.fillStyle = '#2E8BC0';
+                ctx.fillRect(halfW - 15, cy, 30, cL - 180);
+                ctx.strokeStyle = '#1A6A90'; ctx.lineWidth = 2;
+                ctx.strokeRect(halfW - 15, cy, 30, cL - 180);
+                
+                // Side windows
+                for(let wy = cy + 30; wy < cy + cL - 180; wy += 55) {
+                    ctx.fillStyle = '#3A4A5A';
+                    ctx.beginPath(); ctx.roundRect(halfW - halfW + 16, wy, 12, 35, 4); ctx.fill();
+                    ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.beginPath(); ctx.roundRect(halfW + halfW - 28, wy, 12, 35, 4); ctx.fill();
+                    ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 2; ctx.stroke();
+                }
+                
+                // Tail light
+                ctx.fillStyle = '#E04040';
+                ctx.beginPath(); ctx.roundRect(halfW - 10, cy + cL - 60, 20, 8, 3); ctx.fill();
+                ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 2; ctx.stroke();
+                
+                // Coral accent stripes
+                ctx.strokeStyle = '#F08070'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(halfW - halfW + 14, cy); ctx.lineTo(halfW - halfW + 14, cy + cL - 150); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(halfW + halfW - 14, cy); ctx.lineTo(halfW + halfW - 14, cy + cL - 150); ctx.stroke();
+                
+            } else {
+                // === MIDDLE CARS ===
+                ctx.fillStyle = '#F8F0E8';
+                ctx.beginPath(); ctx.roundRect(halfW - halfW + 10, cy, bodyW - 20, cL, 8); ctx.fill();
+                ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.stroke();
+                
+                // Blue center stripe
+                ctx.fillStyle = '#2E8BC0';
+                ctx.fillRect(halfW - 15, cy + 4, 30, cL - 8);
+                ctx.strokeStyle = '#1A6A90'; ctx.lineWidth = 2;
+                ctx.strokeRect(halfW - 15, cy + 4, 30, cL - 8);
+                
+                // Side windows
+                for(let wy = cy + 30; wy < cy + cL - 30; wy += 55) {
+                    ctx.fillStyle = '#3A4A5A';
+                    ctx.beginPath(); ctx.roundRect(halfW - halfW + 16, wy, 12, 35, 4); ctx.fill();
+                    ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.beginPath(); ctx.roundRect(halfW + halfW - 28, wy, 12, 35, 4); ctx.fill();
+                    ctx.strokeStyle = '#2A2A3A'; ctx.lineWidth = 2; ctx.stroke();
+                }
+                
+                // Coral accent stripes
+                ctx.strokeStyle = '#F08070'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(halfW - halfW + 14, cy); ctx.lineTo(halfW - halfW + 14, cy + cL); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(halfW + halfW - 14, cy); ctx.lineTo(halfW + halfW - 14, cy + cL); ctx.stroke();
+                
+                // Roof detail - AC units (simple rectangles)
+                if(i % 2 === 0) {
+                    ctx.fillStyle = '#D0C8C0';
+                    ctx.beginPath(); ctx.roundRect(halfW - 25, cy + 100, 50, 30, 4); ctx.fill();
+                    ctx.strokeStyle = '#A09888'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.beginPath(); ctx.roundRect(halfW - 25, cy + 350, 50, 30, 4); ctx.fill();
+                    ctx.strokeStyle = '#A09888'; ctx.lineWidth = 2; ctx.stroke();
+                }
+            }
         }
         ctx.restore();
     };
@@ -2678,10 +2813,16 @@ function drawGrid() {
     
     if(gameState.train && (gameState.train.phase === 'warning' || gameState.train.phase === 'active')) {
         if((Date.now() % 500 < 250) || gameState.train.phase === 'active') {
-            ctx.fillStyle = 'rgba(239,68,68,0.15)'; ctx.fillRect(1350, 0, 200, H); ctx.fillRect(1650, 0, 200, H);
-            ctx.fillStyle = '#ef4444'; ctx.shadowBlur = 900; ctx.shadowColor = '#ef4444';
+            ctx.fillStyle = 'rgba(239,68,68,0.12)'; ctx.fillRect(1350, 0, 200, H); ctx.fillRect(1650, 0, 200, H);
+            // Simple flat warning markers - no electricity/lightning, One Piece style
+            ctx.fillStyle = '#ef4444';
             for(let y = 0; y < H; y += 100) { ctx.fillRect(1340, y, 10, 50); ctx.fillRect(1540, y, 10, 50); ctx.fillRect(1640, y, 10, 50); ctx.fillRect(1840, y, 10, 50); }
-            ctx.shadowBlur = 0;
+            // Warm yellow chevron warning markers
+            ctx.fillStyle = '#F0C040';
+            ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center';
+            for(let y = 20; y < H; y += 200) {
+                ctx.fillText('⚠', 1450, y); ctx.fillText('⚠', 1750, y);
+            }
         }
     }
     if(gameState.train && gameState.train.phase === 'active') drawTrains();
@@ -3015,45 +3156,74 @@ function drawCorsairCannons() {
         if(cn.x < cam.x - 100 || cn.x > cam.x + vW + 100 || cn.y < cam.y - 100 || cn.y > cam.y + vH + 100) return;
         ctx.save(); ctx.translate(cn.x, cn.y);
         let trimC = cn.trimColor || '#dc2626';
-        // Reference-style cannon: pot/bucket shaped body
-        // Wooden carriage base
-        ctx.fillStyle = '#5c3a21';
-        ctx.beginPath(); ctx.moveTo(-16, 8); ctx.lineTo(16, 8); ctx.lineTo(14, 16); ctx.lineTo(-14, 16); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = '#3d2610'; ctx.lineWidth = 1; ctx.stroke();
-        // Main cannon body - tapered cylinder (like the reference pot shape)
-        let bodyGrad = ctx.createLinearGradient(-12, -14, 12, 14);
-        bodyGrad.addColorStop(0, '#8a8a8a'); bodyGrad.addColorStop(0.3, '#b0b0b0'); bodyGrad.addColorStop(0.5, '#c8c8c8'); bodyGrad.addColorStop(0.7, '#a0a0a0'); bodyGrad.addColorStop(1, '#707070');
-        ctx.fillStyle = bodyGrad;
-        ctx.beginPath(); ctx.moveTo(-10, -16); ctx.quadraticCurveTo(-14, -8, -13, 8); ctx.lineTo(13, 8); ctx.quadraticCurveTo(14, -8, 10, -16); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5; ctx.stroke();
-        // Trim bands
-        ctx.strokeStyle = trimC; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.moveTo(-12, -10); ctx.lineTo(12, -10); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-13, 2); ctx.lineTo(13, 2); ctx.stroke();
-        // Barrel opening (top)
-        ctx.fillStyle = '#222'; ctx.beginPath(); ctx.ellipse(0, -16, 8, 3, 0, 0, 6.28); ctx.fill();
-        ctx.strokeStyle = '#999'; ctx.lineWidth = 1; ctx.stroke();
-        // Fuse/wick on top
-        ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 1.5; ctx.beginPath();
-        ctx.moveTo(0, -18); ctx.quadraticCurveTo(3, -24, -1, -28); ctx.stroke();
-        // Fuse spark
-        let sparkA = 0.5 + Math.sin(Date.now()/80)*0.5;
-        ctx.fillStyle = `rgba(255,160,0,${sparkA})`; ctx.beginPath(); ctx.arc(-1, -28, 3, 0, 6.28); ctx.fill();
-        ctx.fillStyle = `rgba(255,255,100,${sparkA*0.8})`; ctx.beginPath(); ctx.arc(-1, -28, 1.5, 0, 6.28); ctx.fill();
-        // Rivets/bolts
-        ctx.fillStyle = '#777';
-        [-7, 0, 7].forEach(rx => { ctx.beginPath(); ctx.arc(rx, -4, 1.5, 0, 6.28); ctx.fill(); });
-        // Wheels
-        ctx.fillStyle = '#3f3f46'; ctx.strokeStyle = '#71717a'; ctx.lineWidth = 1.5;
-        [-12, 12].forEach(wx => {
-            ctx.beginPath(); ctx.arc(wx, 14, 6, 0, 6.28); ctx.fill(); ctx.stroke();
-            // Wheel spokes
-            ctx.strokeStyle = '#555'; ctx.lineWidth = 0.8;
-            for(let sp=0;sp<4;sp++){ let sa=sp*0.785; ctx.beginPath(); ctx.moveTo(wx+Math.cos(sa)*2, 14+Math.sin(sa)*2); ctx.lineTo(wx+Math.cos(sa)*5, 14+Math.sin(sa)*5); ctx.stroke(); }
-            ctx.strokeStyle = '#71717a'; ctx.lineWidth = 1.5;
-            // Wheel hub
-            ctx.fillStyle = '#888'; ctx.beginPath(); ctx.arc(wx, 14, 2, 0, 6.28); ctx.fill();
+        // ONE PIECE EGGHEAD STYLE - flat, bold, bright, no shadows/gradients, soft outlines
+        // True top-down 2D view of a pot/bucket cannon
+        
+        // Wooden carriage base - flat warm brown
+        ctx.fillStyle = '#D4915C';
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(-18, 6); ctx.lineTo(18, 6); ctx.lineTo(15, 16); ctx.lineTo(-15, 16); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#8B5E3C'; ctx.lineWidth = 2.5; ctx.stroke();
+        
+        // Main cannon body - flat steel blue-gray, pot/bucket shape
+        ctx.fillStyle = '#A8B8C8';
+        ctx.beginPath(); ctx.moveTo(-11, -18); ctx.quadraticCurveTo(-15, -6, -14, 8); ctx.lineTo(14, 8); ctx.quadraticCurveTo(15, -6, 11, -18); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#5A6A7A'; ctx.lineWidth = 3; ctx.stroke();
+        
+        // Trim bands - bright colored rings
+        ctx.strokeStyle = trimC; ctx.lineWidth = 3.5;
+        ctx.beginPath(); ctx.moveTo(-13, -10); ctx.lineTo(13, -10); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-14, 2); ctx.lineTo(14, 2); ctx.stroke();
+        
+        // Coral/salmon accent band (One Piece Egghead style)
+        ctx.strokeStyle = '#F08070'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(-12, -4); ctx.lineTo(12, -4); ctx.stroke();
+        
+        // Barrel opening (top) - dark circle
+        ctx.fillStyle = '#3A3A4A';
+        ctx.beginPath(); ctx.ellipse(0, -18, 9, 4, 0, 0, 6.28); ctx.fill();
+        ctx.strokeStyle = '#5A6A7A'; ctx.lineWidth = 2; ctx.stroke();
+        
+        // Fuse/wick - candy-stripe style (One Piece)
+        ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+        ctx.strokeStyle = '#F0A050';
+        ctx.beginPath(); ctx.moveTo(0, -20); ctx.quadraticCurveTo(4, -26, -1, -32); ctx.stroke();
+        ctx.strokeStyle = '#E06040';
+        ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.moveTo(0, -20); ctx.quadraticCurveTo(4, -26, -1, -32); ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Fuse spark - bright and cheerful
+        let sparkA = 0.6 + Math.sin(Date.now()/80)*0.4;
+        ctx.fillStyle = `rgba(255,200,60,${sparkA})`; ctx.beginPath(); ctx.arc(-1, -32, 4, 0, 6.28); ctx.fill();
+        ctx.fillStyle = `rgba(255,255,150,${sparkA})`; ctx.beginPath(); ctx.arc(-1, -32, 2, 0, 6.28); ctx.fill();
+        
+        // Rivets/bolts - bright round dots
+        ctx.fillStyle = '#7090A0';
+        [-7, 0, 7].forEach(rx => { ctx.beginPath(); ctx.arc(rx, -4, 2, 0, 6.28); ctx.fill(); ctx.strokeStyle='#5A6A7A'; ctx.lineWidth=1; ctx.stroke(); });
+        
+        // Wheels - simple bold circles (One Piece style)
+        ctx.fillStyle = '#606878';
+        [-14, 14].forEach(wx => {
+            ctx.beginPath(); ctx.arc(wx, 14, 7, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = '#404858'; ctx.lineWidth = 2.5; ctx.stroke();
+            // Wheel hub - bright accent
+            ctx.fillStyle = '#A8B8C8';
+            ctx.beginPath(); ctx.arc(wx, 14, 3, 0, 6.28); ctx.fill();
+            // Simple cross spokes
+            ctx.strokeStyle = '#505868'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(wx-5, 14); ctx.lineTo(wx+5, 14); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(wx, 14-5); ctx.lineTo(wx, 14+5); ctx.stroke();
+            ctx.fillStyle = '#606878';
         });
+        
+        // Rainbow shimmer accent on body (subtle Egghead reference)
+        let hue = (Date.now()/20 + cn.x) % 360;
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = `hsl(${hue},70%,65%)`;
+        ctx.beginPath(); ctx.moveTo(-8, -14); ctx.quadraticCurveTo(-10, -2, -9, 6); ctx.lineTo(-4, 6); ctx.quadraticCurveTo(-5, -2, -4, -14); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = 1;
+        
         ctx.restore();
     });
 }
@@ -3109,22 +3279,60 @@ function drawPlayers() {
         ctx.save(); ctx.translate(e.x, e.y);
         if(o.isJuggernaut) ctx.scale(1.8, 1.8);
         
-        // Exaggerated smear frame: anime-style stretch along movement direction
+        // === CEL-SHADED TOON OUTLINE (drawn first as thick outline behind everything) ===
+        if(!iC) {
+            let heroR = o.heroClass === 'corsair' && o.corsairStance === 'cannon' ? 22 : 18;
+            ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            ctx.strokeStyle = '#1A1A2A';
+            ctx.lineWidth = 7;
+            ctx.beginPath(); ctx.arc(0, 0, heroR, 0, 6.28); ctx.stroke();
+        }
+        
+        // Exaggerated smear frame: anime-style stretch/distortion along movement
         if(isSmearing && speed > 1) {
             let moveAngle = Math.atan2(velY, velX);
-            let smearFactor = Math.min(speed / 1200, 3.5);
-            let squashFactor = 1 / (1 + (smearFactor - 1) * 0.5);
+            // More dramatic smear - stretches significantly at high speeds
+            let smearFactor = Math.min(speed / 600, 5.0);
+            let squashFactor = 10 / (10 + (smearFactor - 1) * 0.6);
             ctx.rotate(moveAngle);
-            ctx.scale(1 + (smearFactor - 1) * 0.7, squashFactor);
+            ctx.scale(100 + (smearFactor - 1) * 0.85, squashFactor);
             ctx.rotate(-moveAngle);
-            // Draw motion ghost trail behind
-            if(speed > 8) {
-                let ghostAlpha = Math.min(0.3, speed / 80);
-                ctx.save(); ctx.globalAlpha = ghostAlpha;
-                let gx = -velX * 0.6, gy = -velY * 0.6;
-                ctx.fillStyle = o.color || '#fff';
-                ctx.beginPath(); ctx.arc(gx, gy, 14, 0, 6.28); ctx.fill();
-                if(speed > 14) { ctx.beginPath(); ctx.arc(gx*1.6, gy*1.6, 10, 0, 6.28); ctx.fill(); }
+            
+            // Draw elongated motion ghost trail (smear echo)
+            if(speed > 6) {
+                let ghostAlpha = Math.min(0.45, speed / 50);
+                let ghostColor = o.color || '#fff';
+                // Multiple ghost echoes for smoother smear
+                for(let gi = 1; gi <= 3; gi++) {
+                    let gFade = ghostAlpha * (1 - gi * 0.3);
+                    if(gFade <= 0) break;
+                    ctx.save(); ctx.globalAlpha = gFade;
+                    let gx = -velX * 0.4 * gi, gy = -velY * 0.4 * gi;
+                    // Elongated ellipse ghost instead of circle
+                    ctx.translate(gx, gy);
+                    ctx.rotate(moveAngle);
+                    ctx.scale(1.4, 0.7);
+                    ctx.fillStyle = ghostColor;
+                    ctx.beginPath(); ctx.arc(0, 0, 14, 0, 6.28); ctx.fill();
+                    ctx.restore();
+                }
+            }
+            
+            // Speed lines emanating from character (manga-style)
+            if(speed > 1) {
+                let lineAlpha = Math.min(0.6, speed / 40);
+                ctx.save(); ctx.globalAlpha = lineAlpha;
+                ctx.strokeStyle = '#FFF'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                let backAngle = Math.atan2(-velY, -velX);
+                for(let sl = 0; sl < 5; sl++) {
+                    let spreadAngle = backAngle + (sl - 2) * 0.25;
+                    let startDist = 20 + sl * 3;
+                    let lineLen = 15 + speed * 0.3 + sl * 5;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(spreadAngle) * startDist, Math.sin(spreadAngle) * startDist);
+                    ctx.lineTo(Math.cos(spreadAngle) * (startDist + lineLen), Math.sin(spreadAngle) * (startDist + lineLen));
+                    ctx.stroke();
+                }
                 ctx.restore();
             }
         }
@@ -3214,6 +3422,7 @@ function drawPlayers() {
                 else if(w==='kendo') { ctx.fillStyle=isImpactFlash?'#000':'#ef4444'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-8,6); ctx.lineTo(-5,0); ctx.lineTo(-8,-6); ctx.fill(); }
                 else if(w==='glitch') { ctx.fillStyle=isImpactFlash?'#000':'#22c55e'; ctx.beginPath(); ctx.arc(0,0,10,0,6.28); ctx.fill(); }
                 else if(w==='jubilee') { ctx.fillStyle=isImpactFlash?'#000':'#ec4899'; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(5,0); ctx.lineTo(0,10); ctx.lineTo(-5,0); ctx.fill(); }
+                else if(w==='corsair') { ctx.fillStyle=isImpactFlash?'#000':'#A8B8C8'; ctx.fillRect(-6,-4,12,8); ctx.strokeStyle=isImpactFlash?'#000':'#5A6A7A'; ctx.lineWidth=1.5; ctx.strokeRect(-6,-4,12,8); }
                 ctx.restore();
             });
         } else if(!iC && o.heroClass === 'thorfinn') {
@@ -3226,126 +3435,137 @@ function drawPlayers() {
             if(o.daggers >= 2) { ctx.save(); ctx.translate(12, 12); ctx.rotate(-0.4 + sw); drawDag(ctx); ctx.restore(); }
         } else if(!iC && o.heroClass === 'corsair') {
             let trimC = o.customization?.corsairColors?.trim || '#dc2626';
+            // === CORSAIR HAT (2.5D, drawn behind/below body) ===
+            // One Piece Egghead style pirate tricorn hat
+            let hatAngle = o.angle || 0;
+            ctx.save();
+            // Hat brim - flat dark oval behind head
+            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
+            ctx.beginPath(); ctx.ellipse(0, -2, 28, 14, 0, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 2.5; ctx.stroke();
+            // Hat brim trim
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#D4A04A'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.ellipse(0, -2, 28, 14, 0, 0, 6.28); ctx.stroke();
+            // Hat crown - rounded dome on top
+            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
+            ctx.beginPath(); ctx.ellipse(0, -8, 16, 12, 0, Math.PI, 0); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 2; ctx.stroke();
+            // Hat band - bright trim color
+            ctx.fillStyle = isImpactFlash ? '#000' : trimC;
+            ctx.fillRect(-16, -10, 32, 4);
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 1;
+            ctx.strokeRect(-16, -10, 32, 4);
+            // Skull emblem on hat - small and cute (One Piece style)
+            ctx.fillStyle = isImpactFlash ? '#000' : '#FFFFFF';
+            ctx.beginPath(); ctx.arc(0, -14, 5, 0, 6.28); ctx.fill();
+            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
+            ctx.beginPath(); ctx.arc(-2, -15, 1.5, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(2, -15, 1.5, 0, 6.28); ctx.fill();
+            // Crossbones
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#FFFFFF'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(-6, -17); ctx.lineTo(6, -11); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(6, -17); ctx.lineTo(-6, -11); ctx.stroke();
+            ctx.restore();
+            
             if(o.corsairStance === 'cannon') {
-                // Cannon mode: brown body with high-detail mounted cannon
-                ctx.fillStyle = isImpactFlash ? '#000' : '#8B4513';
+                // === CANNON MODE (One Piece Egghead Style) ===
+                // Body - warm brown, flat fill
+                ctx.fillStyle = isImpactFlash ? '#000' : '#C47A4A';
                 ctx.beginPath(); ctx.arc(0, 0, 18, 0, 6.28); ctx.fill();
-                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 2.5; ctx.stroke();
-                // Belt/strap
-                ctx.strokeStyle = isImpactFlash ? '#000' : '#5c3a21'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.moveTo(-14, -6); ctx.lineTo(14, 6); ctx.stroke();
-                // Cannon barrel - detailed silver metal
-                if(!isImpactFlash) {
-                    let barrelGrad = ctx.createLinearGradient(8, -7, 8, 7);
-                    barrelGrad.addColorStop(0, '#a0a0a0'); barrelGrad.addColorStop(0.3, '#d0d0d0'); barrelGrad.addColorStop(0.5, '#e0e0e0'); barrelGrad.addColorStop(0.7, '#c0c0c0'); barrelGrad.addColorStop(1, '#909090');
-                    ctx.fillStyle = barrelGrad;
-                } else ctx.fillStyle = '#000';
-                ctx.beginPath(); ctx.moveTo(10, -7); ctx.lineTo(38, -5); ctx.lineTo(40, -3); ctx.lineTo(40, 3); ctx.lineTo(38, 5); ctx.lineTo(10, 7); ctx.closePath(); ctx.fill();
-                // Barrel rings
-                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 1.5;
-                [18, 28, 36].forEach(rx => { ctx.beginPath(); ctx.moveTo(rx, -6); ctx.lineTo(rx, 6); ctx.stroke(); });
-                // Muzzle opening
-                ctx.fillStyle = isImpactFlash ? '#000' : '#222';
-                ctx.beginPath(); ctx.ellipse(40, 0, 3, 4, 0, 0, 6.28); ctx.fill();
-                // Cannon base (rounded pot shape)
-                if(!isImpactFlash) {
-                    let baseGrad = ctx.createRadialGradient(8, 0, 2, 8, 0, 12);
-                    baseGrad.addColorStop(0, '#c0c0c0'); baseGrad.addColorStop(1, '#707070');
-                    ctx.fillStyle = baseGrad;
-                } else ctx.fillStyle = '#000';
-                ctx.beginPath(); ctx.arc(8, 0, 11, 0, 6.28); ctx.fill();
-                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.arc(8, 0, 12, 0, 6.28); ctx.stroke();
+                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 3; ctx.stroke();
+                // Vest detail - simple V
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#A06030'; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(-6, -14); ctx.lineTo(0, -8); ctx.lineTo(6, -14); ctx.stroke();
+                // Belt strap
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#8B5E3C'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(-14, -4); ctx.lineTo(14, 4); ctx.stroke();
+                
+                // === CANNON (in front, offset forward) - One Piece Egghead flat style ===
+                ctx.save(); ctx.translate(28, 0);
+                // Cannon body - flat steel
+                ctx.fillStyle = isImpactFlash ? '#000' : '#A8B8C8';
+                ctx.beginPath(); ctx.moveTo(-6, -8); ctx.lineTo(18, -6); ctx.lineTo(20, -4); ctx.lineTo(20, 4); ctx.lineTo(18, 6); ctx.lineTo(-6, 8); ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#5A6A7A'; ctx.lineWidth = 2.5; ctx.stroke();
+                // Barrel rings - bright trim
+                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 2;
+                [4, 12].forEach(rx => { ctx.beginPath(); ctx.moveTo(rx, -7); ctx.lineTo(rx, 7); ctx.stroke(); });
+                // Coral accent ring
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#F08070'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(8, -7); ctx.lineTo(8, 7); ctx.stroke();
+                // Muzzle
+                ctx.fillStyle = isImpactFlash ? '#000' : '#3A3A4A';
+                ctx.beginPath(); ctx.ellipse(20, 0, 3, 5, 0, 0, 6.28); ctx.fill();
+                // Cannon base - flat circle
+                ctx.fillStyle = isImpactFlash ? '#000' : '#8898A8';
+                ctx.beginPath(); ctx.arc(-4, 0, 10, 0, 6.28); ctx.fill();
+                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(-4, 0, 11, 0, 6.28); ctx.stroke();
+                ctx.restore();
+                
                 // Wheels
-                ctx.fillStyle = isImpactFlash ? '#000' : '#3f3f46';
+                ctx.fillStyle = isImpactFlash ? '#000' : '#606878';
                 [-12, 12].forEach(wx => {
-                    ctx.beginPath(); ctx.arc(wx, 17, 5, 0, 6.28); ctx.fill();
-                    ctx.strokeStyle = isImpactFlash ? '#000' : '#888'; ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.arc(wx, 17, 5, 0, 6.28); ctx.stroke();
-                    ctx.fillStyle = isImpactFlash ? '#000' : '#999';
-                    ctx.beginPath(); ctx.arc(wx, 17, 1.5, 0, 6.28); ctx.fill();
+                    ctx.beginPath(); ctx.arc(wx, 18, 6, 0, 6.28); ctx.fill();
+                    ctx.strokeStyle = isImpactFlash ? '#000' : '#404858'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.fillStyle = isImpactFlash ? '#000' : '#A8B8C8';
+                    ctx.beginPath(); ctx.arc(wx, 18, 2.5, 0, 6.28); ctx.fill();
+                    ctx.fillStyle = isImpactFlash ? '#000' : '#606878';
                 });
             } else {
-                // On-foot mode: detailed brown body with ultra-realistic weapons
-                ctx.fillStyle = isImpactFlash ? '#000' : '#8B4513';
+                // === ON-FOOT MODE (One Piece Egghead Style) ===
+                ctx.fillStyle = isImpactFlash ? '#000' : '#C47A4A';
                 ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
-                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 2; ctx.stroke();
-                // Vest detail
-                ctx.strokeStyle = isImpactFlash ? '#000' : '#5c3a21'; ctx.lineWidth = 1.5;
+                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 2.5; ctx.stroke();
+                // Vest V
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#A06030'; ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.moveTo(-4, -14); ctx.lineTo(0, -10); ctx.lineTo(4, -14); ctx.stroke();
                 let sw = o.slashAnimTimer > 0 ? (1 - (o.slashAnimTimer / 0.3)) * 2 : 0;
-                // === CUTLASS (hyper detailed) ===
+                // === CUTLASS (flat, bold, One Piece style) ===
                 ctx.save(); ctx.translate(14, -8); ctx.rotate(-0.6 + sw);
-                // Guard (cross-guard with knuckle bow)
-                ctx.fillStyle = isImpactFlash ? '#000' : '#c0c0c0';
-                ctx.beginPath(); ctx.moveTo(-2, -6); ctx.quadraticCurveTo(2, -8, 4, -5); ctx.lineTo(4, 5); ctx.quadraticCurveTo(2, 8, -2, 6); ctx.closePath(); ctx.fill();
-                // Handle wrapped in leather
-                ctx.fillStyle = isImpactFlash ? '#000' : '#5c3a21';
+                // Guard
+                ctx.fillStyle = isImpactFlash ? '#000' : '#D4A04A';
+                ctx.beginPath(); ctx.moveTo(-2, -5); ctx.quadraticCurveTo(2, -7, 4, -4); ctx.lineTo(4, 4); ctx.quadraticCurveTo(2, 7, -2, 5); ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#A07830'; ctx.lineWidth = 1.5; ctx.stroke();
+                // Handle
+                ctx.fillStyle = isImpactFlash ? '#000' : '#8B5E3C';
                 ctx.fillRect(-8, -2.5, 8, 5);
-                // Handle wrapping lines
-                ctx.strokeStyle = isImpactFlash ? '#000' : '#3d2610'; ctx.lineWidth = 0.5;
-                for(let w=-6;w<=-2;w+=2){ ctx.beginPath(); ctx.moveTo(w, -2.5); ctx.lineTo(w+1.5, 2.5); ctx.stroke(); }
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#6A4020'; ctx.lineWidth = 1.5; ctx.strokeRect(-8, -2.5, 8, 5);
                 // Pommel
-                ctx.fillStyle = isImpactFlash ? '#000' : '#b0b0b0';
+                ctx.fillStyle = isImpactFlash ? '#000' : '#D4A04A';
                 ctx.beginPath(); ctx.arc(-9, 0, 3, 0, 6.28); ctx.fill();
-                // Blade - curved elegant cutlass
-                if(!isImpactFlash) {
-                    let bladeGrad = ctx.createLinearGradient(4, -3, 38, 0);
-                    bladeGrad.addColorStop(0, '#e8e8e8'); bladeGrad.addColorStop(0.4, '#f5f5f5'); bladeGrad.addColorStop(0.6, '#ddd'); bladeGrad.addColorStop(1, '#ccc');
-                    ctx.fillStyle = bladeGrad;
-                } else ctx.fillStyle = '#000';
+                // Blade - flat bright steel
+                ctx.fillStyle = isImpactFlash ? '#000' : '#E8E8F0';
                 ctx.beginPath(); ctx.moveTo(4, -2.5); ctx.quadraticCurveTo(18, -5, 35, -2);
                 ctx.lineTo(38, 0); ctx.lineTo(35, 1); ctx.quadraticCurveTo(18, 3, 4, 2.5); ctx.closePath(); ctx.fill();
-                // Blade edge highlight
-                ctx.strokeStyle = isImpactFlash ? '#000' : 'rgba(255,255,255,0.6)'; ctx.lineWidth = 0.5;
-                ctx.beginPath(); ctx.moveTo(6, -2); ctx.quadraticCurveTo(18, -4.5, 36, -1.5); ctx.stroke();
-                // Blade tip
-                ctx.fillStyle = isImpactFlash ? '#000' : '#e0e0e0';
-                ctx.beginPath(); ctx.moveTo(35, -2); ctx.lineTo(40, -0.5); ctx.lineTo(38, 0); ctx.lineTo(35, 1); ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#8898A8'; ctx.lineWidth = 1.5; ctx.stroke();
                 ctx.restore();
-                // === FLINTLOCK PISTOL (hyper detailed) ===
+                // === FLINTLOCK (flat, bold, One Piece style) ===
                 ctx.save(); ctx.translate(14, 8);
                 let rc = o.slashAnimTimer > 0 && o.corsairComboStep === 2 ? (o.slashAnimTimer / 0.15) * 5 : 0;
                 ctx.translate(-rc, 0);
-                // Stock (wood)
-                if(!isImpactFlash) {
-                    let woodGrad = ctx.createLinearGradient(0, -2, 0, 8);
-                    woodGrad.addColorStop(0, '#7a4a2a'); woodGrad.addColorStop(0.5, '#5c3a21'); woodGrad.addColorStop(1, '#4a2e18');
-                    ctx.fillStyle = woodGrad;
-                } else ctx.fillStyle = '#000';
+                // Stock
+                ctx.fillStyle = isImpactFlash ? '#000' : '#A06830';
                 ctx.beginPath(); ctx.moveTo(-2, -1); ctx.lineTo(2, -2); ctx.lineTo(2, 2); ctx.lineTo(0, 8); ctx.lineTo(-3, 8); ctx.lineTo(-2, 2); ctx.closePath(); ctx.fill();
-                // Wood grain lines
-                ctx.strokeStyle = isImpactFlash ? '#000' : '#3d2610'; ctx.lineWidth = 0.3;
-                ctx.beginPath(); ctx.moveTo(-1, 0); ctx.lineTo(-2, 7); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(1, 0); ctx.lineTo(0, 7); ctx.stroke();
-                // Barrel (metal)
-                if(!isImpactFlash) {
-                    let metalGrad = ctx.createLinearGradient(2, -4, 2, 1);
-                    metalGrad.addColorStop(0, '#b0b0b0'); metalGrad.addColorStop(0.4, '#d0d0d0'); metalGrad.addColorStop(1, '#999');
-                    ctx.fillStyle = metalGrad;
-                } else ctx.fillStyle = '#000';
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#704020'; ctx.lineWidth = 1.5; ctx.stroke();
+                // Barrel
+                ctx.fillStyle = isImpactFlash ? '#000' : '#A8B8C8';
                 ctx.fillRect(2, -4.5, 22, 5);
-                // Barrel details
-                ctx.strokeStyle = isImpactFlash ? '#000' : '#777'; ctx.lineWidth = 0.5;
-                ctx.strokeRect(2, -4.5, 22, 5);
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#5A6A7A'; ctx.lineWidth = 1.5; ctx.strokeRect(2, -4.5, 22, 5);
                 // Barrel ring
-                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 1;
+                ctx.strokeStyle = isImpactFlash ? '#000' : trimC; ctx.lineWidth = 1.5;
                 ctx.beginPath(); ctx.moveTo(18, -5); ctx.lineTo(18, 1); ctx.stroke();
                 // Muzzle
-                ctx.fillStyle = isImpactFlash ? '#000' : '#e0e0e0';
+                ctx.fillStyle = isImpactFlash ? '#000' : '#D8D8E0';
                 ctx.fillRect(23, -4, 4, 4);
-                ctx.fillStyle = isImpactFlash ? '#000' : '#222';
+                ctx.fillStyle = isImpactFlash ? '#000' : '#3A3A4A';
                 ctx.fillRect(26, -3.5, 2, 3);
-                // Flintlock mechanism
-                ctx.fillStyle = isImpactFlash ? '#000' : '#c0c0c0';
+                // Flintlock hammer
+                ctx.fillStyle = isImpactFlash ? '#000' : '#D4A04A';
                 ctx.beginPath(); ctx.moveTo(6, -5); ctx.lineTo(10, -7); ctx.lineTo(8, -5); ctx.closePath(); ctx.fill();
-                // Trigger guard
-                ctx.strokeStyle = isImpactFlash ? '#000' : '#aaa'; ctx.lineWidth = 0.8;
-                ctx.beginPath(); ctx.moveTo(4, 1); ctx.quadraticCurveTo(6, 4, 8, 1); ctx.stroke();
                 ctx.restore();
-                // Parry visual - enhanced with blade glow
+                // Parry visual
                 if(o.corsairParryActive) {
-                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.globalAlpha = 0.5;
+                    ctx.strokeStyle = '#FFF'; ctx.lineWidth = 4; ctx.globalAlpha = 0.5;
                     ctx.beginPath(); ctx.arc(0, 0, 28, -1.0, 1.0); ctx.stroke();
                     ctx.strokeStyle = trimC; ctx.lineWidth = 2; ctx.globalAlpha = 0.8;
                     ctx.beginPath(); ctx.arc(0, 0, 28, -1.0, 1.0); ctx.stroke();
@@ -3808,8 +4028,11 @@ if(aeroCtxCopyBtn) {
         if(cId) {
             let sCls = isCl ? 'glitch' : gameState.players[cId].heroClass;
             if(sCls === 'aero') sCls = 'thorfinn'; // can't copy self
-            myPlayer.copycatWeapons.push(sCls);
-            if(myPlayer.copycatWeapons.length > 4) myPlayer.copycatWeapons.shift();
+            // Prevent duplicate - don't stack same hero weapon
+            if(!myPlayer.copycatWeapons.includes(sCls)) {
+                myPlayer.copycatWeapons.push(sCls);
+                if(myPlayer.copycatWeapons.length > 4) myPlayer.copycatWeapons.shift();
+            }
             vfx.push({type:'stealLink', targetId:cId, sourceId:myId, life:0.4, maxLife:0.4});
             sdEv({type:'copycat_steal_vfx', targetId:cId});
         }
@@ -3841,6 +4064,7 @@ function fireAeroCopiedWeapon(w, dM) {
     else if(w==='glitch') sdEv({type:'glitch_shoot', targetX:myPlayer.targetX, targetY:myPlayer.targetY, dmgMult:dM});
     else if(w==='trace') { let dist=Math.hypot(myPlayer.targetX-myPlayer.x, myPlayer.targetY-myPlayer.y); let n1={x:myPlayer.x+Math.cos(myPlayer.angle)*dist*0.33, y:myPlayer.y+Math.sin(myPlayer.angle)*dist*0.33}, n2={x:myPlayer.x+Math.cos(myPlayer.angle)*dist*0.66, y:myPlayer.y+Math.sin(myPlayer.angle)*dist*0.66}, n3={x:myPlayer.x+Math.cos(myPlayer.angle)*dist, y:myPlayer.y+Math.sin(myPlayer.angle)*dist}; sdEv({type:'trace_shoot', nodes:[n1,n2,n3], x:myPlayer.x, y:myPlayer.y, dmgMult:dM}); }
     else if(w==='kendo') sdEv({type:'copycat_kendo_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
+    else if(w==='corsair') sdEv({type:'corsair_cannonball', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
 }
 
 // === GLOBAL CURSOR (Passive) - Draw pixel cursor at Aero's aim position ===
