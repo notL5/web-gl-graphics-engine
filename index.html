@@ -28,7 +28,8 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 .team-btn{flex:1;padding:1vh;}.team-btn.red{background-color:#450a0a;border-color:#991b1b;color:#fca5a5}.team-btn.red.selected{background-color:#991b1b;color:white;box-shadow:0 0 10px #dc2626}
 .team-btn.blue{background-color:#172554;border-color:#1e40af;color:#bfdbfe}.team-btn.blue.selected{background-color:#1e40af;color:white;box-shadow:0 0 10px #2563eb}
 .char-preview-box{flex-grow:1;background:#121212;border:1px solid #3f3f46;border-radius:8px;margin:1.5vh 0;display:flex;justify-content:center;align-items:center;font-style:italic;color:#71717a;min-height:10vh;text-align:center;padding:1vh}
-.class-list-btn{background:#18181b;text-align:left;padding-left:1vw;font-weight:normal;border-color:#3f3f46;padding:1vh;}.class-list-btn.selected{background:#3f3f46;border-color:#a855f7;font-weight:bold}
+.class-list-btn{background:#18181b;text-align:left;padding-left:0.6vw;font-weight:normal;border-color:#3f3f46;padding:0.5vh 0.5vw;font-size:0.8rem;}.class-list-btn.selected{background:#3f3f46;border-color:#a855f7;font-weight:bold}
+.roster-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4vh;width:100%;}
 .color-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1vh;font-size:0.85rem;color:#a1a1aa}.color-row input[type="color"]{width:2vw;min-width:30px;height:2vw;min-height:30px;padding:0;border:none;border-radius:4px;cursor:pointer;background:transparent}
 #game-container{display:none;position:relative;width:95vw;height:85vh;max-width:1400px;max-height:900px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid #27272a;background-color:#000;overflow:hidden;z-index:5}
 #game-container.active{display:block}canvas{display:block;width:100%;height:100%;background:transparent;cursor:crosshair;position:relative;z-index:5}
@@ -127,6 +128,10 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
         <div class="ability-slot" id="ui-corsair-stance"><div class="key">SHIFT</div><div class="name">Stance</div><div class="status" id="status-corsair-stance">Cannon</div></div>
         <div class="ability-slot" id="ui-corsair-parry"><div class="key">E</div><div class="name">Iron Parry</div><div class="status" id="status-corsair-parry">Ready</div><div class="cooldown-overlay" id="cd-corsair-parry"></div></div>
         <div class="ability-slot" id="ui-jubilee-dash"><div class="key">SPACE</div><div class="name">Blast Dash</div><div class="status" id="status-jubilee-dash">Ready</div><div class="cooldown-overlay" id="cd-jubilee-dash"></div></div>
+
+        <div class="ability-slot" id="ui-tim-primary"><div class="key">L-CLICK</div><div class="name" id="name-tim-primary">Core Beam</div><div class="status" id="status-tim-primary">Ready</div><div class="cooldown-overlay" id="cd-tim-primary"></div></div>
+        <div class="ability-slot" id="ui-tim-stance"><div class="key">SHIFT</div><div class="name" id="name-tim-stance">Macro Mode</div><div class="status" id="status-tim-stance">Heavy</div></div>
+        <div class="ability-slot" id="ui-tim-vents"><div class="key">SPACE</div><div class="name">Lateral Vents</div><div class="status" id="status-tim-vents">Ready</div><div class="cooldown-overlay" id="cd-tim-vents"></div></div>
         
 
     </div>
@@ -161,21 +166,21 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                 </div>
                 <button id="btn-start-game" onclick="startGame()" disabled style="background:#27272a;font-size:1.1rem;margin-top:1.5vh;">Connecting...</button>
             </div>
-            <div class="lobby-col" style="flex: 1;">
-                <div class="col-box">
-                    <h3 style="margin:0 0 1vh 0;color:#a1a1aa;font-size:0.9rem;">Info</h3>
-                    <h2 id="info-name" style="margin:0;font-size:2rem;font-weight:800;">Thorfinn</h2>
-                    <div id="info-role" style="font-size:1rem;font-weight:600;color:#f59e0b;margin-bottom:1vh;">Assassin</div>
-                    <div id="info-stats" style="font-size:0.9rem;color:#d4d4d8;">250 HP • Speed</div>
-                    <div class="char-preview-box" id="info-desc">[]</div>
-                    <div style="font-weight:600;margin-bottom:1vh;color:#a1a1aa;font-size:0.9rem;">Abilities</div>
-                    <ul id="info-abilities" style="margin:0;padding-left:1.5vw;font-size:0.9rem;color:#d4d4d8;line-height:1.5;"></ul>
+            <div class="lobby-col" style="flex: 0.65;">
+                <div class="col-box" style="padding: 1vh 0.7vw;">
+                    <h3 style="margin:0 0 0.7vh 0;color:#a1a1aa;font-size:0.8rem;">Info</h3>
+                    <h2 id="info-name" style="margin:0 0 0.4vh 0;font-size:1.4rem;font-weight:800;">Thorfinn</h2>
+                    <div id="info-role" style="font-size:0.85rem;font-weight:600;color:#f59e0b;margin-bottom:0.6vh;">Assassin</div>
+                    <div id="info-stats" style="font-size:0.8rem;color:#d4d4d8;margin-bottom:0.6vh;">250 HP • Speed</div>
+                    <div class="char-preview-box" id="info-desc" style="margin: 0.6vh 0; min-height: 8vh; font-size:0.75rem;">[]</div>
+                    <div style="font-weight:600;margin-bottom:0.5vh;color:#a1a1aa;font-size:0.75rem;">Abilities</div>
+                    <ul id="info-abilities" style="margin:0;padding-left:1.2vw;font-size:0.7rem;color:#d4d4d8;line-height:1.3;"></ul>
                 </div>
             </div>
-            <div class="lobby-col" style="flex: 0.8;">
-                <div class="col-box" style="overflow-y:auto;">
-                    <h3 style="margin:0 0 1.5vh 0;color:#a1a1aa;font-size:0.9rem;">Roster</h3>
-                    <div style="display:flex;flex-direction:column;gap:0.5vh;">
+            <div class="lobby-col" style="flex: 1.1; display:flex; flex-direction:column; gap:1.5vh;">
+                <div class="col-box" style="overflow:hidden;">
+                    <h3 style="margin:0 0 1vh 0;color:#a1a1aa;font-size:0.9rem;">Roster</h3>
+                    <div class="roster-grid">
                         <button class="class-list-btn selected" id="btn-thorfinn" onclick="selectHero('thorfinn')">Thorfinn</button>
                         <button class="class-list-btn" id="btn-trace" onclick="selectHero('trace')">Trace</button>
                         <button class="class-list-btn" id="btn-blitz" onclick="selectHero('blitz')">Blitz</button>
@@ -185,11 +190,10 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                         <button class="class-list-btn" id="btn-aero" onclick="selectHero('aero')">Aero</button>
                         <button class="class-list-btn" id="btn-jubilee" onclick="selectHero('jubilee')">Jubilee</button>
                         <button class="class-list-btn" id="btn-corsair" onclick="selectHero('corsair')">Corsair</button>
+                        <button class="class-list-btn" id="btn-tim" onclick="selectHero('tim')">Tiny Tim</button>
                     </div>
                 </div>
-            </div>
-            <div class="lobby-col" id="customization-col" style="flex: 0.8;">
-                <div class="col-box" style="align-items:center;">
+                <div class="col-box" style="flex-shrink:0; align-items:center;">
                     <h3 style="margin:0 0 1.5vh 0;color:#a1a1aa;font-size:0.9rem;">Customization</h3>
                     <canvas id="previewCanvas" width="160" height="160" style="background:#121212;border:1px solid #3f3f46;border-radius:8px;margin-bottom:1.5vh;width:100%;aspect-ratio:1/1;"></canvas>
                     <div id="trace-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Bow Base</span><input type="color" id="tColorBow"></div><div class="color-row"><span>Neon Light</span><input type="color" id="tColorNeon"></div></div>
@@ -201,6 +205,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                         <button onclick="clearAeroBg()" style="width:100%;padding:1vh;font-size:0.75rem;margin-top:1vh;background:#ef4444;border:none;border-radius:4px;cursor:pointer;color:#fff;">Clear Image</button>
                     </div>
                     <div id="corsair-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Trim Color</span><input type="color" id="corsairColorTrim" value="#dc2626"></div></div>
+                    <div id="tim-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Cannon Color</span><input type="color" id="timColorCannon"></div><div class="color-row"><span>Beam Color</span><input type="color" id="timColorBeam"></div></div>
                     <div id="generic-custom-panel" style="width:100%;text-align:center;font-style:italic;color:#71717a;font-size:0.85rem;">No customizations.</div>
                 </div>
             </div>
@@ -260,10 +265,11 @@ const HERO_DATA = {
     blitz:{name:'Blitz',role:'Assassin',hp:200,speed:'Fast',color:'#ffffff',desc:'Spatial illusionist capable of teleportation and stance swaps.',abilities:['Swap Stance','Handgun/Katana','Spatial Shift','Displace Grab','[ULT] Paradox Rift']},
     kendo:{name:'Kendo',role:'Sniper',hp:250,speed:'Medium',color:'#ef4444',desc:'Tactical sniper with a ridable arrow and modular shield.',abilities:['Y-Arrow','Arrow Ride','Subsonic Shield']},
     glitch:{name:'Glitch',role:'Support',hp:350,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
-    jubilee:{name:'Jubilee',role:'Damage',hp:200,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
-    misaki:{name:'Misaki',role:'Sniper',hp:300,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
-    corsair:{name:'Corsair',role:'Heavy Tank / Brawler',hp:450,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
-    aero:{name:'Aero',role:'Support',hp:250,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']}
+    jubilee:{name:'Jubilee',role:'Damage Dealer',hp:200,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
+    misaki:{name:'Misaki and Kisaki',role:'Sniper',hp:300,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
+    corsair:{name:'Corsair',role:'Tank',hp:450,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
+    aero:{name:'Aero',role:'Controller',hp:250,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},
+    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Tectonic-Disruption and Matter-Vaporization Cannon',role:'Tank',hp:200,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']}
 };
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
@@ -272,25 +278,28 @@ let kCol = JSON.parse(localStorage.getItem('rivals_kisakiColors'))||{body:'#dc26
 let crsCol = JSON.parse(localStorage.getItem('rivals_corsairColors'))||{trim:'#dc2626'};
 let kndCol = JSON.parse(localStorage.getItem('rivals_kendoColors'))||{primary:'#ef4444',glow:'#ef4444'}; getEl('kendoColorPrimary').value=kndCol.primary; getEl('kendoColorGlow').value=kndCol.glow;
 getEl('corsairColorTrim').value=crsCol.trim;
+let timCol = JSON.parse(localStorage.getItem('rivals_timColors'))||{skin:'#22c55e',antenna:'#00ff00',eyes:'#000000',cannon:'#fbbf24',beam:'#ff6b6b'}; getEl('timColorCannon').value=timCol.cannon; getEl('timColorBeam').value=timCol.beam;
 
 const saveCols = () => {
     tCol={bow:getEl('tColorBow').value, neon:getEl('tColorNeon').value}; localStorage.setItem('rivals_traceColors',JSON.stringify(tCol)); myPlayer.customization.traceColors=tCol;
     kCol={body:getEl('kColorBody').value, w2:getEl('kColorW2').value, w3:getEl('kColorW3').value}; localStorage.setItem('rivals_kisakiColors',JSON.stringify(kCol)); myPlayer.customization.kisakiColors=kCol;
     kndCol={primary:getEl('kendoColorPrimary').value, glow:getEl('kendoColorGlow').value}; localStorage.setItem('rivals_kendoColors',JSON.stringify(kndCol)); myPlayer.customization.kendoColors=kndCol;
     crsCol={trim:getEl('corsairColorTrim').value}; localStorage.setItem('rivals_corsairColors',JSON.stringify(crsCol)); myPlayer.customization.corsairColors=crsCol;
+    timCol={skin:timCol.skin,antenna:timCol.antenna,eyes:timCol.eyes,cannon:getEl('timColorCannon').value, beam:getEl('timColorBeam').value}; localStorage.setItem('rivals_timColors',JSON.stringify(timCol)); myPlayer.customization.timColors=timCol;
     updateLobbyState();
 };
-['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim'].forEach(id=>getEl(id).addEventListener('input',saveCols));
+['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim','timColorCannon','timColorBeam'].forEach(id=>getEl(id).addEventListener('input',saveCols));
 
 let myPlayer = { 
     id:null, name:getEl('playerName').value, heroClass:"thorfinn", team:"none", color:"#f59e0b", 
-    x:W/2, y:H/2, angle:0, hp:250, maxHp:250, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol},
+    x:W/2, y:H/2, angle:0, hp:250, maxHp:250, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol,timColors:timCol},
     kisakiDeployed:false, kisakiMirrorOn:false, kisakiMirrorAngle:0, blitzWeapon:'handgun', blitzAmmo:8, grabbedLocked:false, flicker:false,
     ultCharge: 0, hasUltAura: false, auraTimer: 0, isJuggernaut: false, aeroDrawing: false, aeroTabType: 1, traceShooting: false, traceNodes:[], traceDashing: false, traceDashNodes:[], traceFreeze: false,
     copycatWeapons: [],
     aeroContextMenu: false, aeroContextMenuTimer: 0, aeroContextMenuX: 0, aeroContextMenuY: 0, aeroContextMenuWorldX: 0, aeroContextMenuWorldY: 0, aeroPasting: false, aeroPasteFirstShot: false, aeroPasteTimers: {},
     thorfinnStrands: [],
-    corsairStance: 'cannon', corsairCannonX: 0, corsairCannonY: 0, corsairComboStep: 0, corsairParryActive: false, corsairParryTimer: 0, corsairDmgReduction: 0.3
+    corsairStance: 'cannon', corsairCannonX: 0, corsairCannonY: 0, corsairComboStep: 0, corsairParryActive: false, corsairParryTimer: 0, corsairDmgReduction: 0.3,
+    timStance: 'macro', timCannonX: 0, timCannonY: 0, timBeamCharge: 0, timBeamActive: false, timUltCharging: false, timUltCharge: 0, timBeamDirectionAngle: 0, timBeamCollapsing: false, timBeamCollapseTimer: 0, timTransitioning: false, timTransitionTimer: 0, timTransitionTargetStance: 'micro'
 };
 
 let savedAeroBg = localStorage.getItem('rivals_aeroBg'); if(savedAeroBg) myPlayer.customization.aeroBg = savedAeroBg;
@@ -494,7 +503,8 @@ let localCombat = {
     mQ:false, m1:false,
     traceShoot:{cd:0,maxCd:1.0}, traceDash:{cd:0,maxCd:4.0,active:false,path:[],idx:0},
     aeroPaste:{cd:0,maxCd:0.8}, aeroCopy:{cd:0,maxCd:0},
-    corsairPrimary:{cd:0,maxCd:2.0}, corsairParry:{cd:0,maxCd:6.0}, corsairCombo:{cd:0,maxCd:0.4}
+    corsairPrimary:{cd:0,maxCd:2.0}, corsairParry:{cd:0,maxCd:6.0}, corsairCombo:{cd:0,maxCd:0.4},
+    timPrimary:{cd:0,maxCd:0.1}, timVents:{cd:0,maxCd:2.0}, timUlt:{cd:0,maxCd:150.0}
 };
 
 function resetAllCooldowns() {
@@ -541,7 +551,7 @@ function drawPrev() {
     const o = myPlayer;
     
     // Hide all custom panels
-    ['trace','kisaki','kendo','aero','thorfinn','glitch','corsair','generic'].forEach(i => {
+    ['trace','kisaki','kendo','aero','thorfinn','glitch','corsair','tim','generic'].forEach(i => {
         let el = getEl(i+'-custom-panel');
         if(el) el.style.display = 'none';
     });
@@ -763,6 +773,37 @@ function drawPrev() {
         pCtx.fillStyle = '#606878';
         pCtx.beginPath(); pCtx.arc(-8, 14, 4, 0, 6.28); pCtx.fill();
         pCtx.beginPath(); pCtx.arc(8, 14, 4, 0, 6.28); pCtx.fill();
+    } else if(heroClass === 'tim') {
+        getEl('tim-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        let skinC = o.customization?.timColors?.skin || '#22c55e';
+        let antennaC = o.customization?.timColors?.antenna || '#00ff00';
+        let eyeC = o.customization?.timColors?.eyes || '#000000';
+        let cannonC = o.customization?.timColors?.cannon || '#fbbf24';
+        let beamC = o.customization?.timColors?.beam || '#ff6b6b';
+        // Body
+        pCtx.fillStyle = skinC;
+        pCtx.beginPath(); pCtx.arc(0, 0, 8, 0, 6.28); pCtx.fill();
+        pCtx.strokeStyle = '#00aa00'; pCtx.lineWidth = 1; pCtx.stroke();
+        // Antennas (simplified for preview)
+        pCtx.strokeStyle = antennaC; pCtx.lineWidth = 1;
+        [-4, 4].forEach(ax => {
+            pCtx.beginPath(); pCtx.moveTo(ax, -8); pCtx.lineTo(ax, -14);
+            pCtx.stroke();
+            pCtx.fillStyle = antennaC;
+            pCtx.beginPath(); pCtx.arc(ax, -15, 1.2, 0, 6.28); pCtx.fill();
+        });
+        // Eyes
+        pCtx.fillStyle = eyeC;
+        pCtx.beginPath(); pCtx.arc(-3, -2, 1.5, 0, 6.28); pCtx.fill();
+        pCtx.beginPath(); pCtx.arc(3, -2, 1.5, 0, 6.28); pCtx.fill();
+        // Cannon preview (simplified)
+        pCtx.fillStyle = cannonC;
+        pCtx.fillRect(6, -3, 8, 6);
+        pCtx.strokeStyle = beamC;
+        pCtx.lineWidth = 2;
+        pCtx.beginPath(); pCtx.moveTo(14, 0); pCtx.lineTo(20, 0);
+        pCtx.stroke();
     } else if(heroClass === 'kendo') {
         getEl('kendo-custom-panel').style.display = 'block';
         pCtx.translate(0, Math.sin(Date.now()/150)*3);
@@ -803,7 +844,6 @@ function drawPrev() {
 function drawThorfinnHairPreview(p, pctx) {
     if(p.heroClass !== 'thorfinn' || !p.thorfinnStrands) return;
     const outlineColor = '#5c3a21';
-    const saveCtx = ctx; ctx = pctx; // Temporarily replace global ctx for helper functions
     const backStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cDark);
     const midStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cMid);
     const topStrands = p.thorfinnStrands.filter(s => s.cfg.palette === cTop);
@@ -821,7 +861,6 @@ function drawThorfinnHairPreview(p, pctx) {
     drawAnimeHairLayerPreview(backStrands, outlineColor, pctx);
     drawAnimeHairLayerPreview(midStrands, outlineColor, pctx);
     drawAnimeHairLayerPreview(topStrands, outlineColor, pctx);
-    ctx = saveCtx;
 }
 
 function drawAnimeHairLayerPreview(strands, outlineCol, pctx) {
@@ -902,6 +941,15 @@ function selectHero(id) {
     // Initialize Thorfinn hair if switching to Thorfinn
     if(id === 'thorfinn') {
         initThorfinnHair(myPlayer);
+    }
+    
+    // Initialize Tim if switching to Tim
+    if(id === 'tim') {
+        myPlayer.timStance = 'macro';
+        myPlayer.timCannonX = myPlayer.x;
+        myPlayer.timCannonY = myPlayer.y;
+        myPlayer.timBeamCharge = 0;
+        myPlayer.timUltCharge = 0;
     }
     
     let baseHp = HERO_DATA[id].hp;
@@ -1415,7 +1463,14 @@ window.addEventListener('keydown', e => {
     }
     
     if(k === 'q' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
-        if(myPlayer.heroClass === 'misaki' && !localCombat.mQ) {
+        if(myPlayer.heroClass === 'tim' && myPlayer.ultCharge >= 100 && !localCombat.mQ) {
+            localCombat.mQ = true;
+            myPlayer.timUltCharging = true;
+            myPlayer.timUltCharge = 0;
+            myPlayer.ultCharge = 0;
+            myPlayer.timStance = 'macro';
+            sdEv({type:'tim_ult_start', x:myPlayer.x, y:myPlayer.y});
+        } else if(myPlayer.heroClass === 'misaki' && !localCombat.mQ) {
             localCombat.mQ = true;
             if(Math.hypot(myPlayer.targetX - myPlayer.x, myPlayer.targetY - myPlayer.y) < 50) { myPlayer.kisakiDeployed = myPlayer.kisakiMirrorOn = false; sdEv({type:'kisaki_recall'}); }
             else { myPlayer.kisakiDeployed = true; sdEv({type:'kisaki_deploy', x:myPlayer.targetX, y:myPlayer.targetY}); }
@@ -1448,6 +1503,7 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'jubilee') trJubD();
             else if(myPlayer.heroClass === 'misaki') trMisG();
             else if(myPlayer.heroClass === 'blitz') trBlTp();
+            else if(myPlayer.heroClass === 'tim') trTimVents();
             else if(myPlayer.heroClass === 'corsair') {
         setVisibleAbilities(['corsair-primary','corsair-stance','corsair-parry']);
         let cp = localCombat.corsairPrimary.cd; 
@@ -1503,6 +1559,23 @@ window.addEventListener('keydown', e => {
                 myPlayer.x = myCannon.x; myPlayer.y = myCannon.y;
                 sdEv({type:'corsair_mount_cannon'});
             }
+        }
+        sdUp();
+    } else if(e.key === 'Shift' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && myPlayer.heroClass === 'tim' && !myPlayer.timTransitioning) {
+        // Tim's quantum condenser stance switch with animation
+        if(myPlayer.timStance === 'macro') {
+            myPlayer.timTransitioning = true;
+            myPlayer.timTransitionTimer = 1.2;
+            myPlayer.timTransitionTargetStance = 'micro';
+            myPlayer.timBeamCharge = 0;
+            sdEv({type:'tim_stance_switch', newStance:'micro'});
+        } else {
+            // Switching back to macro takes 1.2 seconds with animation
+            myPlayer.timTransitioning = true;
+            myPlayer.timTransitionTimer = 1.2;
+            myPlayer.timTransitionTargetStance = 'macro';
+            myPlayer.timBeamCharge = 0;
+            sdEv({type:'tim_stance_switch', newStance:'macro'});
         }
         sdUp();
     }
@@ -1567,6 +1640,20 @@ can.addEventListener('mousedown', e => {
         if(myPlayer.heroClass === 'thorfinn') trSl();
         else if(myPlayer.heroClass === 'kendo') tgKndA();
         else if(myPlayer.heroClass === 'glitch') trGlSh();
+        else if(myPlayer.heroClass === 'tim') {
+            if(!myPlayer.timTransitioning) {
+                if(myPlayer.timStance === 'macro') { 
+                    myPlayer.timBeamActive = true; 
+                    myPlayer.timBeamCharge = 0; 
+                    myPlayer.timBeamDirectionAngle = myPlayer.angle; 
+                } else if(myPlayer.timStance === 'micro' && localCombat.timPrimary.cd <= 0) {
+                    // Micro mode fires immediately
+                    localCombat.timPrimary.cd = (activeServerMode==='CHAOS')?0.01:0.2;
+                    applyShake(2, 0.05);
+                    sdEv({type:'tim_pea_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle});
+                }
+            }
+        }
         else if(myPlayer.heroClass === 'corsair') {
             if(myPlayer.corsairStance === 'cannon' && localCombat.corsairPrimary.cd <= 0) {
                 localCombat.corsairPrimary.cd = (activeServerMode==='CHAOS')?0.05:2.0;
@@ -1601,7 +1688,29 @@ can.addEventListener('mousedown', e => {
 
 window.addEventListener('mouseup', () => {
     mDwn = false;
-    if(myPlayer.heroClass === 'trace') {
+    if(myPlayer.heroClass === 'tim') {
+        if(myPlayer.timBeamActive && myPlayer.timStance === 'macro') {
+            myPlayer.timBeamActive = false;
+            if(myPlayer.timBeamCharge >= 0.01) {
+                // Beam collapse animation triggered on release
+                myPlayer.timBeamCollapsing = true;
+                myPlayer.timBeamCollapseTimer = 0.3;
+                // Calculate cannon muzzle position (93 units from center)
+                let muzzleX = myPlayer.x + 93 * Math.cos(myPlayer.timBeamDirectionAngle);
+                let muzzleY = myPlayer.y + 93 * Math.sin(myPlayer.timBeamDirectionAngle);
+                sdEv({type:'tim_core_beam_end', charge:Math.min(myPlayer.timBeamCharge, 4.0), angle:myPlayer.timBeamDirectionAngle, x:muzzleX, y:muzzleY});
+                localCombat.timPrimary.cd = (activeServerMode==='CHAOS')?0.05:0.5;
+                applyShake(Math.min(8, myPlayer.timBeamCharge * 2), 0.15);
+                // Much much smaller recoil on release
+                let recoilForce = myPlayer.timBeamCharge * 5;
+                localCombat.dash.v.x -= Math.cos(myPlayer.timBeamDirectionAngle) * recoilForce;
+                localCombat.dash.v.y -= Math.sin(myPlayer.timBeamDirectionAngle) * recoilForce;
+                localCombat.dash.rec = Math.min(0.15, myPlayer.timBeamCharge * 0.03);
+            }
+            myPlayer.timBeamCharge = 0;
+            sdUp();
+        }
+    } else if(myPlayer.heroClass === 'trace') {
         if(myPlayer.traceShooting) {
             myPlayer.traceShooting = false;
             if(myPlayer.traceNodes.length > 0) { sdEv({type: 'trace_shoot', nodes: myPlayer.traceNodes, x: myPlayer.x, y: myPlayer.y}); localCombat.traceShoot.cd = (activeServerMode === 'CHAOS') ? 0.05 : 1.0; applyShake(3, 0.1); }
@@ -1635,6 +1744,7 @@ function trKndS(){if(localCombat.kendoShield.cd<=0&&myPlayer.arrowActive){localC
 function trDsh(){if(localCombat.dash.charges>0){localCombat.dash.charges--;let s=localCombat.dash.cds.findIndex(c=>c<=0);if(s!==-1)localCombat.dash.cds[s]=localCombat.dash.maxCd;localCombat.dash.v.x=Math.cos(myPlayer.angle)*30;localCombat.dash.v.y=Math.sin(myPlayer.angle)*30;}}
 function trSl(){if(localCombat.slash.cd<=0&&myPlayer.daggers>0){localCombat.slash.cd=(activeServerMode==='CHAOS')?0.05:localCombat.slash.maxCd;myPlayer.slashAnimTimer=0.15;applyShake(3,0.1);vfx.push({type:'animeSlash',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle,life:0.15,maxLife:0.15,daggerCount:myPlayer.daggers});sdEv({type:'slash',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle,daggerCount:myPlayer.daggers});}}
 function trThr(){if(myPlayer.daggers>0&&myPlayer.heroClass==='thorfinn'){myPlayer.daggers--;sdEv({type:'throw',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});sdUp();}}
+function trTimVents(){if(myPlayer.heroClass==='tim'&&localCombat.timVents.cd<=0){localCombat.timVents.cd=(activeServerMode==='CHAOS')?0.05:2.0;let ventAngle=myPlayer.angle+1.57;if(keys.a)ventAngle=myPlayer.angle+3.14;else if(keys.d)ventAngle=myPlayer.angle;localCombat.dash.v.x=Math.cos(ventAngle)*40;localCombat.dash.v.y=Math.sin(ventAngle)*40;localCombat.dash.rec=0.3;applyShake(5,0.15);sdEv({type:'tim_vents',angle:ventAngle,x:myPlayer.x,y:myPlayer.y});sdUp();}}
 
 function cDm(a, t) {
     if(a === t) return false;
@@ -1801,6 +1911,38 @@ function processCombatEvent(sId, e) {
         let tb = gameState.projectiles.find(p=>p.id===e.tabId&&p.ownerId===sId&&p.phase==='active');
         if(tb) { tb.phase='closing'; tb.closeEdge=e.edge; tb.closeTimer=0.3; tb.hitIds={}; }
     }
+    // ===== TIM EVENT HANDLERS =====
+    else if(e.type==='tim_pea_shoot'){
+        s.slashAnimTimer=0.1;
+        let sx=s.x+Math.cos(e.angle)*25,sy=s.y+Math.sin(e.angle)*25;
+        gameState.projectiles.push({type:'tim_pea_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*1200,vy:Math.sin(e.angle)*1200,angle:e.angle,life:1.5,dmg:7,hitIds:{}});
+        if(sId!==myId)vfx.push({type:'timMuzzleFlash',x:sx,y:sy,angle:e.angle,life:0.1,maxLife:0.1});
+    }
+    else if(e.type==='tim_core_beam_firing'){
+        // Continuous beam damage - create or update active beam
+        let existingBeam = gameState.projectiles.find(p=>p.type==='tim_core_beam'&&p.ownerId===sId);
+        if(!existingBeam) {
+            gameState.projectiles.push({type:'tim_core_beam',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,angle:e.angle,charge:e.charge,startTime:Date.now(),life:999,damage:e.damage,hitIds:{},hitCooldowns:{}});
+        } else {
+            existingBeam.x=e.x; existingBeam.y=e.y; existingBeam.angle=e.angle; existingBeam.charge=e.charge; existingBeam.damage=e.damage;
+        }
+    }
+    else if(e.type==='tim_core_beam_end'){
+        // Remove active beam and trigger collapse animation
+        gameState.projectiles = gameState.projectiles.filter(p=>!(p.type==='tim_core_beam'&&p.ownerId===sId));
+        vfx.push({type:'timBeamCollapse',x:e.x,y:e.y,angle:e.angle,charge:e.charge,life:0.3,maxLife:0.3});
+    }
+    else if(e.type==='tim_vents'){
+        s.slashAnimTimer=0.15;
+        connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'tim_vents_vfx',x:e.x,y:e.y,angle:e.angle});});
+        if(sId!==myId)vfx.push({type:'timVentsPuff',x:e.x,y:e.y,angle:e.angle,life:0.4,maxLife:0.4});
+    }
+    else if(e.type==='tim_ult_fire'){
+        s.slashAnimTimer=0.3;
+        gameState.projectiles.push({type:'tim_rainbow_beam',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,angle:e.angle,life:0.8,damage:100,hitIds:{},initializing:true,initTimer:4.0});
+        connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'tim_ult_vfx',x:e.x,y:e.y,angle:e.angle});});
+        if(sId!==myId)applyShake(12,0.3);
+    }
 }
 
 function iW(x,y) {
@@ -1876,7 +2018,14 @@ function updateMovement(dt) {
     }
     
     if(myPlayer.stunTimer <= 0 && !myPlayer.grabbedLocked && !myPlayer.traceFreeze) {
-        myPlayer.angle = Math.atan2(wy - myPlayer.y, wx - myPlayer.x);
+        let targetAngle = Math.atan2(wy - myPlayer.y, wx - myPlayer.x);
+        // Apply rotation damping when Tim is firing core beam
+        if(myPlayer.heroClass === 'tim' && myPlayer.timBeamActive && myPlayer.timStance === 'macro' && !myPlayer.timTransitioning && mDwn) {
+            // Lerp angle with 0.35 factor (slower rotation)
+            myPlayer.angle = myPlayer.angle + (targetAngle - myPlayer.angle) * 0.35;
+        } else {
+            myPlayer.angle = targetAngle;
+        }
         myPlayer.targetX = wx; myPlayer.targetY = wy;
     }
     
@@ -1978,6 +2127,24 @@ function updateMovement(dt) {
                 let bs = 4.5;
                 if(myPlayer.heroClass === 'jubilee') bs = 4.0;
                 if(myPlayer.heroClass === 'corsair' && myPlayer.corsairStance === 'cannon') bs = 2.88;
+                if(myPlayer.heroClass === 'tim') {
+                    if(myPlayer.timTransitioning) {
+                        // During transition: speed adjusts based on cannon weight (scale)
+                        // Transition progress: 0 = start, 1 = end
+                        let transProgress = 1 - (myPlayer.timTransitionTimer / 1.2);
+                        if(myPlayer.timTransitionTargetStance === 'micro') {
+                            // macro→micro: cannon shrinks (lighter), speed increases from 0.8 to 9.5
+                            bs = 0.8 + (9.5 - 0.8) * transProgress;
+                        } else {
+                            // micro→macro: cannon grows (heavier), speed decreases from 9.5 to 0.8
+                            bs = 9.5 - (9.5 - 0.8) * transProgress;
+                        }
+                    } else if(myPlayer.timStance === 'macro') {
+                        bs = 0.8;  // Very very slow in macro mode
+                    } else if(myPlayer.timStance === 'micro') {
+                        bs = 9.5;  // Much faster in micro mode
+                    }
+                }
                 if(myPlayer.heroClass === 'thorfinn' && myPlayer.daggers === 0) bs = 8.0;
                 if(localCombat.dash.rec > 0) bs = 3.0;
                 let mx = 0, my = 0;
@@ -2012,9 +2179,67 @@ function updateMovement(dt) {
 
 function updateGameState(dt) {
     let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo'].forEach(k => {
+    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt'].forEach(k => {
         if(localCombat[k] && localCombat[k].cd > 0) localCombat[k].cd -= dt * cdM;
     });
+    
+    // Tim's beam charging logic
+    if(myPlayer.timBeamActive && myPlayer.timStance === 'macro') {
+        myPlayer.timBeamCharge = Math.min(4.0, myPlayer.timBeamCharge + dt);
+    }
+    
+    // Tim's ultimate charging logic
+    if(myPlayer.timUltCharging) {
+        myPlayer.timUltCharge = Math.min(4.0, myPlayer.timUltCharge + dt);
+        if(myPlayer.timUltCharge >= 4.0) {
+            const MIN_DIMENSION = 50;
+            sdEv({type:'tim_ult_fire', charge:myPlayer.timUltCharge, angle:myPlayer.angle, x:myPlayer.x, y:myPlayer.y});
+            myPlayer.timUltCharging = false;
+            myPlayer.timUltCharge = 0;
+            localCombat.timUlt.cd = (activeServerMode === 'CHAOS') ? 0.5 : 150.0;
+            applyShake(20, 0.6);
+        }
+    }
+    
+    // Tim's pea-shooter auto-fire in micro mode - ONLY pea shooter
+    if(myPlayer.heroClass === 'tim' && myPlayer.timStance === 'micro' && !myPlayer.timTransitioning && mDwn && localCombat.timPrimary.cd <= 0) {
+        localCombat.timPrimary.cd = (activeServerMode==='CHAOS')?0.01:0.2;
+        applyShake(2, 0.05);
+        sdEv({type:'tim_pea_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle});
+    }
+    
+    // Tim's Core Beam doing damage while being held down
+    if(myPlayer.heroClass === 'tim' && myPlayer.timBeamActive && myPlayer.timStance === 'macro' && !myPlayer.timTransitioning && mDwn) {
+        // Update beam angle every frame to follow Tim's rotation
+        myPlayer.timBeamDirectionAngle = myPlayer.angle;
+        // Beam fires continuously - damage based on current charge (minimum 5 DPS even at charge 0)
+        let beamDamage = Math.max(5, 8 + (myPlayer.timBeamCharge / 4.0) * 14); // 5-22 DPS
+        // Calculate cannon muzzle position (93 units from center)
+        let muzzleX = myPlayer.x + 93 * Math.cos(myPlayer.timBeamDirectionAngle);
+        let muzzleY = myPlayer.y + 93 * Math.sin(myPlayer.timBeamDirectionAngle);
+        sdEv({type:'tim_core_beam_firing', charge:Math.min(myPlayer.timBeamCharge, 4.0), angle:myPlayer.timBeamDirectionAngle, x:muzzleX, y:muzzleY, damage:beamDamage});
+        // Add local VFX for beam firing
+        vfx.push({type:'timBeamFiring', x:muzzleX, y:muzzleY, angle:myPlayer.timBeamDirectionAngle, charge:myPlayer.timBeamCharge, beamColor:myPlayer.customization?.timColors?.beam || '#ff6b6b', life:0.05, maxLife:0.05});
+    }
+    
+    // Tim beam collapse animation
+    if(myPlayer.heroClass === 'tim' && myPlayer.timBeamCollapsing) {
+        myPlayer.timBeamCollapseTimer -= dt;
+        if(myPlayer.timBeamCollapseTimer <= 0) {
+            myPlayer.timBeamCollapsing = false;
+        }
+    }
+    
+    // Tim stance transition animation
+    if(myPlayer.heroClass === 'tim' && myPlayer.timTransitioning) {
+        myPlayer.timTransitionTimer -= dt;
+        if(myPlayer.timTransitionTimer <= 0) {
+            myPlayer.timTransitioning = false;
+            // Actually switch the stance now
+            myPlayer.timStance = myPlayer.timTransitionTargetStance;
+            sdUp();
+        }
+    }
     
     if(localCombat.blitzPrimary.rTm > 0) {
         localCombat.blitzPrimary.rTm -= dt * cdM;
@@ -2450,7 +2675,151 @@ function updateGameState(dt) {
                         if(d < 25) { if(!p.hitCooldowns[id]) { let dHP = t.maxHp * 0.15 * (p.dmgMult||1.0); dmgTk(t, dHP, p.ownerId); sendHitmarker(p.ownerId, t, dHP); p.hitCooldowns[id] = true; t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id); if(p.mode==='copycat_cursor') copycatHit = true; } } else if(d > 45) p.hitCooldowns[id] = false;
                     }
                 }
-                if(p.mode==='copycat_cursor' && copycatHit) { p.deactivated = true; }
+                if(p.mode==='copyctim_pea_bullet') {
+                // Small pea-shooter bullets from Tim's micro mode
+                p.x += p.vx * sm * dt;
+                p.y += p.vy * sm * dt;
+                p.life -= dt;
+                
+                let hw = iW(p.x, p.y);
+                let hit = false;
+                
+                if(!hw) {
+                    for(let id in gameState.players) {
+                        let t = gameState.players[id];
+                        if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && Math.hypot(t.x - p.x, t.y - p.y) < 15) {
+                            if(!p.hitIds[id]) {
+                                dmgTk(t, p.dmg, p.ownerId);
+                                sendHitmarker(p.ownerId, t, p.dmg);
+                                t.lastAttacker = p.ownerId;
+                                t.lastHitTime = Date.now();
+                                chD(t, id);
+                                p.hitIds[id] = true;
+                                hit = true;
+                            }
+                        }
+                    }
+                }
+                
+                for(let c of gameState.clones) {
+                    if(cDm(p.ownerId, c.ownerId) && !c.invulnerable && Math.hypot(c.x - p.x, c.y - p.y) < 15) {
+                        if(!p.hitIds[c.id]) {
+                            dmgTk(c, p.dmg, p.ownerId);
+                            sendHitmarker(p.ownerId, c, p.dmg);
+                            p.hitIds[c.id] = true;
+                            hit = true;
+                        }
+                    }
+                }
+                
+                if(hw || hit || p.life <= 0 || p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > H + 100) {
+                    gameState.projectiles.splice(i, 1);
+                }
+            } else if(p.type === 'tim_core_beam') {
+                // Continuous beam that fires from Tim - updates position each frame
+                p.life -= dt;
+                
+                // Damage everyone in line of the beam
+                let beamLength = 150 + (p.charge / 4.0) * 100;
+                let beamRadius = 20;  // Collision radius for beam (increased for reliability)
+                
+                for(let id in gameState.players) {
+                    let t = gameState.players[id];
+                    if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable) {
+                        // Check if target is within beam line
+                        let dx = t.x - p.x, dy = t.y - p.y;
+                        let distToTarget = Math.hypot(dx, dy);
+                        
+                        // Project target onto beam line
+                        let beamDist = Math.cos(Math.atan2(dy, dx) - p.angle) * distToTarget;
+                        let beamOffDist = Math.sin(Math.atan2(dy, dx) - p.angle) * distToTarget;
+                        
+                        if(beamDist > 0 && beamDist < beamLength && Math.abs(beamOffDist) < beamRadius + 15) {
+                            if(!p.hitCooldowns[id] || p.hitCooldowns[id] <= 0) {
+                                dmgTk(t, p.damage * dt, p.ownerId);
+                                sendHitmarker(p.ownerId, t, Math.round(p.damage * dt));
+                                t.lastAttacker = p.ownerId;
+                                t.lastHitTime = Date.now();
+                                chD(t, id);
+                                p.hitCooldowns[id] = 0.05;  // 50ms cooldown between hits
+                            } else {
+                                p.hitCooldowns[id] -= dt;
+                            }
+                        } else {
+                            p.hitCooldowns[id] = 0;
+                        }
+                    }
+                }
+                
+                for(let c of gameState.clones) {
+                    if(cDm(p.ownerId, c.ownerId) && !c.invulnerable) {
+                        let dx = c.x - p.x, dy = c.y - p.y;
+                        let distToTarget = Math.hypot(dx, dy);
+                        let beamDist = Math.cos(Math.atan2(dy, dx) - p.angle) * distToTarget;
+                        let beamOffDist = Math.sin(Math.atan2(dy, dx) - p.angle) * distToTarget;
+                        
+                        if(beamDist > 0 && beamDist < beamLength && Math.abs(beamOffDist) < beamRadius + 15) {
+                            if(!p.hitCooldowns[c.id] || p.hitCooldowns[c.id] <= 0) {
+                                dmgTk(c, p.damage * dt, p.ownerId);
+                                sendHitmarker(p.ownerId, c, Math.round(p.damage * dt));
+                                p.hitCooldowns[c.id] = 0.05;
+                            } else {
+                                p.hitCooldowns[c.id] -= dt;
+                            }
+                        } else {
+                            p.hitCooldowns[c.id] = 0;
+                        }
+                    }
+                }
+                
+                if(p.life <= 0) {
+                    gameState.projectiles.splice(i, 1);
+                }
+            } else if(p.type === 'tim_rainbow_beam') {
+                // Ultimate beam - travels forward and does massive damage
+                if(p.initializing) {
+                    p.initTimer -= dt;
+                    if(p.initTimer <= 0) {
+                        p.initializing = false;
+                    }
+                    p.life -= dt;
+                } else {
+                    p.x += Math.cos(p.angle) * 1500 * sm * dt;
+                    p.y += Math.sin(p.angle) * 1500 * sm * dt;
+                    p.life -= dt;
+                    
+                    // Massive AoE damage
+                    let hitRadius = 80;
+                    
+                    for(let id in gameState.players) {
+                        let t = gameState.players[id];
+                        if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && Math.hypot(t.x - p.x, t.y - p.y) < hitRadius) {
+                            if(!p.hitIds[id]) {
+                                dmgTk(t, p.damage, p.ownerId);
+                                sendHitmarker(p.ownerId, t, p.damage);
+                                t.lastAttacker = p.ownerId;
+                                t.lastHitTime = Date.now();
+                                chD(t, id);
+                                p.hitIds[id] = true;
+                            }
+                        }
+                    }
+                    
+                    for(let c of gameState.clones) {
+                        if(cDm(p.ownerId, c.ownerId) && !c.invulnerable && Math.hypot(c.x - p.x, c.y - p.y) < hitRadius) {
+                            if(!p.hitIds[c.id]) {
+                                dmgTk(c, p.damage, p.ownerId);
+                                sendHitmarker(p.ownerId, c, p.damage);
+                                p.hitIds[c.id] = true;
+                            }
+                        }
+                    }
+                }
+                
+                if(p.life <= 0 || p.x < -200 || p.x > W + 200 || p.y < -200 || p.y > H + 200) {
+                    gameState.projectiles.splice(i, 1);
+                }
+            } else if(p.type === 'at_cursor' && copycatHit) { p.deactivated = true; }
                 if(p.mode==='copycat' && (iW(p.x,p.y) || p.life<=0)) gameState.projectiles.splice(i,1);
             } else if(p.type === 'matrix_beam') {
                 p.lastX = p.x; p.lastY = p.y;
@@ -2599,6 +2968,27 @@ function updateUI(now = performance.now()) {
         getEl('cd-corsair-parry').style.height = `${pp > 0 ? (pp / 6.0) * 100 : 0}%`;
         getEl('status-corsair-parry').innerText = myPlayer.corsairStance === 'foot' ? (pp > 0 ? pp.toFixed(1) + 's' : (myPlayer.corsairParryActive ? 'ACTIVE' : 'Ready')) : 'Req. Foot';
         getEl('ui-corsair-parry').style.opacity = (myPlayer.corsairStance === 'foot' && pp <= 0) ? '1' : '0.5';
+    }
+    else if(myPlayer.heroClass === 'tim') {
+        setVisibleAbilities(['tim-primary','tim-stance','tim-vents']);
+        let tp = localCombat.timPrimary.cd;
+        getEl('cd-tim-primary').style.height = `${tp > 0 ? (tp / 0.5) * 100 : 0}%`;
+        if(myPlayer.timStance === 'macro') {
+            getEl('name-tim-primary').innerText = 'Core Beam';
+            getEl('status-tim-primary').innerText = myPlayer.timBeamActive ? `Charge: ${Math.round(myPlayer.timBeamCharge*10)/10}s` : (tp > 0 ? tp.toFixed(1) + 's' : 'Ready');
+            if(myPlayer.timBeamActive) getEl('ui-tim-primary').style.borderColor = '#22c55e';
+            else getEl('ui-tim-primary').style.borderColor = '#52525b';
+        } else {
+            getEl('name-tim-primary').innerText = 'Pea-Shooter';
+            getEl('status-tim-primary').innerText = tp > 0 ? tp.toFixed(1) + 's' : 'Ready';
+            getEl('ui-tim-primary').style.borderColor = '#52525b';
+        }
+        getEl('name-tim-stance').innerText = myPlayer.timStance === 'macro' ? 'Macro Mode' : 'Micro Mode';
+        getEl('status-tim-stance').innerText = myPlayer.timStance === 'macro' ? 'Heavy' : 'Fast';
+        getEl('ui-tim-stance').style.color = myPlayer.timStance === 'macro' ? '#ef4444' : '#22c55e';
+        let tv = localCombat.timVents.cd;
+        getEl('cd-tim-vents').style.height = `${tv > 0 ? (tv / 2.0) * 100 : 0}%`;
+        getEl('status-tim-vents').innerText = tv > 0 ? tv.toFixed(1) + 's' : 'Ready';
     }
     else if(myPlayer.heroClass === 'trace') {
         setVisibleAbilities(['trace-primary','trace-dash']);
@@ -3113,6 +3503,94 @@ function drawEnts() {
         } else if(['sniper_bullet','blitz_bullet'].includes(p.type)) {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.fillStyle = '#fef08a'; ctx.shadowBlur = 15; ctx.shadowColor = '#f59e0b';
             ctx.fillRect(0, -1.5, p.type === 'sniper_bullet' ? 45 : 30, 3); ctx.restore();
+        } else if(p.type === 'tim_pea_bullet') {
+            // Small bright laser bullet from micro mode - uses beam color from customization
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+            
+            // Get beam color from owner's customization
+            let owner = gameState.players[p.ownerId];
+            let beamColor = owner?.customization?.timColors?.beam || '#ff6b6b';
+            
+            ctx.shadowBlur = 12; ctx.shadowColor = beamColor;
+            // Main bullet
+            ctx.fillStyle = beamColor; ctx.globalAlpha = 0.9;
+            ctx.beginPath(); ctx.moveTo(8, 0); ctx.quadraticCurveTo(0, -2.5, -6, 0); ctx.quadraticCurveTo(0, 2.5, 8, 0); ctx.fill();
+            // Bright core
+            ctx.fillStyle = beamColor; ctx.globalAlpha = 0.7;
+            ctx.beginPath(); ctx.arc(4, 0, 2, 0, 6.28); ctx.fill();
+            ctx.restore();
+        } else if(p.type === 'tim_core_beam') {
+            // Core beam - continuous laser from cannon with custom colors
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+            let beamLen = 150 + (p.charge / 4.0) * 100;
+            let beamWidth = 4 + (p.charge / 4.0) * 5;  // 4 to 9 width
+            
+            // Get beam color from owner's customization
+            let owner = gameState.players[p.ownerId];
+            let beamColor = owner?.customization?.timColors?.beam || '#ff6b6b';
+            
+            // Convert hex to rgb for rgba blend
+            let rgb = parseInt(beamColor.slice(1), 16);
+            let r = (rgb >> 16) & 255;
+            let g = (rgb >> 8) & 255;
+            let b = (rgb & 255) >> 0;
+            
+            // Outer glow
+            ctx.strokeStyle = `rgba(${r},${g},${b},0.3)`; ctx.lineWidth = beamWidth * 3; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            // Main beam
+            ctx.strokeStyle = `rgba(${r},${g},${b},0.8)`; ctx.lineWidth = beamWidth * 2;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            // Inner core (lighter blend)
+            ctx.strokeStyle = `rgba(${Math.min(r+100,255)},${Math.min(g+100,255)},${Math.min(b+100,255)},1)`; ctx.lineWidth = beamWidth;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            ctx.restore();
+        } else if(p.type === 'tim_rainbow_beam') {
+            // Ultimate rainbow beam - massive, multi-colored
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+            // If initializing (4 second charge), show charging state
+            if(p.initializing) {
+                let chargeP = 1 - (p.initTimer / 4.0);  // 0 to 1 as it charges
+                ctx.fillStyle = `rgba(0,255,0,${0.15 + chargeP*0.15})`;
+                ctx.beginPath(); ctx.arc(0, 0, 40 + chargeP*60, 0, 6.28); ctx.fill();
+                ctx.strokeStyle = `rgba(0,255,0,${0.3 + chargeP*0.3})`;
+                ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 40 + chargeP*60, 0, 6.28); ctx.stroke();
+            } else {
+                // Firing state - rainbow spiral beam
+                let beamLen = 400;
+                let colors = ['#ff0000', '#ff7700', '#ffff00', '#00ff00', '#0088ff', '#8800ff'];
+                
+                // Outer dark glow
+                ctx.strokeStyle = 'rgba(100,100,100,0.2)';
+                ctx.lineWidth = 60; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+                
+                // Rainbow layers
+                for(let i = 0; i < colors.length; i++) {
+                    ctx.strokeStyle = colors[i];
+                    ctx.globalAlpha = 0.8 - i*0.1;
+                    ctx.lineWidth = 40 - i*5;
+                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+                }
+                
+                // White hot core
+                ctx.strokeStyle = '#ffffff';
+                ctx.globalAlpha = 0.9;
+                ctx.lineWidth = 8;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+                
+                // Spiral sparkles along beam
+                ctx.fillStyle = '#ffffff';
+                for(let i = 0; i < 15; i++) {
+                    let sx = i * (beamLen/15) + Math.sin(Date.now()/100 + i)*10;
+                    let sy = Math.cos(Date.now()/100 + i)*5;
+                    ctx.beginPath(); ctx.arc(sx, sy, 3, 0, 6.28); ctx.fill();
+                }
+            }
+            ctx.restore();
         } else if(p.type !== 'blitz_grab_manager') {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx)); drawDag(ctx); ctx.restore();
         }
@@ -3572,6 +4050,127 @@ function drawPlayers() {
                     ctx.globalAlpha = 1;
                 }
             }
+        } else if(!iC && o.heroClass === 'tim') {
+            // === TINY TIM: Green Alien (45% size, so scale is already in the transform) ===
+            let timScale = 0.45;
+            ctx.scale(timScale, timScale);
+            ctx.translate(0, 0);
+            
+            let skinC = o.customization?.timColors?.skin || '#00ff00';  // Brighter, more green
+            let antennaC = o.customization?.timColors?.antenna || '#00ff00';
+            let eyeC = o.customization?.timColors?.eyes || '#000000';
+            
+            // Main body - more vibrant green
+            ctx.fillStyle = isImpactFlash ? '#000' : skinC;
+            ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#00aa00'; ctx.lineWidth = 1.5; ctx.stroke();
+            
+            // Glyph/pattern on body - makes it more alien
+            ctx.fillStyle = isImpactFlash ? '#000' : '#00cc00';
+            ctx.fillRect(-3, -2, 6, 1);
+            ctx.fillRect(-2, 2, 4, 1);
+            
+            // Antennas
+            ctx.save();
+            ctx.strokeStyle = isImpactFlash ? '#000' : antennaC; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+            [-8, 8].forEach(ax => {
+                ctx.beginPath(); ctx.moveTo(ax, -16); ctx.quadraticCurveTo(ax + 3, -28, ax, -32);
+                ctx.stroke();
+                // Antenna balls
+                ctx.fillStyle = isImpactFlash ? '#000' : antennaC;
+                ctx.beginPath(); ctx.arc(ax, -33, 2.5, 0, 6.28); ctx.fill();
+            });
+            ctx.restore();
+            
+            // Beady black eyes - larger
+            ctx.fillStyle = isImpactFlash ? '#000' : eyeC;
+            [-6, 6].forEach(ex => {
+                ctx.beginPath(); ctx.arc(ex, -5, 3, 0, 6.28); ctx.fill();
+            });
+            
+            // Mouth - simple line
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#007700'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(-4, 4); ctx.lineTo(4, 4); ctx.stroke();
+            
+            // Macro/Micro Mode Gun (drawn in Tim's rotated local space, so it rotates with him)
+            let isTransitioning = o.timTransitioning;
+            let transitionProgress = isTransitioning ? (1.2 - o.timTransitionTimer) / 1.2 : 0;  // 0 to 1 during transition
+            let targetStance = o.timTransitionTargetStance || (o.timStance === 'macro' ? 'micro' : 'macro');  // Where we're transitioning to
+            
+            if(isTransitioning || o.timStance === 'macro') {
+                // Draw macro gun - animate size during transition
+                ctx.save();
+                let baseOffset = 50;
+                let baseScale = 1;
+                
+                if(isTransitioning) {
+                    if(targetStance === 'micro') {
+                        // Shrinking from macro to micro
+                        baseScale = 1 - transitionProgress * 0.6;  // Scale from 1 to 0.4
+                        baseOffset = 50 - transitionProgress * 30;  // Offset from 50 to 20
+                    } else {
+                        // Enlarging from micro to macro
+                        baseScale = 0.4 + transitionProgress * 0.6;  // Scale from 0.4 to 1
+                        baseOffset = 20 + transitionProgress * 30;  // Offset from 20 to 50
+                    }
+                }
+                
+                ctx.scale(1/timScale, 1/timScale);  // Unscale to draw cannon at normal size
+                ctx.translate(baseOffset, 0);
+                ctx.scale(baseScale, baseScale);
+                
+                // Canon barrel - use customized cannon color
+                let cannonColor = o.customization?.timColors?.cannon || '#fbbf24';
+                ctx.fillStyle = isImpactFlash ? '#000' : cannonColor; 
+                ctx.globalAlpha = 0.9;
+                ctx.fillRect(-12, -10, 55, 20);  // 2.5x bigger
+                ctx.globalAlpha = 1;
+                
+                // Barrel highlight/glow layers
+                ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
+                ctx.globalAlpha = 0.6;
+                ctx.fillRect(-12, -12, 55, 4);
+                ctx.globalAlpha = 1;
+                
+                // Dark outline
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#666600'; ctx.lineWidth = 2.5; ctx.strokeRect(-12, -10, 55, 20);
+                
+                // Cannon chamber - circular base (enlarged)
+                ctx.fillStyle = isImpactFlash ? '#000' : '#444400';
+                ctx.beginPath(); ctx.arc(-16, 0, 14, 0, 6.28); ctx.fill();
+                ctx.strokeStyle = isImpactFlash ? '#000' : cannonColor; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.arc(-16, 0, 15, 0, 6.28); ctx.stroke();
+                
+                // Muzzle glow if charging - use beam color
+                if(o.timBeamActive) {
+                    // Show charging strength
+                    let beamColor = o.customization?.timColors?.beam || '#ff6b6b';
+                    let glowSize = 6 + o.timBeamCharge * 8;
+                    let glowIntensity = 0.3 + (o.timBeamCharge / 4.0) * 0.7;
+                    ctx.fillStyle = `${beamColor}${Math.round(glowIntensity * 255).toString(16).padStart(2, '0')}`;
+                    ctx.beginPath(); ctx.arc(43, 0, glowSize, 0, 6.28); ctx.fill();
+                    
+                    // Inner bright spot
+                    ctx.fillStyle = `${beamColor}${Math.round(glowIntensity * 0.8 * 255).toString(16).padStart(2, '0')}`;
+                    ctx.beginPath(); ctx.arc(43, 0, glowSize * 0.6, 0, 6.28); ctx.fill();
+                }
+                
+                ctx.restore();
+            } else {
+                // Draw micro gun - tiny pistol (in Tim's rotated local space)
+                ctx.save();
+                ctx.scale(1/timScale, 1/timScale);  // Unscale to gun at normal size
+                let cannonColor = o.customization?.timColors?.cannon || '#fbbf24';
+                ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
+                ctx.fillRect(0, -1.5, 18, 3);  // Slightly bigger
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#666600'; ctx.lineWidth = 1.5; ctx.strokeRect(0, -1.5, 18, 3);
+                // Mini muzzle
+                ctx.fillStyle = isImpactFlash ? '#000' : '#444400';
+                ctx.fillRect(18, -2, 4, 4);
+                ctx.restore();
+            }
+            
+            ctx.scale(1/timScale, 1/timScale);
         } else if(!iC && o.heroClass === 'jubilee') {
             ctx.fillStyle = isImpactFlash ? '#000' : '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#ec4899';
             let ro = (Date.now() / 150) % 6.28;
@@ -3774,6 +4373,86 @@ function drawVFX() {
                     ctx.beginPath(); ctx.arc(sx, sy, 1 + Math.random()*2, 0, 6.28); ctx.fill();
                 }
             }
+        } else if(e.type === 'timMuzzleFlash') {
+            ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.angle);
+            ctx.fillStyle = 'rgba(0,255,0,0.8)'; ctx.shadowBlur = 15; ctx.shadowColor = '#00ff00';
+            ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(12, 0); ctx.lineTo(0, 4); ctx.fill();
+            ctx.restore();
+        } else if(e.type === 'timVentsPuff') {
+            ctx.save(); ctx.translate(e.x, e.y);
+            let p = 1 - (e.life / e.maxLife);
+            ctx.fillStyle = `rgba(0,255,100,${(1-p)*0.4})`;
+            ctx.beginPath(); ctx.arc(Math.cos(e.angle)*20, Math.sin(e.angle)*20, 15 + p*20, 0, 6.28); ctx.fill();
+            ctx.fillStyle = `rgba(0,200,50,${(1-p)*0.6})`;
+            ctx.beginPath(); ctx.arc(Math.cos(e.angle)*10, Math.sin(e.angle)*10, 8 + p*15, 0, 6.28); ctx.fill();
+            ctx.restore();
+        } else if(e.type === 'timBeamCollapse') {
+            // Beam collapse animation - sides compressing inward
+            ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.angle);
+            let p = e.life / e.maxLife;  // 1 at start, 0 at end
+            let minWidth = 4, maxWidth = Math.max(4, 9 * (e.charge / 4.0));
+            let collapseAmount = (1 - p) * (maxWidth - minWidth);
+            let currentWidth = maxWidth - collapseAmount;
+            let beamLen = 150 + e.charge * 100;
+            
+            // Outer glow layer
+            ctx.strokeStyle = `rgba(0,255,0,${p*0.3})`; ctx.lineWidth = currentWidth + 8;
+            ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            // Main laser
+            ctx.strokeStyle = `rgba(0,255,0,${p*0.6})`; ctx.lineWidth = currentWidth + 4;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            // Inner bright core
+            ctx.strokeStyle = `rgba(100,255,100,${p*0.8})`; ctx.lineWidth = currentWidth;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            ctx.restore();
+        } else if(e.type === 'timBeamFiring') {
+            // Core beam charging visualization with custom colors
+            ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.angle);
+            let chargeP = e.charge / 4.0;  // 0 to 1
+            
+            // Beam width scales from 4 to 9 grid spaces (40-90 pixels approximately)
+            let minWidth = 4, maxWidth = 9;
+            let beamWidth = minWidth + chargeP * (maxWidth - minWidth);
+            let beamLen = 150 + chargeP * 100;  // Length scales too
+            
+            // Get beam color (from player customization if available, otherwise red)
+            let beamColor = e.beamColor || '#ff6b6b';
+            let rgb = parseInt(beamColor.slice(1), 16);
+            let r = (rgb >> 16) & 255;
+            let g = (rgb >> 8) & 255;
+            let b = (rgb & 255) >> 0;
+            
+            // Outer glow - scales with charge
+            ctx.strokeStyle = `rgba(${r},${g},${b},${0.2 + chargeP * 0.3})`,
+            ctx.lineWidth = beamWidth * 10;
+            ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            // Mid glow layer
+            ctx.strokeStyle = `rgba(${r},${g},${b},${0.4 + chargeP * 0.3})`;
+            ctx.lineWidth = beamWidth * 5;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            // Main beam - using custom color
+            ctx.strokeStyle = `rgba(${r},${g},${b},${0.7 + chargeP * 0.3})`;
+            ctx.lineWidth = beamWidth * 2;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            // Inner bright core - lighter version of beam color
+            ctx.strokeStyle = `rgba(${Math.min(r+100,255)},${Math.min(g+100,255)},${Math.min(b+100,255)},${0.9})`;
+            ctx.lineWidth = beamWidth;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(beamLen, 0); ctx.stroke();
+            
+            // Shadow/glow effect on sides for depth
+            ctx.strokeStyle = `rgba(${r},${g},${b},${0.3 + chargeP * 0.2})`;
+            ctx.lineWidth = beamWidth * 0.5;
+            ctx.beginPath(); ctx.moveTo(0, -beamWidth*1.5); ctx.lineTo(beamLen, -beamWidth*1.5); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, beamWidth*1.5); ctx.lineTo(beamLen, beamWidth*1.5); ctx.stroke();
+            
+            ctx.restore();
         } else if(e.type === 'corsairExplosion') {
             ctx.translate(e.x, e.y);
             let p = 1 - (e.life / e.maxLife);
