@@ -29,7 +29,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 .team-btn.blue{background-color:#172554;border-color:#1e40af;color:#bfdbfe}.team-btn.blue.selected{background-color:#1e40af;color:white;box-shadow:0 0 10px #2563eb}
 .char-preview-box{flex-grow:1;background:#121212;border:1px solid #3f3f46;border-radius:8px;margin:1.5vh 0;display:flex;justify-content:center;align-items:center;font-style:italic;color:#71717a;min-height:10vh;text-align:center;padding:1vh}
 .class-list-btn{background:#18181b;text-align:left;padding-left:0.6vw;font-weight:normal;border-color:#3f3f46;padding:0.5vh 0.5vw;font-size:0.8rem;}.class-list-btn.selected{background:#3f3f46;border-color:#a855f7;font-weight:bold}
-.roster-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4vh;width:100%;}
+.roster-grid{display:flex;flex-direction:column;gap:0.4vh;width:100%;overflow-y:auto;}
 .color-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1vh;font-size:0.85rem;color:#a1a1aa}.color-row input[type="color"]{width:2vw;min-width:30px;height:2vw;min-height:30px;padding:0;border:none;border-radius:4px;cursor:pointer;background:transparent}
 #game-container{display:none;position:relative;width:95vw;height:85vh;max-width:1400px;max-height:900px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid #27272a;background-color:#000;overflow:hidden;z-index:5}
 #game-container.active{display:block}canvas{display:block;width:100%;height:100%;background:transparent;cursor:crosshair;position:relative;z-index:5}
@@ -166,19 +166,8 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                 </div>
                 <button id="btn-start-game" onclick="startGame()" disabled style="background:#27272a;font-size:1.1rem;margin-top:1.5vh;">Connecting...</button>
             </div>
-            <div class="lobby-col" style="flex: 0.65;">
-                <div class="col-box" style="padding: 1vh 0.7vw;">
-                    <h3 style="margin:0 0 0.7vh 0;color:#a1a1aa;font-size:0.8rem;">Info</h3>
-                    <h2 id="info-name" style="margin:0 0 0.4vh 0;font-size:1.4rem;font-weight:800;">Thorfinn</h2>
-                    <div id="info-role" style="font-size:0.85rem;font-weight:600;color:#f59e0b;margin-bottom:0.6vh;">Assassin</div>
-                    <div id="info-stats" style="font-size:0.8rem;color:#d4d4d8;margin-bottom:0.6vh;">250 HP • Speed</div>
-                    <div class="char-preview-box" id="info-desc" style="margin: 0.6vh 0; min-height: 8vh; font-size:0.75rem;">[]</div>
-                    <div style="font-weight:600;margin-bottom:0.5vh;color:#a1a1aa;font-size:0.75rem;">Abilities</div>
-                    <ul id="info-abilities" style="margin:0;padding-left:1.2vw;font-size:0.7rem;color:#d4d4d8;line-height:1.3;"></ul>
-                </div>
-            </div>
-            <div class="lobby-col" style="flex: 1.1; display:flex; flex-direction:column; gap:1.5vh;">
-                <div class="col-box" style="overflow:hidden;">
+            <div class="lobby-col" style="flex: 0.7;">
+                <div class="col-box" style="overflow:hidden;flex-grow:1;min-height:0;">
                     <h3 style="margin:0 0 1vh 0;color:#a1a1aa;font-size:0.9rem;">Roster</h3>
                     <div class="roster-grid">
                         <button class="class-list-btn selected" id="btn-thorfinn" onclick="selectHero('thorfinn')">Thorfinn</button>
@@ -193,6 +182,8 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                         <button class="class-list-btn" id="btn-tim" onclick="selectHero('tim')">Tiny Tim</button>
                     </div>
                 </div>
+            </div>
+            <div class="lobby-col" style="flex: 1.0;">
                 <div class="col-box" style="flex-shrink:0; align-items:center;">
                     <h3 style="margin:0 0 1.5vh 0;color:#a1a1aa;font-size:0.9rem;">Customization</h3>
                     <canvas id="previewCanvas" width="160" height="160" style="background:#121212;border:1px solid #3f3f46;border-radius:8px;margin-bottom:1.5vh;width:100%;aspect-ratio:1/1;"></canvas>
@@ -207,6 +198,17 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                     <div id="corsair-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Trim Color</span><input type="color" id="corsairColorTrim" value="#dc2626"></div></div>
                     <div id="tim-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Cannon Color</span><input type="color" id="timColorCannon"></div><div class="color-row"><span>Beam Color</span><input type="color" id="timColorBeam"></div></div>
                     <div id="generic-custom-panel" style="width:100%;text-align:center;font-style:italic;color:#71717a;font-size:0.85rem;">No customizations.</div>
+                </div>
+            </div>
+            <div class="lobby-col" style="flex: 0.6;">
+                <div class="col-box" style="padding: 1vh 0.7vw;">
+                    <h3 style="margin:0 0 0.7vh 0;color:#a1a1aa;font-size:0.8rem;">Info</h3>
+                    <h2 id="info-name" style="margin:0 0 0.4vh 0;font-size:1.2rem;font-weight:800;">Thorfinn</h2>
+                    <div id="info-role" style="font-size:0.8rem;font-weight:600;color:#f59e0b;margin-bottom:0.6vh;">Assassin</div>
+                    <div id="info-stats" style="font-size:0.75rem;color:#d4d4d8;margin-bottom:0.6vh;">250 HP • Speed</div>
+                    <div class="char-preview-box" id="info-desc" style="margin: 0.6vh 0; min-height: 8vh; font-size:0.7rem;">[]</div>
+                    <div style="font-weight:600;margin-bottom:0.5vh;color:#a1a1aa;font-size:0.7rem;">Abilities</div>
+                    <ul id="info-abilities" style="margin:0;padding-left:1.2vw;font-size:0.65rem;color:#d4d4d8;line-height:1.3;"></ul>
                 </div>
             </div>
         </div>
@@ -1259,6 +1261,8 @@ function processVFX(d) {
     else if(d.type==='trace_dash_trail') vfx.push({type:'speedLine', x:d.x, y:d.y, angle:d.angle, life:0.2, maxLife:0.2, length:40, color:d.color});
     else if(d.type==='blitz_ult_vfx') applyShake(10, 0.4);
     else if(d.type==='copycat_steal_vfx') { let t=gameState.players[d.targetId]||gameState.clones.find(c=>c.id===d.targetId), s=gameState.players[d.sourceId]; if(t&&s) vfx.push({type:'stealLink', targetId:d.targetId, sourceId:d.sourceId, life:0.4, maxLife:0.4}); }
+    else if(d.type==='tim_core_beam_vfx') vfx.push({type:'timBeamFiring', x:d.x, y:d.y, angle:d.angle, charge:d.charge||0, beamColor:d.beamColor||'#ff6b6b', life:0.05, maxLife:0.05});
+    else if(d.type==='tim_core_beam_end_vfx') vfx.push({type:'timBeamCollapse', x:d.x, y:d.y, angle:d.angle, charge:d.charge||0, life:0.3, maxLife:0.3});
 }
 
 function sendHitmarker(aId, t, d) {
@@ -1926,11 +1930,16 @@ function processCombatEvent(sId, e) {
         } else {
             existingBeam.x=e.x; existingBeam.y=e.y; existingBeam.angle=e.angle; existingBeam.charge=e.charge; existingBeam.damage=e.damage;
         }
+        // Broadcast firing VFX to all peers (including back to shooter when host) so muzzle flash shows everywhere
+        let beamCol = (gameState.players[sId]?.customization?.timColors?.beam) || '#ff6b6b';
+        connections.forEach(c=>{if(c.open)c.send({type:'tim_core_beam_vfx',x:e.x,y:e.y,angle:e.angle,charge:e.charge,beamColor:beamCol});});
+        if(sId!==myId) vfx.push({type:'timBeamFiring',x:e.x,y:e.y,angle:e.angle,charge:e.charge,beamColor:beamCol,life:0.05,maxLife:0.05});
     }
     else if(e.type==='tim_core_beam_end'){
         // Remove active beam and trigger collapse animation
         gameState.projectiles = gameState.projectiles.filter(p=>!(p.type==='tim_core_beam'&&p.ownerId===sId));
         vfx.push({type:'timBeamCollapse',x:e.x,y:e.y,angle:e.angle,charge:e.charge,life:0.3,maxLife:0.3});
+        connections.forEach(c=>{if(c.open)c.send({type:'tim_core_beam_end_vfx',x:e.x,y:e.y,angle:e.angle,charge:e.charge});});
     }
     else if(e.type==='tim_vents'){
         s.slashAnimTimer=0.15;
@@ -2213,7 +2222,7 @@ function updateGameState(dt) {
         // Update beam angle every frame to follow Tim's rotation
         myPlayer.timBeamDirectionAngle = myPlayer.angle;
         // Beam fires continuously - damage based on current charge (minimum 5 DPS even at charge 0)
-        let beamDamage = Math.max(5, 8 + (myPlayer.timBeamCharge / 4.0) * 14); // 5-22 DPS
+        let beamDamage = Math.max(5, 8 + (myPlayer.timBeamCharge / 4.0) * 140); // 5-22 DPS
         // Calculate cannon muzzle position (93 units from center)
         let muzzleX = myPlayer.x + 93 * Math.cos(myPlayer.timBeamDirectionAngle);
         let muzzleY = myPlayer.y + 93 * Math.sin(myPlayer.timBeamDirectionAngle);
@@ -2675,15 +2684,17 @@ function updateGameState(dt) {
                         if(d < 25) { if(!p.hitCooldowns[id]) { let dHP = t.maxHp * 0.15 * (p.dmgMult||1.0); dmgTk(t, dHP, p.ownerId); sendHitmarker(p.ownerId, t, dHP); p.hitCooldowns[id] = true; t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id); if(p.mode==='copycat_cursor') copycatHit = true; } } else if(d > 45) p.hitCooldowns[id] = false;
                     }
                 }
-                if(p.mode==='copyctim_pea_bullet') {
+                if(p.mode==='copycat' && (iW(p.x,p.y) || p.life<=0)) gameState.projectiles.splice(i,1);
+                if(p.mode==='copycat_cursor' && copycatHit) p.deactivated = true;
+            } else if(p.type === 'tim_pea_bullet') {
                 // Small pea-shooter bullets from Tim's micro mode
                 p.x += p.vx * sm * dt;
                 p.y += p.vy * sm * dt;
                 p.life -= dt;
-                
+
                 let hw = iW(p.x, p.y);
                 let hit = false;
-                
+
                 if(!hw) {
                     for(let id in gameState.players) {
                         let t = gameState.players[id];
@@ -2700,7 +2711,7 @@ function updateGameState(dt) {
                         }
                     }
                 }
-                
+
                 for(let c of gameState.clones) {
                     if(cDm(p.ownerId, c.ownerId) && !c.invulnerable && Math.hypot(c.x - p.x, c.y - p.y) < 15) {
                         if(!p.hitIds[c.id]) {
@@ -2711,37 +2722,35 @@ function updateGameState(dt) {
                         }
                     }
                 }
-                
+
                 if(hw || hit || p.life <= 0 || p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > H + 100) {
                     gameState.projectiles.splice(i, 1);
                 }
             } else if(p.type === 'tim_core_beam') {
                 // Continuous beam that fires from Tim - updates position each frame
                 p.life -= dt;
-                
+
                 // Damage everyone in line of the beam
                 let beamLength = 150 + (p.charge / 4.0) * 100;
-                let beamRadius = 20;  // Collision radius for beam (increased for reliability)
-                
+                let beamRadius = 20;
+
                 for(let id in gameState.players) {
                     let t = gameState.players[id];
                     if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable) {
-                        // Check if target is within beam line
                         let dx = t.x - p.x, dy = t.y - p.y;
                         let distToTarget = Math.hypot(dx, dy);
-                        
-                        // Project target onto beam line
                         let beamDist = Math.cos(Math.atan2(dy, dx) - p.angle) * distToTarget;
                         let beamOffDist = Math.sin(Math.atan2(dy, dx) - p.angle) * distToTarget;
-                        
+
                         if(beamDist > 0 && beamDist < beamLength && Math.abs(beamOffDist) < beamRadius + 15) {
                             if(!p.hitCooldowns[id] || p.hitCooldowns[id] <= 0) {
-                                dmgTk(t, p.damage * dt, p.ownerId);
-                                sendHitmarker(p.ownerId, t, Math.round(p.damage * dt));
+                                let tickDmg = Math.max(1, p.damage * dt);
+                                dmgTk(t, tickDmg, p.ownerId);
+                                sendHitmarker(p.ownerId, t, Math.round(tickDmg));
                                 t.lastAttacker = p.ownerId;
                                 t.lastHitTime = Date.now();
                                 chD(t, id);
-                                p.hitCooldowns[id] = 0.05;  // 50ms cooldown between hits
+                                p.hitCooldowns[id] = 0.05;
                             } else {
                                 p.hitCooldowns[id] -= dt;
                             }
@@ -2750,18 +2759,19 @@ function updateGameState(dt) {
                         }
                     }
                 }
-                
+
                 for(let c of gameState.clones) {
                     if(cDm(p.ownerId, c.ownerId) && !c.invulnerable) {
                         let dx = c.x - p.x, dy = c.y - p.y;
                         let distToTarget = Math.hypot(dx, dy);
                         let beamDist = Math.cos(Math.atan2(dy, dx) - p.angle) * distToTarget;
                         let beamOffDist = Math.sin(Math.atan2(dy, dx) - p.angle) * distToTarget;
-                        
+
                         if(beamDist > 0 && beamDist < beamLength && Math.abs(beamOffDist) < beamRadius + 15) {
                             if(!p.hitCooldowns[c.id] || p.hitCooldowns[c.id] <= 0) {
-                                dmgTk(c, p.damage * dt, p.ownerId);
-                                sendHitmarker(p.ownerId, c, Math.round(p.damage * dt));
+                                let tickDmg = Math.max(1, p.damage * dt);
+                                dmgTk(c, tickDmg, p.ownerId);
+                                sendHitmarker(p.ownerId, c, Math.round(tickDmg));
                                 p.hitCooldowns[c.id] = 0.05;
                             } else {
                                 p.hitCooldowns[c.id] -= dt;
@@ -2771,7 +2781,7 @@ function updateGameState(dt) {
                         }
                     }
                 }
-                
+
                 if(p.life <= 0) {
                     gameState.projectiles.splice(i, 1);
                 }
@@ -2787,10 +2797,9 @@ function updateGameState(dt) {
                     p.x += Math.cos(p.angle) * 1500 * sm * dt;
                     p.y += Math.sin(p.angle) * 1500 * sm * dt;
                     p.life -= dt;
-                    
-                    // Massive AoE damage
+
                     let hitRadius = 80;
-                    
+
                     for(let id in gameState.players) {
                         let t = gameState.players[id];
                         if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && Math.hypot(t.x - p.x, t.y - p.y) < hitRadius) {
@@ -2804,7 +2813,7 @@ function updateGameState(dt) {
                             }
                         }
                     }
-                    
+
                     for(let c of gameState.clones) {
                         if(cDm(p.ownerId, c.ownerId) && !c.invulnerable && Math.hypot(c.x - p.x, c.y - p.y) < hitRadius) {
                             if(!p.hitIds[c.id]) {
@@ -2815,12 +2824,10 @@ function updateGameState(dt) {
                         }
                     }
                 }
-                
+
                 if(p.life <= 0 || p.x < -200 || p.x > W + 200 || p.y < -200 || p.y > H + 200) {
                     gameState.projectiles.splice(i, 1);
                 }
-            } else if(p.type === 'at_cursor' && copycatHit) { p.deactivated = true; }
-                if(p.mode==='copycat' && (iW(p.x,p.y) || p.life<=0)) gameState.projectiles.splice(i,1);
             } else if(p.type === 'matrix_beam') {
                 p.lastX = p.x; p.lastY = p.y;
                 if(p.phase === 'slow') { p.slowTimer -= dt; p.speed = 150; if(p.slowTimer <= 0) p.phase = 'fast'; } else p.speed = 1600;
@@ -2839,6 +2846,10 @@ function updateGameState(dt) {
                 }
                 if(h || p.life <= 0 || p.x < 0 || p.x > W || p.y < 0 || p.y > H) gameState.projectiles.splice(i, 1);
             } else {
+                // Catch-all: thorfinn thrown daggers (untyped projectiles)
+                let owner = gameState.players[p.ownerId];
+                let isDagger = !p.type && owner && owner.heroClass === 'thorfinn';
+                if(!isDagger) { gameState.projectiles.splice(i, 1); continue; }
                 p.lastX = p.x; p.lastY = p.y; p.x += p.vx * sm * dt; p.y += p.vy * sm * dt; p.life -= dt;
                 let h = iW(p.x, p.y);
                 if(!h) for(let c of gameState.clones) if(cDm(p.ownerId, c.ownerId) && !c.invulnerable && Math.hypot(c.x - p.x, c.y - p.y) < 20) { dmgTk(c, 60, p.ownerId); sendHitmarker(p.ownerId, c, 60); h = true; break; }
@@ -3514,7 +3525,7 @@ function drawEnts() {
             ctx.shadowBlur = 12; ctx.shadowColor = beamColor;
             // Main bullet
             ctx.fillStyle = beamColor; ctx.globalAlpha = 0.9;
-            ctx.beginPath(); ctx.moveTo(8, 0); ctx.quadraticCurveTo(0, -2.5, -6, 0); ctx.quadraticCurveTo(0, 2.5, 8, 0); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(80, 0); ctx.quadraticCurveTo(0, -2.5, -6, 0); ctx.quadraticCurveTo(0, 2.5, 8, 0); ctx.fill();
             // Bright core
             ctx.fillStyle = beamColor; ctx.globalAlpha = 0.7;
             ctx.beginPath(); ctx.arc(4, 0, 2, 0, 6.28); ctx.fill();
@@ -4797,7 +4808,7 @@ function drawAeroContextMenuWorld(ctx2) {
         ctx2.fillStyle = '#000'; ctx2.font = 'bold 9px sans-serif';
         ctx2.fillText('📋 Copy', 6, 28);
         ctx2.fillStyle = '#aaa'; ctx2.font = '9px sans-serif';
-        ctx2.fillText('📄 Paste', 6, 44);
+        ctx2.fillText('📄 67', 6, 44);
         ctx2.restore();
     }
 }
