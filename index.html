@@ -196,7 +196,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                         <button onclick="clearAeroBg()" style="width:100%;padding:1vh;font-size:0.75rem;margin-top:1vh;background:#ef4444;border:none;border-radius:4px;cursor:pointer;color:#fff;">Clear Image</button>
                     </div>
                     <div id="corsair-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Trim Color</span><input type="color" id="corsairColorTrim" value="#dc2626"></div></div>
-                    <div id="tim-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Cannon Color</span><input type="color" id="timColorCannon"></div><div class="color-row"><span>Beam Color</span><input type="color" id="timColorBeam"></div></div>
+                    <div id="tim-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Skin</span><input type="color" id="timColorSkin"></div><div class="color-row"><span>Antenna</span><input type="color" id="timColorAntenna"></div><div class="color-row"><span>Eyes</span><input type="color" id="timColorEyes"></div><div class="color-row"><span>Cannon Color</span><input type="color" id="timColorCannon"></div><div class="color-row"><span>Beam Color</span><input type="color" id="timColorBeam"></div></div>
                     <div id="generic-custom-panel" style="width:100%;text-align:center;font-style:italic;color:#71717a;font-size:0.85rem;">No customizations.</div>
                 </div>
             </div>
@@ -248,6 +248,37 @@ aeroUrls.forEach(src => { let img = new Image(); img.crossOrigin="anonymous"; im
 const healImg = new Image(); healImg.crossOrigin="anonymous"; healImg.src = 'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=400&q=80';
 
 let peer, isHost=false, connections=[], hostConnection, myId=null, hostInGame=false, lobbyPlayers={};
+let currentHostPeerId = null; // last known host peer id (for migration)
+
+// =====================================================================
+// BALANCE CONFIG - Easy to tweak hero numbers here
+// =====================================================================
+const BALANCE = {
+    tim: {
+        coreBeamMinDps: 6,    // DPS at 0 charge
+        coreBeamMaxDps: 32,   // DPS at full (4.0) charge
+    },
+    blitz: {
+        handgunCooldown: 0.12,    // seconds between shots (auto-fire)
+        katanaCooldown: 0.7,      // seconds between swings (manual click)
+        katanaDamage: 50,         // per hit
+    },
+    corsair: {
+        broadsideCooldown: 2.6,   // seconds
+        broadsideDamage: 68,
+    },
+    glitch: {
+        beamDmgSlow: 45,          // damage per tick during slow phase (solo)
+        beamDmgFast: 30,          // damage per tick during fast phase (solo)
+        beamDmgSlow1Clone: 26,    // with 1 clone (player + 1)
+        beamDmgFast1Clone: 16,
+        beamDmgSlow2Clone: 22,    // with 2 clones (player + 2)
+        beamDmgFast2Clone: 13,
+        maxClones: 2,             // max clones (player + this many)
+    }
+};
+// =====================================================================
+
 const GRID=50, W=3200, H=2400; 
 let cam = {x:0, y:0, zoom:0.6, targetZoom: 0.6};
 let gameState = {isTeamMode:false, players:{}, projectiles:[], pickups:[], walls:[], shields:[], clones:[], healthPacks:[], train:{phase:'idle',timer:2.0}, corsairCannons:[]};
@@ -264,14 +295,14 @@ const SPAWN_POINTS = [ {x: 300, y: 300}, {x: 2900, y: 300}, {x: 300, y: 2100}, {
 const HERO_DATA = {
     trace:{name:'Trace',role:'Assassin',hp:250,speed:'Fast',color:'#a855f7',desc:'High-speed precision flanker utilizing geometric light arrows and unpredictable pathing.',abilities:['Vector Arrow (Hold L-Click to Draw Nodes)','Slipstream Dash (Hold Space to Draw Nodes)']},
     thorfinn:{name:'Thorfinn',role:'Assassin',hp:250,speed:'Fast',color:'#f59e0b',desc:'Dual-dagger close quarters high-mobility assassin.',abilities:['X-Slash','Throw Dagger','Dash']},
-    blitz:{name:'Blitz',role:'Assassin',hp:200,speed:'Fast',color:'#ffffff',desc:'Spatial illusionist capable of teleportation and stance swaps.',abilities:['Swap Stance','Handgun/Katana','Spatial Shift','Displace Grab','[ULT] Paradox Rift']},
+    blitz:{name:'Blitz',role:'Assassin',hp:220,speed:'Fast',color:'#ffffff',desc:'Spatial illusionist capable of teleportation and stance swaps.',abilities:['Swap Stance','Handgun/Katana','Spatial Shift','Displace Grab','[ULT] Paradox Rift']},
     kendo:{name:'Kendo',role:'Sniper',hp:250,speed:'Medium',color:'#ef4444',desc:'Tactical sniper with a ridable arrow and modular shield.',abilities:['Y-Arrow','Arrow Ride','Subsonic Shield']},
-    glitch:{name:'Glitch',role:'Support',hp:350,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
-    jubilee:{name:'Jubilee',role:'Damage Dealer',hp:200,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
+    glitch:{name:'Glitch',role:'Support',hp:260,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
+    jubilee:{name:'Jubilee',role:'Damage Dealer',hp:220,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
     misaki:{name:'Misaki and Kisaki',role:'Sniper',hp:300,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
-    corsair:{name:'Corsair',role:'Tank',hp:450,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
+    corsair:{name:'Corsair',role:'Tank',hp:400,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
     aero:{name:'Aero',role:'Controller',hp:250,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},
-    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Tectonic-Disruption and Matter-Vaporization Cannon',role:'Tank',hp:200,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']}
+    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Tectonic-Disruption and Matter-Vaporization Cannon',role:'Tank',hp:380,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']}
 };
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
@@ -280,17 +311,19 @@ let kCol = JSON.parse(localStorage.getItem('rivals_kisakiColors'))||{body:'#dc26
 let crsCol = JSON.parse(localStorage.getItem('rivals_corsairColors'))||{trim:'#dc2626'};
 let kndCol = JSON.parse(localStorage.getItem('rivals_kendoColors'))||{primary:'#ef4444',glow:'#ef4444'}; getEl('kendoColorPrimary').value=kndCol.primary; getEl('kendoColorGlow').value=kndCol.glow;
 getEl('corsairColorTrim').value=crsCol.trim;
-let timCol = JSON.parse(localStorage.getItem('rivals_timColors'))||{skin:'#22c55e',antenna:'#00ff00',eyes:'#000000',cannon:'#fbbf24',beam:'#ff6b6b'}; getEl('timColorCannon').value=timCol.cannon; getEl('timColorBeam').value=timCol.beam;
+let timCol = JSON.parse(localStorage.getItem('rivals_timColors'))||{skin:'#22c55e',antenna:'#00ff00',eyes:'#000000',cannon:'#fbbf24',beam:'#ff6b6b'};
+getEl('timColorSkin').value=timCol.skin; getEl('timColorAntenna').value=timCol.antenna; getEl('timColorEyes').value=timCol.eyes;
+getEl('timColorCannon').value=timCol.cannon; getEl('timColorBeam').value=timCol.beam;
 
 const saveCols = () => {
     tCol={bow:getEl('tColorBow').value, neon:getEl('tColorNeon').value}; localStorage.setItem('rivals_traceColors',JSON.stringify(tCol)); myPlayer.customization.traceColors=tCol;
     kCol={body:getEl('kColorBody').value, w2:getEl('kColorW2').value, w3:getEl('kColorW3').value}; localStorage.setItem('rivals_kisakiColors',JSON.stringify(kCol)); myPlayer.customization.kisakiColors=kCol;
     kndCol={primary:getEl('kendoColorPrimary').value, glow:getEl('kendoColorGlow').value}; localStorage.setItem('rivals_kendoColors',JSON.stringify(kndCol)); myPlayer.customization.kendoColors=kndCol;
     crsCol={trim:getEl('corsairColorTrim').value}; localStorage.setItem('rivals_corsairColors',JSON.stringify(crsCol)); myPlayer.customization.corsairColors=crsCol;
-    timCol={skin:timCol.skin,antenna:timCol.antenna,eyes:timCol.eyes,cannon:getEl('timColorCannon').value, beam:getEl('timColorBeam').value}; localStorage.setItem('rivals_timColors',JSON.stringify(timCol)); myPlayer.customization.timColors=timCol;
+    timCol={skin:getEl('timColorSkin').value, antenna:getEl('timColorAntenna').value, eyes:getEl('timColorEyes').value, cannon:getEl('timColorCannon').value, beam:getEl('timColorBeam').value}; localStorage.setItem('rivals_timColors',JSON.stringify(timCol)); myPlayer.customization.timColors=timCol;
     updateLobbyState();
 };
-['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim','timColorCannon','timColorBeam'].forEach(id=>getEl(id).addEventListener('input',saveCols));
+['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim','timColorSkin','timColorAntenna','timColorEyes','timColorCannon','timColorBeam'].forEach(id=>getEl(id).addEventListener('input',saveCols));
 
 let myPlayer = { 
     id:null, name:getEl('playerName').value, heroClass:"thorfinn", team:"none", color:"#f59e0b", 
@@ -538,6 +571,7 @@ function isSpawnPointSafe(spawn,playerId,team='none'){if(!spawn)return false;con
 function getSafeSpawn(playerId,team='none'){const scored=SPAWN_POINTS.map(spawn=>{const fixed=gnV(spawn.x,spawn.y);let nearestEnemy=Infinity;for(let id in gameState.players){if(id===playerId)continue;const p=gameState.players[id];if(!p||p.isDead||(gameState.isTeamMode&&p.team===team))continue;nearestEnemy=Math.min(nearestEnemy,Math.hypot(p.x-fixed.x,p.y-fixed.y));}return {spawn:fixed,safe:isSpawnPointSafe(fixed,playerId,team),nearestEnemy};}).sort((a,b)=>Number(b.safe)-Number(a.safe)||b.nearestEnemy-a.nearestEnemy);return (scored[0]&&scored[0].spawn)||gnV(W/2,H/2);}
 function clampVfxPool(){if(vfx.length>MAX_VFX)vfx.splice(0,vfx.length-MAX_VFX);}
 function getCompactState(includeWalls=false){return {players:gameState.players,projectiles:gameState.projectiles,pickups:gameState.pickups,walls:includeWalls?gameState.walls:undefined,shields:gameState.shields||[],clones:gameState.clones||[],isTeamMode:gameState.isTeamMode,healthPacks:gameState.healthPacks||[],train:gameState.train||{phase:'idle',timer:2},koth:gameState.koth,ultOrb:gameState.ultOrb,juggernautId:gameState.juggernautId??null,corsairCannons:gameState.corsairCannons||[]};}
+function getStatePacket(includeWalls=false){return {type:'state', state:getCompactState(includeWalls), migrationOrder:migrationOrder, hostPeerId: myId};}
 
 const pCan=getEl('previewCanvas'), pCtx=pCan.getContext('2d');
 
@@ -1011,9 +1045,22 @@ function updateLobbyUI() {
     }
 }
 
+// Track join order for host migration. Host = lowest joinOrder.
+let nextJoinOrder = 1;
+let migrationOrder = []; // ordered list of peer IDs (host first), maintained by host & sent to clients
+let isMigrating = false;
+
+function rebuildMigrationOrder() {
+    // Sort lobby players by joinOrder ascending; host should always be first
+    migrationOrder = Object.keys(lobbyPlayers)
+        .filter(id => lobbyPlayers[id])
+        .sort((a, b) => (lobbyPlayers[a].joinOrder ?? 9e9) - (lobbyPlayers[b].joinOrder ?? 9e9));
+}
+
 function updateLobbyState() {
     if(isHost) {
-        lobbyPlayers[myId] = {name:myPlayer.name, heroClass:myPlayer.heroClass, team:myPlayer.team, isHost:true, customization:myPlayer.customization};
+        lobbyPlayers[myId] = {name:myPlayer.name, heroClass:myPlayer.heroClass, team:myPlayer.team, isHost:true, customization:myPlayer.customization, joinOrder: lobbyPlayers[myId]?.joinOrder ?? 0};
+        rebuildMigrationOrder();
         broadcastLobby(); updateLobbyUI();
     } else if(hostConnection && hostConnection.open) {
         hostConnection.send({type:'lobby_update_player', player:{id:myId, name:myPlayer.name, heroClass:myPlayer.heroClass, team:myPlayer.team, customization:myPlayer.customization}});
@@ -1022,7 +1069,8 @@ function updateLobbyState() {
 
 function broadcastLobby() {
     if(!isHost) return;
-    connections.forEach(c => { if(c.open) c.send({type:'lobby_state', players:lobbyPlayers, serverMode:activeServerMode}); });
+    rebuildMigrationOrder();
+    connections.forEach(c => { if(c.open) c.send({type:'lobby_state', players:lobbyPlayers, serverMode:activeServerMode, migrationOrder:migrationOrder, hostPeerId: myId}); });
 }
 
 function addToKillFeed(d) {
@@ -1084,21 +1132,131 @@ function selectServer(mode) {
     connectToServer(mode);
 }
 
-function connectToServer(mode) {
-    if(peer) { peer.destroy(); peer = null; }
-    connections = []; lobbyPlayers = {}; updateLobbyUI();
-    getEl('btn-start-game').disabled = true; getEl('btn-start-game').innerText = "Connecting...";
-    let srvId = SERVER_IDS[mode];
-    
+// Decide what to do when the host disappears: try to migrate (the lowest-joinOrder
+// surviving player becomes the new host using its own peer; everyone else reconnects
+// to that peer id). Falls back to a public-server reconnect if migration data is missing.
+function handleHostGone() {
+    if(isMigrating) return;
+    isMigrating = true;
+    let oldHostId = currentHostPeerId;
+    // Determine successor: filter migrationOrder for peers other than dead host
+    let survivors = (migrationOrder || []).filter(id => id && id !== oldHostId);
+    // Prune lobbyPlayers to remove the dead host
+    if(oldHostId) { delete lobbyPlayers[oldHostId]; delete gameState.players[oldHostId]; }
+    if(survivors.length === 0) {
+        // No one to migrate to — full reconnect
+        isMigrating = false; connectToServer(activeServerMode); return;
+    }
+    let nextHostId = survivors[0];
+    if(nextHostId === myId) {
+        // We are the new host. Destroy current peer, spin up a fresh one (random id),
+        // and broadcast our id as the new rendezvous via lobby_state/state packets.
+        try { peer.destroy(); } catch(e){}
+        peer = null; connections = []; hostConnection = null;
+        // Use a fresh random Peer (no fixed id) to avoid colliding with the dead public id
+        peer = new Peer();
+        peer.on('error', err => { /* swallow */ });
+        // Reuse becomeHost's connection handler by calling it with a random srvId trick:
+        // We need it to use this fresh peer. Easiest path: replicate the inner logic.
+        peer.on('open', id => {
+            myId = id; myPlayer.id = id; isHost = true; hostInGame = true;
+            currentHostPeerId = id;
+            // Preserve gameState; reset lobby & connections, our player gets joinOrder 0
+            lobbyPlayers = {};
+            nextJoinOrder = 1;
+            lobbyPlayers[id] = {name:myPlayer.name, heroClass:myPlayer.heroClass, team:myPlayer.team, isHost:true, customization:myPlayer.customization, joinOrder: 0};
+            // Re-key our own player in gameState
+            gameState.players[id] = {...myPlayer, id};
+            rebuildMigrationOrder();
+            getEl('btn-start-game').disabled = false; getEl('btn-start-game').innerText = "ENTER ARENA";
+            updateLobbyUI();
+            isMigrating = false;
+        });
+        peer.on('connection', c => {
+            connections.push(c);
+            c.on('open', () => { if(c.open) c.send({type:'state', state:getCompactState(true), migrationOrder:migrationOrder, hostPeerId: myId}); });
+            c.on('data', d => {
+                if(d.type === 'player_leaving') {
+                    delete gameState.players[d.id]; delete lobbyPlayers[d.id]; gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==d.id);
+                    connections = connections.filter(x => x.peer !== d.id);
+                    broadcastLobby(); updateLobbyUI();
+                    return;
+                }
+                if(d.type === 'lobby_update_player') {
+                    let existing = lobbyPlayers[d.player.id];
+                    let jo = existing?.joinOrder ?? nextJoinOrder++;
+                    lobbyPlayers[d.player.id] = {name:d.player.name, heroClass:d.player.heroClass, team:d.player.team, isHost:false, customization:d.player.customization, joinOrder: jo};
+                    broadcastLobby(); updateLobbyUI();
+                }
+                else if(d.type === 'update') {
+                    if(gameState.players[d.player.id]){
+                        let s = gameState.players[d.player.id], pr={hp:s.hp, isDead:s.isDead, stunTimer:s.stunTimer, kills:s.kills, deaths:s.deaths, flicker:s.flicker, grabbedLocked:!!s.grabbedLocked};
+                        Object.assign(s, d.player); Object.assign(s, pr); if(d.player.flicker !== undefined) s.flicker = d.player.flicker;
+                        s.invulnerable = d.player.invulnerable || false;
+                    } else {
+                        let sp = getSafeSpawn(d.player.id, d.player.team || 'none');
+                        let baseHp = HERO_DATA[d.player.heroClass]?.hp || 250;
+                        if(activeServerMode === 'CHAOS') baseHp *= 12;
+                        let np = Object.assign({}, d.player);
+                        np.x = sp.x; np.y = sp.y;
+                        np.name = np.name || 'Player';
+                        np.color = np.color || HERO_DATA[np.heroClass]?.color || '#fff';
+                        np.team = np.team || 'none';
+                        np.hp = np.hp || baseHp; np.maxHp = np.maxHp || baseHp;
+                        np.kills = 0; np.deaths = 0; np.isDead = false;
+                        if(np.heroClass === 'thorfinn') initThorfinnHair(np);
+                        gameState.players[d.player.id] = np;
+                        let jo = lobbyPlayers[d.player.id]?.joinOrder ?? nextJoinOrder++;
+                        lobbyPlayers[d.player.id] = {name:np.name, heroClass:np.heroClass, team:np.team, isHost:false, customization:np.customization, joinOrder: jo};
+                        broadcastLobby();
+                    }
+                }
+                else if(d.type === 'event') processCombatEvent(d.senderId, d.event);
+                else if(d.type === 'chat') broadcastChat(d);
+                else processVFX(d);
+            });
+            c.on('close', () => {
+                delete gameState.players[c.peer]; delete lobbyPlayers[c.peer];
+                connections = connections.filter(x => x !== c);
+                broadcastLobby(); updateLobbyUI();
+            });
+            c.on('error', () => {
+                delete gameState.players[c.peer]; delete lobbyPlayers[c.peer];
+                connections = connections.filter(x => x !== c);
+                broadcastLobby(); updateLobbyUI();
+            });
+        });
+    } else {
+        // Someone else is the new host — connect to their peer id
+        // Small random delay to let the new host's peer come up
+        setTimeout(() => connectToServer(activeServerMode, nextHostId), 600 + Math.random()*400);
+    }
+}
+
+function connectToServer(mode, explicitHostId) {
+    if(peer) { try{peer.destroy();}catch(e){} peer = null; }
+    connections = []; lobbyPlayers = {};
+    if(!explicitHostId) { migrationOrder = []; currentHostPeerId = null; }
+    updateLobbyUI();
+    getEl('btn-start-game').disabled = true; getEl('btn-start-game').innerText = explicitHostId ? "Reconnecting..." : "Connecting...";
+    let srvId = explicitHostId || SERVER_IDS[mode];
+
     peer = new Peer();
     peer.on('open', id => {
         myId = id; myPlayer.id = id;
         hostConnection = peer.connect(srvId, { reliable: true });
-        connectingTimeout = setTimeout(() => { 
-            if(!hostConnection || !hostConnection.open) { 
-                peer.destroy(); becomeHost(mode, srvId); 
-            } 
+        connectingTimeout = setTimeout(() => {
+            if(!hostConnection || !hostConnection.open) {
+                if(explicitHostId) {
+                    // Migration target unreachable — fall back to public server-id flow
+                    try{peer.destroy();}catch(e){}
+                    connectToServer(mode);
+                } else {
+                    peer.destroy(); becomeHost(mode, srvId);
+                }
+            }
         }, 1500);
+
         
         hostConnection.on('open', () => {
             clearTimeout(connectingTimeout); isHost = false; hostInGame = true;
@@ -1108,52 +1266,86 @@ function connectToServer(mode) {
         });
         
         hostConnection.on('data', d => {
-            if (d.type === 'host_leaving') { connectToServer(activeServerMode); return; }
-            if (d.type === 'lobby_state') { 
-                lobbyPlayers = d.players; 
+            if (d.type === 'host_leaving') { handleHostGone(); return; }
+            if (d.type === 'lobby_state') {
+                lobbyPlayers = d.players;
+                if(d.migrationOrder) migrationOrder = d.migrationOrder;
+                if(d.hostPeerId) currentHostPeerId = d.hostPeerId;
                 let prevMode = activeServerMode;
-                activeServerMode = d.serverMode; 
-                gameState.isTeamMode = (activeServerMode === 'RVB' || activeServerMode === 'KOTH'); 
+                activeServerMode = d.serverMode;
+                gameState.isTeamMode = (activeServerMode === 'RVB' || activeServerMode === 'KOTH');
                 if (prevMode !== activeServerMode) {
                     let baseHp = HERO_DATA[myPlayer.heroClass].hp;
                     if (activeServerMode === 'CHAOS') baseHp *= 12;
                     myPlayer.maxHp = baseHp; myPlayer.hp = baseHp;
                 }
-                updateLobbyUI(); 
-            } 
-            else if (d.type === 'state') syncGS(d.state);
+                updateLobbyUI();
+            }
+            else if (d.type === 'state') {
+                if (d.migrationOrder) migrationOrder = d.migrationOrder;
+                if (d.hostPeerId) currentHostPeerId = d.hostPeerId;
+                syncGS(d.state);
+            }
             else if (d.type === 'killfeed') addToKillFeed(d);
             else if (d.type === 'hitmarker') spawnHitmarker(d.x, d.y, d.damage);
             else if (d.type === 'chat') addChatMessage(d);
             else if (d.type === 'orb_claimed') { myPlayer.ultCharge = 100; resetAllCooldowns(); applyShake(15, 0.4); }
             else processVFX(d);
         });
-        hostConnection.on('close', () => connectToServer(activeServerMode));
+        hostConnection.on('close', () => { handleHostGone(); });
+        hostConnection.on('error', () => { handleHostGone(); });
+
     });
 }
 
-function becomeHost(mode, srvId) {
+function becomeHost(mode, srvId, opts) {
+    opts = opts || {};
     peer = new Peer(srvId);
     peer.on('open', id => {
         myId = id; myPlayer.id = id; isHost = true; hostInGame = true;
-        gameState.walls = genMap();
-        gameState.healthPacks = [{id:'h1',x:600,y:1200,active:true,timer:0},{id:'h2',x:2600,y:1200,active:true,timer:0},{id:'h3',x:1500,y:300,active:true,timer:0},{id:'h4',x:1600,y:1900,active:true,timer:0}];
-        gameState.train = {phase:'idle',timer:2}; 
-        gameState.isTeamMode = (mode === 'RVB' || mode === 'KOTH');
-        if(mode === 'KOTH') gameState.koth = { x: W/2, y: H/2, radius: 250, ownerTeam: 'none', captureProgress: 0, points: { red: 0, blue: 0, ffa: {} } };
-        gameState.ultOrb = { state: 'inactive', x: -1000, y: -1000, targetX: 0, targetY: 0, timer: 60.0, claimerId: null };
-        gameState.juggernautId = null;
-        
-        lobbyPlayers[id] = {name:myPlayer.name, heroClass:myPlayer.heroClass, team:myPlayer.team, isHost:true, customization:myPlayer.customization};
-        let baseHp = HERO_DATA[myPlayer.heroClass].hp; if (mode === 'CHAOS') baseHp *= 12; myPlayer.maxHp = myPlayer.hp = baseHp;
-        
-        getEl('btn-start-game').disabled = false; getEl('btn-start-game').innerText = "ENTER ARENA"; 
+        currentHostPeerId = id;
+        if(!opts.preserveState) {
+            gameState.walls = genMap();
+            gameState.healthPacks = [{id:'h1',x:600,y:1200,active:true,timer:0},{id:'h2',x:2600,y:1200,active:true,timer:0},{id:'h3',x:1500,y:300,active:true,timer:0},{id:'h4',x:1600,y:1900,active:true,timer:0}];
+            gameState.train = {phase:'idle',timer:2};
+            gameState.isTeamMode = (mode === 'RVB' || mode === 'KOTH');
+            if(mode === 'KOTH') gameState.koth = { x: W/2, y: H/2, radius: 250, ownerTeam: 'none', captureProgress: 0, points: { red: 0, blue: 0, ffa: {} } };
+            gameState.ultOrb = { state: 'inactive', x: -1000, y: -1000, targetX: 0, targetY: 0, timer: 60.0, claimerId: null };
+            gameState.juggernautId = null;
+            lobbyPlayers = {};
+            nextJoinOrder = 1;
+            lobbyPlayers[id] = {name:myPlayer.name, heroClass:myPlayer.heroClass, team:myPlayer.team, isHost:true, customization:myPlayer.customization, joinOrder: 0};
+            let baseHp = HERO_DATA[myPlayer.heroClass].hp; if (mode === 'CHAOS') baseHp *= 12; myPlayer.maxHp = myPlayer.hp = baseHp;
+        } else {
+            // Migration: keep existing gameState, but rebuild lobby with our new id as host
+            // Re-key lobbyPlayers because our myId just changed
+            let oldEntries = Object.entries(lobbyPlayers).filter(([k,v])=>v && k!==opts.oldHostId);
+            lobbyPlayers = {};
+            // Our own joinOrder must be the lowest going forward
+            lobbyPlayers[id] = {name:myPlayer.name, heroClass:myPlayer.heroClass, team:myPlayer.team, isHost:true, customization:myPlayer.customization, joinOrder: 0};
+            // Keep others (they will reconnect with new peer ids; we'll repopulate when they do)
+            // Drop the old entries since their peer ids will change on reconnect.
+            nextJoinOrder = 1;
+            // Reset connections list (peers will reconnect)
+            connections = [];
+            // Remove the dead host's player from gameState
+            if(opts.oldHostId) {
+                delete gameState.players[opts.oldHostId];
+                gameState.corsairCannons = (gameState.corsairCannons||[]).filter(c=>c.ownerId!==opts.oldHostId);
+            }
+            // Make sure our own player is in gameState under the new id
+            gameState.players[id] = {...myPlayer, id};
+        }
+        rebuildMigrationOrder();
+        getEl('btn-start-game').disabled = false; getEl('btn-start-game').innerText = "ENTER ARENA";
         updateLobbyUI();
+        isMigrating = false;
     });
+
     peer.on('error', err => { if(err.type === 'unavailable-id') setTimeout(() => connectToServer(mode), 500); });
     peer.on('connection', c => {
         connections.push(c);
-        c.on('open', () => { if(c.open) c.send({type:'state', state:getCompactState(true)}); });
+        c.on('open', () => { if(c.open) c.send({type:'state', state:getCompactState(true), migrationOrder:migrationOrder, hostPeerId: myId}); });
         c.on('data', d => {
             if(d.type === 'player_leaving') {
                 delete gameState.players[d.id]; delete lobbyPlayers[d.id]; gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==d.id);
@@ -1161,10 +1353,13 @@ function becomeHost(mode, srvId) {
                 broadcastLobby(); updateLobbyUI();
                 return;
             }
-            if(d.type === 'lobby_update_player') { 
-                lobbyPlayers[d.player.id] = {name:d.player.name, heroClass:d.player.heroClass, team:d.player.team, isHost:false, customization:d.player.customization}; 
-                broadcastLobby(); updateLobbyUI(); 
-            } 
+            if(d.type === 'lobby_update_player') {
+                let existing = lobbyPlayers[d.player.id];
+                let jo = existing?.joinOrder ?? nextJoinOrder++;
+                lobbyPlayers[d.player.id] = {name:d.player.name, heroClass:d.player.heroClass, team:d.player.team, isHost:false, customization:d.player.customization, joinOrder: jo};
+                broadcastLobby(); updateLobbyUI();
+            }
+
             else if(d.type === 'update') {
                 if(gameState.players[d.player.id]){
                     let s = gameState.players[d.player.id], pr={hp:s.hp, isDead:s.isDead, stunTimer:s.stunTimer, kills:s.kills, deaths:s.deaths, flicker:s.flicker, grabbedLocked:!!s.grabbedLocked};
@@ -1187,9 +1382,11 @@ function becomeHost(mode, srvId) {
                     if(np.heroClass === 'thorfinn') initThorfinnHair(np);
                     gameState.players[d.player.id] = np;
                     // Also add to lobby list
-                    lobbyPlayers[d.player.id] = {name:np.name, heroClass:np.heroClass, team:np.team, isHost:false, customization:np.customization};
+                    let jo = lobbyPlayers[d.player.id]?.joinOrder ?? nextJoinOrder++;
+                    lobbyPlayers[d.player.id] = {name:np.name, heroClass:np.heroClass, team:np.team, isHost:false, customization:np.customization, joinOrder: jo};
                     broadcastLobby();
                 }
+
             } 
             else if(d.type === 'event') processCombatEvent(d.senderId, d.event); 
             else if(d.type === 'chat') broadcastChat(d);
@@ -1404,7 +1601,7 @@ function bdSt() {
     const includeWalls = now - _bdStFullStateLast > 3000;
     if(includeWalls) _bdStFullStateLast = now;
     const snapshot = getCompactState(includeWalls);
-    connections.forEach(c => { if(c.open) c.send({type:'state', state:snapshot}); });
+    connections.forEach(c => { if(c.open) c.send({type:'state', state:snapshot, migrationOrder:migrationOrder, hostPeerId: myId}); });
 }
 
 let _sdUpLast = 0, _sdUpInterval = 1000/30; // throttle to 30hz
@@ -1660,7 +1857,7 @@ can.addEventListener('mousedown', e => {
         }
         else if(myPlayer.heroClass === 'corsair') {
             if(myPlayer.corsairStance === 'cannon' && localCombat.corsairPrimary.cd <= 0) {
-                localCombat.corsairPrimary.cd = (activeServerMode==='CHAOS')?0.05:2.0;
+                localCombat.corsairPrimary.cd = (activeServerMode==='CHAOS')?0.05:BALANCE.corsair.broadsideCooldown;
                 // Recoil: knock backward opposite to shot direction
                 let recoilForce = 56;
                 localCombat.dash.v.x -= Math.cos(myPlayer.angle) * recoilForce;
@@ -1686,7 +1883,7 @@ can.addEventListener('mousedown', e => {
         }
         else if(myPlayer.heroClass === 'jubilee') trJubP();
         else if(myPlayer.heroClass === 'misaki') trMisS();
-        else if(myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'handgun') trBlSh();
+        else if(myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'katana') trBlKt();
     }
 }); 
 
@@ -1732,8 +1929,8 @@ window.addEventListener('mouseup', () => {
 
 function trBlTp(){let b=localCombat.blitzTp;if(b.ch>0&&b.dTm<=0&&!myPlayer.grabbedLocked){if(Math.hypot(myPlayer.targetX-myPlayer.x,myPlayer.targetY-myPlayer.y)>350)return;b.ch--;let s=b.cds.findIndex(c=>c<=0);if(s!==-1)b.cds[s]=b.maxCd;let p=gnV(myPlayer.targetX,myPlayer.targetY);b.dTm=0.085;b.dx=p.x;b.dy=p.y;sdEv({type:'blitz_tp_windup',x:myPlayer.x,y:myPlayer.y});}}
 function trBlG(){if(localCombat.blitzGrab.cd<=0&&!myPlayer.grabbedLocked){let cI=null,cD=60,iC=false;for(let id in gameState.players){if(id===myId||gameState.players[id].isDead)continue;let d=Math.hypot(gameState.players[id].x-myPlayer.targetX,gameState.players[id].y-myPlayer.targetY);if(d<cD){cD=d;cI=id;}}for(let c of gameState.clones){let d=Math.hypot(c.x-myPlayer.targetX,c.y-myPlayer.targetY);if(d<cD){cD=d;cI=c.id;iC=true;}}if(cI!==null){localCombat.blitzGrab.cd=(activeServerMode==='CHAOS')?0.05:localCombat.blitzGrab.maxCd;myPlayer.grabbedLocked=true;sdEv({type:'blitz_grab_init',targetId:cI,isClone:iC,angle:myPlayer.angle});}}}
-function trBlSh(){if(localCombat.blitzPrimary.cd<=0&&localCombat.blitzPrimary.rTm<=0&&!myPlayer.grabbedLocked&&myPlayer.blitzAmmo>0){localCombat.blitzPrimary.cd=(activeServerMode==='CHAOS')?0.05:0.35;myPlayer.blitzAmmo--;myPlayer.slashAnimTimer=0.15;applyShake(3,0.1);sdEv({type:'blitz_shoot',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});if(myPlayer.blitzAmmo<=0)localCombat.blitzPrimary.rTm=(activeServerMode==='CHAOS')?0.05:0.8;}}
-function trBlKt(){if(localCombat.blitzPrimary.cd<=0&&!myPlayer.grabbedLocked){localCombat.blitzPrimary.cd=(activeServerMode==='CHAOS')?0.05:0.7;myPlayer.slashAnimTimer=0.3;localCombat.dash.v.x=Math.cos(myPlayer.angle)*6;localCombat.dash.v.y=Math.sin(myPlayer.angle)*6;localCombat.dash.rec=0.3;vfx.push({type:'blitzSlash',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle,life:0.2,maxLife:0.2});sdEv({type:'blitz_slash',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});}}
+function trBlSh(){if(localCombat.blitzPrimary.cd<=0&&localCombat.blitzPrimary.rTm<=0&&!myPlayer.grabbedLocked&&myPlayer.blitzAmmo>0){localCombat.blitzPrimary.cd=(activeServerMode==='CHAOS')?0.05:BALANCE.blitz.handgunCooldown;myPlayer.blitzAmmo--;myPlayer.slashAnimTimer=0.15;applyShake(3,0.1);sdEv({type:'blitz_shoot',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});if(myPlayer.blitzAmmo<=0)localCombat.blitzPrimary.rTm=(activeServerMode==='CHAOS')?0.05:0.8;}}
+function trBlKt(){if(localCombat.blitzPrimary.cd<=0&&!myPlayer.grabbedLocked){localCombat.blitzPrimary.cd=(activeServerMode==='CHAOS')?0.05:BALANCE.blitz.katanaCooldown;myPlayer.slashAnimTimer=0.3;localCombat.dash.v.x=Math.cos(myPlayer.angle)*6;localCombat.dash.v.y=Math.sin(myPlayer.angle)*6;localCombat.dash.rec=0.3;vfx.push({type:'blitzSlash',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle,life:0.2,maxLife:0.2});sdEv({type:'blitz_slash',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});}}
 function trMisG(){if(localCombat.misakiGrapple.cd<=0&&myPlayer.kisakiDeployed){let k=gameState.projectiles.find(p=>p.type==='kisaki'&&p.ownerId===myId);if(k){localCombat.misakiGrapple.cd=(activeServerMode==='CHAOS')?0.05:localCombat.misakiGrapple.maxCd;let dx=k.x-myPlayer.x,dy=k.y-myPlayer.y;localCombat.misakiGrapple.ang=Math.atan2(dy,dx);localCombat.misakiGrapple.dTm=Math.hypot(dx,dy)/1800;sdEv({type:'misaki_grapple',targetX:k.x,targetY:k.y});}}}
 function trMisF(){if(localCombat.misakiFlare.cd<=0&&myPlayer.kisakiDeployed&&myPlayer.kisakiMirrorOn){localCombat.misakiFlare.cd=(activeServerMode==='CHAOS')?0.05:localCombat.misakiFlare.maxCd;sdEv({type:'misaki_flare'});}}
 function trMisS(){if(localCombat.misakiShoot.cd<=0){localCombat.misakiShoot.cd=(activeServerMode==='CHAOS')?0.05:localCombat.misakiShoot.maxCd;applyShake(5,0.15);sdEv({type:'misaki_shoot',angle:myPlayer.angle});}}
@@ -1841,8 +2038,8 @@ function processCombatEvent(sId, e) {
     else if(e.type==='kendo_ride_recall'){let a=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(a&&(a.mode==='normal'||!a.mode))a.mode='recalling';}
     else if(e.type==='kendo_shield_start'){let a=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(a&&(a.mode==='normal'||!a.mode)){a.mode='building_shield';a.buildTimer=1.5;a.shieldTarget={x:e.targetX,y:e.targetY};}}
     else if(e.type==='copycat_kendo_shoot'){gameState.projectiles.push({type:'kinetic_arrow',mode:'copycat_cursor',id:Math.random().toString(),ownerId:sId,x:s.x,y:s.y,speed:750,angle:e.angle,life:3.0,hitCooldowns:{},dmgMult:e.dmgMult||1.0,deactivated:false});}
-    else if(e.type==='glitch_shoot'){let c=gameState.clones.filter(x=>x.ownerId===sId),bs=(60/(c.length+0.01))*(e.dmgMult||0.01),bf=(42/(c.length+0.01))*(e.dmgMult||1),pa=Math.atan2(e.targetY-s.y,e.targetX-s.x);gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:false,id:Math.random().toString(),x:s.x,y:s.y,angle:pa,life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});c.forEach(C=>{gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:true,id:Math.random().toString(),x:C.x,y:C.y,angle:Math.atan2(e.targetY-C.y,e.targetX-C.x),life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});});}
-    else if(e.type==='glitch_clone'){let c=gameState.clones.filter(x=>x.ownerId===sId);if(c.length>=100)gameState.clones=gameState.clones.filter(x=>x.id!==c[0].id);gameState.clones.push({id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,hp:s.maxHp,maxHp:s.maxHp});}
+    else if(e.type==='glitch_shoot'){let c=gameState.clones.filter(x=>x.ownerId===sId);let nClones=c.length,bs,bf;if(nClones<=0){bs=BALANCE.glitch.beamDmgSlow;bf=BALANCE.glitch.beamDmgFast;}else if(nClones===1){bs=BALANCE.glitch.beamDmgSlow1Clone;bf=BALANCE.glitch.beamDmgFast1Clone;}else{bs=BALANCE.glitch.beamDmgSlow2Clone;bf=BALANCE.glitch.beamDmgFast2Clone;}bs*=(e.dmgMult||1);bf*=(e.dmgMult||1);let pa=Math.atan2(e.targetY-s.y,e.targetX-s.x);gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:false,id:Math.random().toString(),x:s.x,y:s.y,angle:pa,life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});c.forEach(C=>{gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:true,id:Math.random().toString(),x:C.x,y:C.y,angle:Math.atan2(e.targetY-C.y,e.targetX-C.x),life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});});}
+    else if(e.type==='glitch_clone'){let c=gameState.clones.filter(x=>x.ownerId===sId);while(c.length>=BALANCE.glitch.maxClones){let oldest=c.shift();gameState.clones=gameState.clones.filter(x=>x.id!==oldest.id);}gameState.clones.push({id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,hp:s.maxHp,maxHp:s.maxHp});}
     else if(e.type==='glitch_swap'){let c=gameState.clones.find(x=>x.id===e.cloneId);if(c){c.x=e.newCloneX;c.y=e.newCloneY;}}
     else if(e.type==='jubilee_shoot'){const C=['#ff0044','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff','#ffffff'];let ba=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(let i=-1;i<=1;i++)gameState.projectiles.push({type:'firework',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,startAngle:ba,angle:ba,speed:550,life:0.6,index:i,state:'straight',color:C[Math.floor(Math.random()*C.length)],dmgMult:e.dmgMult||1.0});}
     else if(e.type==='jubilee_dash_setup'){gameState.projectiles.push({type:'dash_bomb',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:0.3});}
@@ -1853,7 +2050,7 @@ function processCombatEvent(sId, e) {
     else if(e.type==='misaki_toggle_mirror'){let k=gameState.projectiles.find(p=>p.type==='kisaki'&&p.ownerId===sId);if(k)k.hasMirror=e.state;}
     else if(e.type==='misaki_flare'){let k=gameState.projectiles.find(p=>p.type==='kisaki'&&p.ownerId===sId);if(k&&k.hasMirror){connections.forEach(c=>{if(c.open)c.send({type:'flare_vfx',x:k.x,y:k.y});});if(sId!==myId)vfx.push({type:'flareVfx',x:k.x,y:k.y,life:0.5,maxLife:0.5});for(let id in gameState.players)if(!gameState.players[id].isDead&&cDm(sId,id)){let t=gameState.players[id];if(Math.hypot(t.x-k.x,t.y-k.y)<180&&!t.invulnerable){t.stunTimer=1.5;dmgTk(t,20,sId);sendHitmarker(sId,t,20);t.lastAttacker=sId;t.lastHitTime=Date.now();chD(t,id);}}for(let c of gameState.clones)if(cDm(sId,c.ownerId)&&Math.hypot(c.x-k.x,c.y-k.y)<180&&!c.invulnerable){dmgTk(c,100,sId);sendHitmarker(sId,c,100);}}}
     else if(e.type==='blitz_shoot'){s.slashAnimTimer=0.15;let sx=s.x+Math.cos(e.angle)*35,sy=s.y+Math.sin(e.angle)*35;gameState.projectiles.push({type:'blitz_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*1500,vy:Math.sin(e.angle)*1500,angle:e.angle,life:0.8,distTraveled:0,dmgMult:e.dmgMult||1.0});connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'sniper_vfx',x:sx,y:sy,angle:e.angle});});if(sId!==myId)vfx.push({type:'sniperMuzzle',x:sx,y:sy,angle:e.angle,life:0.15,maxLife:0.15});}
-    else if(e.type==='blitz_slash'){s.slashAnimTimer=0.3;connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'blitz_slash_vfx',x:e.x,y:e.y,angle:e.angle});});if(sId!==myId)vfx.push({type:'blitzSlash',x:e.x,y:e.y,angle:e.angle,life:0.2,maxLife:0.2});let hx=e.x+Math.cos(e.angle)*30,hy=e.y+Math.sin(e.angle)*30;for(let id in gameState.players)if(!gameState.players[id].isDead&&cDm(sId,id)){let t=gameState.players[id];if(Math.hypot(t.x-hx,t.y-hy)<55&&!t.invulnerable){dmgTk(t,70,sId);sendHitmarker(sId,t,70);t.lastAttacker=sId;t.lastHitTime=Date.now();chD(t,id);}}for(let c of gameState.clones)if(cDm(sId,c.ownerId)&&Math.hypot(c.x-hx,c.y-hy)<55&&!c.invulnerable){dmgTk(c,70,sId);sendHitmarker(sId,c,70);}}
+    else if(e.type==='blitz_slash'){s.slashAnimTimer=0.3;connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'blitz_slash_vfx',x:e.x,y:e.y,angle:e.angle});});if(sId!==myId)vfx.push({type:'blitzSlash',x:e.x,y:e.y,angle:e.angle,life:0.2,maxLife:0.2});let hx=e.x+Math.cos(e.angle)*30,hy=e.y+Math.sin(e.angle)*30,kdmg=BALANCE.blitz.katanaDamage;for(let id in gameState.players)if(!gameState.players[id].isDead&&cDm(sId,id)){let t=gameState.players[id];if(Math.hypot(t.x-hx,t.y-hy)<55&&!t.invulnerable){dmgTk(t,kdmg,sId);sendHitmarker(sId,t,kdmg);t.lastAttacker=sId;t.lastHitTime=Date.now();chD(t,id);}}for(let c of gameState.clones)if(cDm(sId,c.ownerId)&&Math.hypot(c.x-hx,c.y-hy)<55&&!c.invulnerable){dmgTk(c,kdmg,sId);sendHitmarker(sId,c,kdmg);}}
     else if(e.type==='blitz_tp_windup'){s.tpTimer=0.085;s.flicker=true;}
     else if(e.type==='blitz_tp_finish'){s.flicker=false;connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'blitz_tp_vfx',sx:e.startX,sy:e.startY,ex:e.endX,ey:e.endY});});if(sId!==myId){vfx.push({type:'blitzTransmission',x:e.startX,y:e.startY,life:0.3,maxLife:0.3});vfx.push({type:'blitzTransmission',x:e.endX,y:e.endY,life:0.3,maxLife:0.3});}}
     else if(e.type==='blitz_grab_init'){s.grabbedLocked=true;gameState.projectiles.push({type:'blitz_grab_manager',id:Math.random().toString(),ownerId:sId,targetId:e.targetId,isClone:e.isClone,originalX:s.x,originalY:s.y,originalAngle:e.angle,phase:1,timer:0.085});}
@@ -1861,7 +2058,7 @@ function processCombatEvent(sId, e) {
     else if(e.type==='copycat_steal_vfx'){connections.forEach(c=>{if(c.open)c.send({type:'copycat_steal_vfx',targetId:e.targetId,sourceId:sId});});if(sId!==myId)vfx.push({type:'stealLink',targetId:e.targetId,sourceId:sId,life:0.4,maxLife:0.4});}
     else if(e.type==='corsair_cannonball'){
         s.slashAnimTimer=0.3;
-        gameState.projectiles.push({type:'corsair_cannonball',id:Math.random().toString(),ownerId:sId,x:e.x+Math.cos(e.angle)*30,y:e.y+Math.sin(e.angle)*30,vx:Math.cos(e.angle)*800,vy:Math.sin(e.angle)*800,angle:e.angle,life:2.0,dmg:80});
+        gameState.projectiles.push({type:'corsair_cannonball',id:Math.random().toString(),ownerId:sId,x:e.x+Math.cos(e.angle)*30,y:e.y+Math.sin(e.angle)*30,vx:Math.cos(e.angle)*800,vy:Math.sin(e.angle)*800,angle:e.angle,life:2.0,dmg:BALANCE.corsair.broadsideDamage});
     }
     else if(e.type==='corsair_melee'){
         s.slashAnimTimer=0.3;
@@ -2038,7 +2235,7 @@ function updateMovement(dt) {
         myPlayer.targetX = wx; myPlayer.targetY = wy;
     }
     
-    if(mDwn && myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'katana' && myPlayer.stunTimer <= 0 && !myPlayer.grabbedLocked) trBlKt();
+    if(mDwn && myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'handgun' && myPlayer.stunTimer <= 0 && !myPlayer.grabbedLocked) trBlSh();
     
     if(myPlayer.heroClass === 'blitz' && localCombat.blitzTp.dTm > 0 && !myPlayer.grabbedLocked) {
         localCombat.blitzTp.dTm -= dt; myPlayer.flicker = true;
@@ -2222,7 +2419,7 @@ function updateGameState(dt) {
         // Update beam angle every frame to follow Tim's rotation
         myPlayer.timBeamDirectionAngle = myPlayer.angle;
         // Beam fires continuously - damage based on current charge (minimum 5 DPS even at charge 0)
-        let beamDamage = Math.max(5, 8 + (myPlayer.timBeamCharge / 4.0) * 140); // 5-22 DPS
+        let beamDamage = BALANCE.tim.coreBeamMinDps + (myPlayer.timBeamCharge / 4.0) * (BALANCE.tim.coreBeamMaxDps - BALANCE.tim.coreBeamMinDps); // 6-32 DPS
         // Calculate cannon muzzle position (93 units from center)
         let muzzleX = myPlayer.x + 93 * Math.cos(myPlayer.timBeamDirectionAngle);
         let muzzleY = myPlayer.y + 93 * Math.sin(myPlayer.timBeamDirectionAngle);
@@ -3867,10 +4064,54 @@ function drawPlayers() {
         
         if(!iC && o.heroClass === 'trace') {
             ctx.fillStyle = isImpactFlash ? '#000' : '#a855f7'; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
-            let nC = o.customization?.traceColors?.neon || '#a855f7'; ctx.strokeStyle = isImpactFlash ? '#000' : nC; ctx.lineWidth = 2; ctx.stroke();
-            ctx.save(); ctx.translate(15, 0); let bC = o.customization?.traceColors?.bow || '#3b0764'; ctx.strokeStyle = isImpactFlash ? '#000' : bC; ctx.lineWidth = 4; ctx.lineCap = 'round';
-            ctx.beginPath(); ctx.moveTo(-5, -20); ctx.quadraticCurveTo(5, 0, -5, 20); ctx.stroke();
-            ctx.strokeStyle = isImpactFlash ? '#000' : nC; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-5, -20); ctx.lineTo(-15, 0); ctx.lineTo(-5, 20); ctx.stroke(); ctx.restore();
+            let nC = o.customization?.traceColors?.neon || '#a855f7';
+            let bC = o.customization?.traceColors?.bow || '#3b0764';
+            ctx.strokeStyle = isImpactFlash ? '#000' : nC; ctx.lineWidth = 2; ctx.stroke();
+            // === HYPER-FUTURISTIC KINETIC ARROW BOW ===
+            ctx.save(); ctx.translate(15, 0);
+            let pulseT = 0.7 + Math.sin(Date.now() / 180) * 0.3;
+            // Outer riser shell — angular dark frame (uses Bow Base color)
+            ctx.fillStyle = isImpactFlash ? '#000' : bC;
+            ctx.beginPath();
+            ctx.moveTo(-2, -28); ctx.lineTo(6, -24); ctx.lineTo(9, -16); ctx.lineTo(7, -7);
+            ctx.lineTo(11, 0); ctx.lineTo(7, 7); ctx.lineTo(9, 16); ctx.lineTo(6, 24);
+            ctx.lineTo(-2, 28); ctx.lineTo(-6, 26); ctx.lineTo(-4, 0); ctx.lineTo(-6, -26);
+            ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : nC; ctx.lineWidth = 1.4; ctx.stroke();
+            // Inner neon energy spine (uses Neon color)
+            ctx.shadowBlur = 10; ctx.shadowColor = nC;
+            ctx.strokeStyle = isImpactFlash ? '#000' : nC; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(-2, -25); ctx.quadraticCurveTo(9, -12, 9, 0);
+            ctx.quadraticCurveTo(9, 12, -2, 25); ctx.stroke();
+            ctx.shadowBlur = 0;
+            // Limb tip emitter nodes
+            ctx.fillStyle = isImpactFlash ? '#000' : nC;
+            ctx.shadowBlur = 8; ctx.shadowColor = nC;
+            ctx.beginPath(); ctx.arc(-2, -28, 2.4 * pulseT, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(-2, 28, 2.4 * pulseT, 0, 6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+            // Bowstring chevron filaments
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#ffffff'; ctx.lineWidth = 0.8;
+            ctx.beginPath(); ctx.moveTo(-2, -28); ctx.lineTo(-15, 0); ctx.lineTo(-2, 28); ctx.stroke();
+            ctx.strokeStyle = isImpactFlash ? '#000' : nC; ctx.lineWidth = 1.6;
+            ctx.shadowBlur = 6; ctx.shadowColor = nC;
+            ctx.beginPath(); ctx.moveTo(-2, -23); ctx.lineTo(-13, 0); ctx.lineTo(-2, 23); ctx.stroke();
+            ctx.shadowBlur = 0;
+            // Floating nock arrowhead (kinetic)
+            ctx.fillStyle = isImpactFlash ? '#000' : nC;
+            ctx.shadowBlur = 10; ctx.shadowColor = nC;
+            ctx.beginPath();
+            ctx.moveTo(-7, 0); ctx.lineTo(-13, -3); ctx.lineTo(-20, 0); ctx.lineTo(-13, 3);
+            ctx.closePath(); ctx.fill();
+            // Tiny fletching dot
+            ctx.beginPath(); ctx.arc(-22, 0, 1.4, 0, 6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+            // Sight reticle on riser
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#ffffff'; ctx.lineWidth = 0.7;
+            ctx.beginPath(); ctx.arc(2, 0, 4, 0, 6.28); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-2, 0); ctx.lineTo(6, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(2, -4); ctx.lineTo(2, 4); ctx.stroke();
+            ctx.restore();
         } else if(o.heroClass === 'glitch') {
             ctx.fillStyle = isImpactFlash ? '#000' : mp; let tm = Date.now() % 4000, st = Math.floor(tm / 800), lt = tm % 800, n1 = [3, 4, 5, 6, 8][st], n2 = [3, 4, 5, 6, 8][(st + 1) % 5], f = 0;
             if(lt > 400) { f = (lt - 400) / 400; f = f < 0.5 ? 4 * f * f * f : 1 - Math.pow(-2 * f + 2, 3) / 2; }
@@ -4071,13 +4312,17 @@ function drawPlayers() {
             let antennaC = o.customization?.timColors?.antenna || '#00ff00';
             let eyeC = o.customization?.timColors?.eyes || '#000000';
             
-            // Main body - more vibrant green
+            // Helper: darken/lighten hex color
+            let _shade = (hex, amt) => { let n=parseInt(hex.slice(1),16); let r=Math.max(0,Math.min(255,((n>>16)&255)+amt)); let g=Math.max(0,Math.min(255,((n>>8)&255)+amt)); let b=Math.max(0,Math.min(255,(n&255)+amt)); return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0'); };
+            let skinDark = _shade(skinC, -50);
+            let skinLight = _shade(skinC, 35);
+            // Main body
             ctx.fillStyle = isImpactFlash ? '#000' : skinC;
             ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
-            ctx.strokeStyle = isImpactFlash ? '#000' : '#00aa00'; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.strokeStyle = isImpactFlash ? '#000' : skinDark; ctx.lineWidth = 1.5; ctx.stroke();
             
-            // Glyph/pattern on body - makes it more alien
-            ctx.fillStyle = isImpactFlash ? '#000' : '#00cc00';
+            // Alien glyph/pattern on body
+            ctx.fillStyle = isImpactFlash ? '#000' : skinLight;
             ctx.fillRect(-3, -2, 6, 1);
             ctx.fillRect(-2, 2, 4, 1);
             
@@ -4099,8 +4344,8 @@ function drawPlayers() {
                 ctx.beginPath(); ctx.arc(ex, -5, 3, 0, 6.28); ctx.fill();
             });
             
-            // Mouth - simple line
-            ctx.strokeStyle = isImpactFlash ? '#000' : '#007700'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+            // Mouth - tinted line
+            ctx.strokeStyle = isImpactFlash ? '#000' : skinDark; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(-4, 4); ctx.lineTo(4, 4); ctx.stroke();
             
             // Macro/Micro Mode Gun (drawn in Tim's rotated local space, so it rotates with him)
@@ -4130,62 +4375,166 @@ function drawPlayers() {
                 ctx.translate(baseOffset, 0);
                 ctx.scale(baseScale, baseScale);
                 
-                // Canon barrel - use customized cannon color
+                // === HYPER-FUTURISTIC ALIEN ORBITAL CANNON (Macro) ===
                 let cannonColor = o.customization?.timColors?.cannon || '#fbbf24';
-                ctx.fillStyle = isImpactFlash ? '#000' : cannonColor; 
-                ctx.globalAlpha = 0.9;
-                ctx.fillRect(-12, -10, 55, 20);  // 2.5x bigger
-                ctx.globalAlpha = 1;
-                
-                // Barrel highlight/glow layers
-                ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
-                ctx.globalAlpha = 0.6;
-                ctx.fillRect(-12, -12, 55, 4);
-                ctx.globalAlpha = 1;
-                
-                // Dark outline
-                ctx.strokeStyle = isImpactFlash ? '#000' : '#666600'; ctx.lineWidth = 2.5; ctx.strokeRect(-12, -10, 55, 20);
-                
-                // Cannon chamber - circular base (enlarged)
-                ctx.fillStyle = isImpactFlash ? '#000' : '#444400';
-                ctx.beginPath(); ctx.arc(-16, 0, 14, 0, 6.28); ctx.fill();
+                let beamColor = o.customization?.timColors?.beam || '#ff6b6b';
+                let timPulse = 0.6 + Math.sin(Date.now() / 220) * 0.4;
+
+                // Rear power core — alien orb chamber
+                ctx.fillStyle = isImpactFlash ? '#000' : '#1a0a1f';
+                ctx.beginPath(); ctx.arc(-22, 0, 16, 0, 6.28); ctx.fill();
                 ctx.strokeStyle = isImpactFlash ? '#000' : cannonColor; ctx.lineWidth = 2.5;
-                ctx.beginPath(); ctx.arc(-16, 0, 15, 0, 6.28); ctx.stroke();
-                
-                // Muzzle glow if charging - use beam color
+                ctx.beginPath(); ctx.arc(-22, 0, 16, 0, 6.28); ctx.stroke();
+                // Inner pulsing core (beam color)
+                ctx.shadowBlur = 14; ctx.shadowColor = beamColor;
+                ctx.fillStyle = isImpactFlash ? '#000' : beamColor;
+                ctx.globalAlpha = 0.85;
+                ctx.beginPath(); ctx.arc(-22, 0, 7 * timPulse, 0, 6.28); ctx.fill();
+                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                // Containment rings around core
+                ctx.strokeStyle = isImpactFlash ? '#000' : cannonColor; ctx.lineWidth = 1.2;
+                for(let r = 0; r < 3; r++) { ctx.beginPath(); ctx.arc(-22, 0, 9 + r*2.5, 0, 6.28); ctx.stroke(); }
+
+                // Main alien barrel — segmented organic-mech shape
+                ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
+                ctx.beginPath();
+                ctx.moveTo(-10, -12);
+                ctx.lineTo(20, -14);
+                ctx.lineTo(38, -10);
+                ctx.lineTo(46, -7);
+                ctx.lineTo(48, -4);
+                ctx.lineTo(48, 4);
+                ctx.lineTo(46, 7);
+                ctx.lineTo(38, 10);
+                ctx.lineTo(20, 14);
+                ctx.lineTo(-10, 12);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#6a6a6a'; ctx.lineWidth = 2; ctx.stroke();
+
+                // Top spine fins — alien biomech ridges
+                ctx.fillStyle = isImpactFlash ? '#000' : '#6a6a6a';
+                [0, 12, 24, 34].forEach(fx => {
+                    ctx.beginPath();
+                    ctx.moveTo(fx, -13); ctx.lineTo(fx + 3, -19); ctx.lineTo(fx + 6, -13);
+                    ctx.closePath(); ctx.fill();
+                });
+                // Bottom matching fins
+                [0, 12, 24, 34].forEach(fx => {
+                    ctx.beginPath();
+                    ctx.moveTo(fx, 13); ctx.lineTo(fx + 3, 19); ctx.lineTo(fx + 6, 13);
+                    ctx.closePath(); ctx.fill();
+                });
+
+                // Energy conduit lines along barrel (beam color)
+                ctx.strokeStyle = isImpactFlash ? '#000' : beamColor; ctx.lineWidth = 1.4;
+                ctx.shadowBlur = 6; ctx.shadowColor = beamColor;
+                ctx.beginPath(); ctx.moveTo(-8, -6); ctx.lineTo(44, -3); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(-8, 6); ctx.lineTo(44, 3); ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Cannon panel rivets / glyphs
+                ctx.fillStyle = isImpactFlash ? '#000' : '#6a6a6a';
+                [4, 16, 28, 40].forEach(rx => {
+                    ctx.beginPath(); ctx.arc(rx, 0, 1.6, 0, 6.28); ctx.fill();
+                });
+
+                // Front muzzle ring — wide alien aperture
+                ctx.fillStyle = isImpactFlash ? '#000' : '#1a0a1f';
+                ctx.beginPath(); ctx.ellipse(48, 0, 5, 12, 0, 0, 6.28); ctx.fill();
+                ctx.strokeStyle = isImpactFlash ? '#000' : cannonColor; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.ellipse(48, 0, 5, 12, 0, 0, 6.28); ctx.stroke();
+                // Crystal prongs around muzzle
+                ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
+                [-12, -6, 0, 6, 12].forEach(py => {
+                    ctx.beginPath();
+                    ctx.moveTo(48, py); ctx.lineTo(56, py * 0.4); ctx.lineTo(48, py * 0.6);
+                    ctx.closePath(); ctx.fill();
+                });
+                // Inner muzzle plasma
+                ctx.shadowBlur = 12; ctx.shadowColor = beamColor;
+                ctx.fillStyle = isImpactFlash ? '#000' : beamColor;
+                ctx.globalAlpha = 0.7;
+                ctx.beginPath(); ctx.ellipse(48, 0, 3 * timPulse, 8 * timPulse, 0, 0, 6.28); ctx.fill();
+                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+
+                // Muzzle glow if charging
                 if(o.timBeamActive) {
-                    // Show charging strength
-                    let beamColor = o.customization?.timColors?.beam || '#ff6b6b';
-                    let glowSize = 6 + o.timBeamCharge * 8;
+                    let glowSize = 8 + o.timBeamCharge * 9;
                     let glowIntensity = 0.3 + (o.timBeamCharge / 4.0) * 0.7;
                     ctx.fillStyle = `${beamColor}${Math.round(glowIntensity * 255).toString(16).padStart(2, '0')}`;
-                    ctx.beginPath(); ctx.arc(43, 0, glowSize, 0, 6.28); ctx.fill();
-                    
-                    // Inner bright spot
+                    ctx.beginPath(); ctx.arc(52, 0, glowSize, 0, 6.28); ctx.fill();
                     ctx.fillStyle = `${beamColor}${Math.round(glowIntensity * 0.8 * 255).toString(16).padStart(2, '0')}`;
-                    ctx.beginPath(); ctx.arc(43, 0, glowSize * 0.6, 0, 6.28); ctx.fill();
+                    ctx.beginPath(); ctx.arc(52, 0, glowSize * 0.6, 0, 6.28); ctx.fill();
+                    // Charging crackle arcs
+                    ctx.strokeStyle = `${beamColor}cc`; ctx.lineWidth = 1;
+                    for(let a = 0; a < 4; a++) {
+                        let ang = Math.random() * 6.28;
+                        ctx.beginPath();
+                        ctx.moveTo(52, 0);
+                        ctx.lineTo(52 + Math.cos(ang) * glowSize * 1.4, Math.sin(ang) * glowSize * 1.4);
+                        ctx.stroke();
+                    }
                 }
-                
+
                 ctx.restore();
             } else {
-                // Draw micro gun - tiny pistol (in Tim's rotated local space)
+                // Draw micro pea-shooter — tiny alien sidearm
                 ctx.save();
-                ctx.scale(1/timScale, 1/timScale);  // Unscale to gun at normal size
+                ctx.scale(1/timScale, 1/timScale);
                 let cannonColor = o.customization?.timColors?.cannon || '#fbbf24';
+                let beamColor = o.customization?.timColors?.beam || '#ff6b6b';
+                // Mini barrel
                 ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
-                ctx.fillRect(0, -1.5, 18, 3);  // Slightly bigger
-                ctx.strokeStyle = isImpactFlash ? '#000' : '#666600'; ctx.lineWidth = 1.5; ctx.strokeRect(0, -1.5, 18, 3);
-                // Mini muzzle
-                ctx.fillStyle = isImpactFlash ? '#000' : '#444400';
-                ctx.fillRect(18, -2, 4, 4);
+                ctx.beginPath();
+                ctx.moveTo(0, -2.5); ctx.lineTo(16, -2); ctx.lineTo(20, -1.5);
+                ctx.lineTo(20, 1.5); ctx.lineTo(16, 2); ctx.lineTo(0, 2.5);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = isImpactFlash ? '#000' : '#6a6a6a'; ctx.lineWidth = 1; ctx.stroke();
+                // Mini fin
+                ctx.fillStyle = isImpactFlash ? '#000' : '#6a6a6a';
+                ctx.beginPath(); ctx.moveTo(8, -2.5); ctx.lineTo(10, -5); ctx.lineTo(12, -2.5); ctx.closePath(); ctx.fill();
+                // Muzzle aperture
+                ctx.fillStyle = isImpactFlash ? '#000' : beamColor;
+                ctx.shadowBlur = 4; ctx.shadowColor = beamColor;
+                ctx.beginPath(); ctx.arc(20, 0, 1.6, 0, 6.28); ctx.fill();
+                ctx.shadowBlur = 0;
                 ctx.restore();
             }
             
             ctx.scale(1/timScale, 1/timScale);
+        } else if(!iC && o.heroClass === 'kendo') {
+            // Kendo body — bright red sniper
+            let kc = o.customization?.kendoColors || {primary:'#ef4444', glow:'#ef4444'};
+            ctx.fillStyle = isImpactFlash ? '#000' : kc.primary;
+            ctx.shadowBlur = 12; ctx.shadowColor = kc.glow;
+            ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            // Arrow indicator on chest
+            ctx.fillStyle = isImpactFlash ? '#000' : '#fff';
+            ctx.beginPath();
+            ctx.moveTo(12, 0); ctx.lineTo(-2, 5); ctx.lineTo(0, 0); ctx.lineTo(-2, -5); ctx.closePath();
+            ctx.fill();
         } else if(!iC && o.heroClass === 'jubilee') {
-            ctx.fillStyle = isImpactFlash ? '#000' : '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#ec4899';
+            // Jubilee body — vibrant pink damage dealer
+            ctx.fillStyle = isImpactFlash ? '#000' : '#ec4899';
+            ctx.shadowBlur = 14; ctx.shadowColor = '#ec4899';
+            ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#fff0f6'; ctx.lineWidth = 2; ctx.stroke();
+            // Pink star/spark accent
+            ctx.fillStyle = isImpactFlash ? '#000' : '#fff';
+            ctx.shadowBlur = 8; ctx.shadowColor = '#fbcfe8';
+            ctx.beginPath(); ctx.arc(0, 0, 4, 0, 6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+            // Orbiting sparkles
             let ro = (Date.now() / 150) % 6.28;
-            ctx.beginPath(); ctx.arc(Math.cos(ro) * 20, Math.sin(ro) * 20, 3, 0, 6.28); ctx.fill();
+            ctx.fillStyle = isImpactFlash ? '#000' : '#fce7f3';
+            for(let s = 0; s < 3; s++) {
+                let a = ro + s * 2.094;
+                ctx.beginPath(); ctx.arc(Math.cos(a) * 22, Math.sin(a) * 22, 2.5, 0, 6.28); ctx.fill();
+            }
         }
         ctx.restore();
         
@@ -4808,7 +5157,7 @@ function drawAeroContextMenuWorld(ctx2) {
         ctx2.fillStyle = '#000'; ctx2.font = 'bold 9px sans-serif';
         ctx2.fillText('📋 Copy', 6, 28);
         ctx2.fillStyle = '#aaa'; ctx2.font = '9px sans-serif';
-        ctx2.fillText('📄 67', 6, 44);
+        ctx2.fillText('📄 Paste', 6, 44);
         ctx2.restore();
     }
 }
