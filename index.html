@@ -539,7 +539,7 @@ function genProcWalls() {
 
 let localCombat = {
     dash:{charges:3,maxCharges:3,cds:[0,0,0],maxCd:4.0,v:{x:0,y:0},rec:0}, 
-    slash:{cd:0,maxCd:0.5}, kendoRide:{cd:0,maxCd:9.0}, kendoShield:{cd:0,maxCd:12.0},
+    slash:{cd:0,maxCd:0.5}, kendoRide:{cd:0,maxCd:9.0}, kendoShield:{cd:0,maxCd:8.0},
     glitchShoot:{cd:0,maxCd:0.45}, glitchClone:{cd:0,maxCd:4.0}, glitchSwap:{cd:0,maxCd:1.5},
     jubileePrimary:{cd:0,maxCd:1.2}, jubileeDash:{cd:0,maxCd:5.0,delay:0,dTm:0,ang:0,spd:0,dr:0}, 
     misakiShoot:{cd:0,maxCd:1.8}, misakiGrapple:{cd:0,maxCd:6.0,dTm:0,ang:0,spd:1800}, misakiFlare:{cd:0,maxCd:10.0},
@@ -5335,7 +5335,7 @@ function drawAeroContextMenuWorld(ctx2) {
         ctx2.fillStyle = '#000'; ctx2.font = 'bold 9px sans-serif';
         ctx2.fillText('📋 Copy', 6, 28);
         ctx2.fillStyle = '#aaa'; ctx2.font = '9px sans-serif';
-        ctx2.fillText('📄 67PAste', 6, 44);
+        ctx2.fillText('📄 Paste', 6, 44);
         ctx2.restore();
     }
 }
