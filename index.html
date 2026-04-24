@@ -36,7 +36,8 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 #scoreboard{position:absolute;top:0;left:0;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;padding:1vh 1vw;border-radius:0 0 12px 0;min-width:12vw;z-index:40;color:white;display:none;backdrop-filter:blur(4px);font-size:0.85rem}
 #scoreboard.active{display:block}.sb-row{display:flex;justify-content:space-between;padding:0.5vh 0;border-bottom:1px solid #3f3f46;font-size:0.9vw;font-weight:bold}.sb-row:last-child{border-bottom:none}
 #koth-ui{display:none;position:absolute;top:2vh;left:50%;transform:translateX(-50%);background:rgba(24,24,27,0.85);border:1px solid #3f3f46;border-radius:12px;padding:1vh 1.5vw;z-index:40;color:white;font-weight:bold;font-size:1.5vw;text-align:center;backdrop-filter:blur(4px);box-shadow:0 4px 15px rgba(0,0,0,0.5)}
-#chat-wrapper {position:absolute;left:0;bottom:0;width:18vw;min-width:220px;height:25vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:0 8px 0 0;display:flex;flex-direction:column;z-index:100;backdrop-filter:blur(4px);pointer-events:auto;opacity:0.6;transition:opacity 0.2s}#chat-wrapper:hover,#chat-wrapper:focus-within{opacity:1}
+#chat-wrapper {position:absolute;left:0;bottom:0;width:18vw;min-width:220px;height:25vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:0 8px 0 0;display:flex;flex-direction:column;z-index:100;backdrop-filter:blur(4px);pointer-events:none;opacity:0.6;transition:opacity 0.2s}#chat-wrapper:hover,#chat-wrapper:focus-within{opacity:1}
+#chat-input{pointer-events:auto;}
 #chat-messages {flex-grow:1;overflow-y:auto;padding:1vh;color:white;font-size:0.85rem;display:flex;flex-direction:column;gap:5px;}
 #chat-input {border:none;border-top:1px solid #3f3f46;background:rgba(0,0,0,0.5);color:white;padding:1vh;font-size:0.85rem;border-radius:0 0 8px 8px;}
 #chat-input:focus {outline:none;background:rgba(0,0,0,0.8);}
@@ -65,31 +66,39 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 #aero-context-menu .ctx-item .ctx-icon{position:absolute;left:4px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:12px;}
 #aero-context-menu .ctx-item .ctx-shortcut{margin-left:auto;padding-left:20px;color:#888;font-size:11px;}
 #aero-context-menu .ctx-separator{height:1px;background:#d0d0d0;margin:2px 2px;}
+/* Cursor stealth: when cursor hovers a UI overlay, fade out an area around it so it doesn't block the view */
+.cursor-stealth{--cx:-9999px;--cy:-9999px;pointer-events:none;-webkit-mask-image:radial-gradient(circle 110px at var(--cx) var(--cy), transparent 0%, transparent 55%, rgba(0,0,0,0.4) 78%, #000 100%);mask-image:radial-gradient(circle 199px at var(--cx) var(--cy), transparent 0%, transparent 55%, rgba(0,0,0,0.4) 78%, #000 100%);}
+/* Cursor-attached semicircle ammo/cooldown HUD (right-side arc) */
+#cursor-hud{position:absolute;pointer-events:none;z-index:60;width:24px;height:24px;margin-left:-17px;margin-top:-19px;display:none;}
+#cursor-hud svg{width:100%;height:100%;overflow:visible;display:block;}
+#cursor-hud .ch-spin{animation:chSpin 0.85s linear infinite;transform-origin:42px 42px;transform-box:fill-box;}
+@keyframes chSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
 <div id="game-container">
     <canvas id="gameCanvas" width="800" height="600" oncontextmenu="return false;"></canvas>
+    <div id="cursor-hud"></div>
     <div id="aero-context-menu">
         <div class="ctx-item disabled"><span class="ctx-icon">✂</span>Cut<span class="ctx-shortcut">Ctrl+X</span></div>
         <div class="ctx-item" id="ctx-copy-btn"><span class="ctx-icon">📋</span>Copy<span class="ctx-shortcut">Ctrl+C</span></div>
         <div class="ctx-item disabled"><span class="ctx-icon">📄</span>Paste<span class="ctx-shortcut">Ctrl+V</span></div>
     </div>
 
-    <div id="scoreboard"></div><div id="kill-feed"></div>
-    <div id="chat-wrapper">
+    <div id="scoreboard" class="cursor-stealth"></div><div id="kill-feed" class="cursor-stealth"></div>
+    <div id="chat-wrapper" class="cursor-stealth">
         <div id="chat-messages"></div>
         <input type="text" id="chat-input" placeholder="Press Enter to chat...">
     </div>
-    <div id="koth-ui"><span id="koth-score-red">0</span><span style="color:#71717a; margin:0 1vw; font-size: 1vw;">vs</span><span id="koth-score-blue">0</span><div id="koth-status" style="font-size:0.8vw; margin-top:0.5vh; letter-spacing:1px;">ZONE NEUTRAL</div></div>
+    <div id="koth-ui" class="cursor-stealth"><span id="koth-score-red">0</span><span style="color:#71717a; margin:0 1vw; font-size: 1vw;">vs</span><span id="koth-score-blue">0</span><div id="koth-status" style="font-size:0.8vw; margin-top:0.5vh; letter-spacing:1px;">ZONE NEUTRAL</div></div>
 
-    <div id="leave-btn-container"><div id="leave-fill"></div><span id="leave-text" style="position:relative;z-index:2;color:#fca5a5;">HOLD TO LEAVE</span></div>
-    <div id="minimap-wrapper"><canvas id="minimapCanvas" width="180" height="180"></canvas></div>
+    <div id="leave-btn-container" class="cursor-stealth"><div id="leave-fill"></div><span id="leave-text" style="position:relative;z-index:2;color:#fca5a5;">HOLD TO LEAVE</span></div>
+    <div id="minimap-wrapper" class="cursor-stealth"><canvas id="minimapCanvas" width="180" height="180"></canvas></div>
 
-    <div id="ult-ui"><div id="ult-fill"></div><div id="ult-text">ULT 0%</div></div>
+    <div id="ult-ui" class="cursor-stealth"><div id="ult-fill"></div><div id="ult-text">ULT 0%</div></div>
 
-    <div id="ability-ui">
+    <div id="ability-ui" class="cursor-stealth">
         <div class="ability-slot" id="ui-slash"><div class="key">L-CLICK</div><div class="name">X-Slash</div><div class="status" id="status-slash">Ready</div><div class="cooldown-overlay" id="cd-slash"></div></div>
         <div class="ability-slot" id="ui-throw"><div class="key">P</div><div class="name">Throw</div><div class="status" id="status-throw">Ammo: 2</div></div>
         <div class="ability-slot" id="ui-dash"><div class="key">SPACE</div><div class="name">Dash</div><div class="status" id="status-dash">Charges: 3</div><div class="cooldown-overlay" id="cd-dash"></div></div>
@@ -135,7 +144,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
         
 
     </div>
-    <div id="health-ui"><div id="health-fill"></div><div id="health-text">150 / 150</div></div>
+    <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="health-text">150 / 150</div></div>
 </div>
 
 <div id="screen-wrapper" class="screen-wrapper active">
@@ -255,8 +264,8 @@ let currentHostPeerId = null; // last known host peer id (for migration)
 // =====================================================================
 const BALANCE = {
     tim: {
-        coreBeamMinDps: 6,    // DPS at 0 charge
-        coreBeamMaxDps: 32,   // DPS at full (4.0) charge
+        coreBeamMinDps: 9,    // DPS at 0 charge
+        coreBeamMaxDps: 65,   // DPS at full (4.0) charge
     },
     blitz: {
         handgunCooldown: 0.12,    // seconds between shots (auto-fire)
@@ -279,7 +288,7 @@ const BALANCE = {
 };
 // =====================================================================
 
-const GRID=50, W=3200, H=2400; 
+const GRID=50, W=3200, H=2500; 
 let cam = {x:0, y:0, zoom:0.6, targetZoom: 0.6};
 let gameState = {isTeamMode:false, players:{}, projectiles:[], pickups:[], walls:[], shields:[], clones:[], healthPacks:[], train:{phase:'idle',timer:2.0}, corsairCannons:[]};
 
@@ -951,13 +960,13 @@ can.addEventListener('mousemove', e => {
     let wx=(sMx/cam.zoom)+cam.x, wy=(sMy/cam.zoom)+cam.y;
     
     if (myPlayer.heroClass === 'trace') {
-        if (myPlayer.traceShooting && myPlayer.traceNodes && myPlayer.traceNodes.length < 5) {
+        if (myPlayer.traceShooting && myPlayer.traceNodes && myPlayer.traceNodes.length < 70) {
             let ln = myPlayer.traceNodes[myPlayer.traceNodes.length - 1];
-            if (Math.hypot(wx - ln.x, wy - ln.y) > 100) myPlayer.traceNodes.push({x: wx, y: wy});
+            if (Math.hypot(wx - ln.x, wy - ln.y) >32) myPlayer.traceNodes.push({x: wx, y: wy});
         }
-        if (myPlayer.traceDashing && myPlayer.traceDashNodes && myPlayer.traceDashNodes.length < 3) {
+        if (myPlayer.traceDashing && myPlayer.traceDashNodes && myPlayer.traceDashNodes.length < 19) {
             let ln = myPlayer.traceDashNodes[myPlayer.traceDashNodes.length - 1];
-            if (Math.hypot(wx - ln.x, wy - ln.y) > 120) myPlayer.traceDashNodes.push({x: wx, y: wy});
+            if (Math.hypot(wx - ln.x, wy - ln.y) > 22) myPlayer.traceDashNodes.push({x: wx, y: wy});
         }
     }
 });
@@ -1487,6 +1496,8 @@ function startGame() {
     gCon.classList.add('active'); getEl('scoreboard').style.display = 'block'; getEl('minimap-wrapper').style.display = 'block';
     lBtn.classList.add('active'); abUi.classList.add('active'); hlUi.classList.add('active');
     updateCanvasSize();
+    // Tip: chat toggle
+    addChatMessage({senderName:'SYSTEM', text:'Press C to toggle chat visibility.', color:'#22d3ee', time:''});
     requestAnimationFrame(gLoop);
 }
 
@@ -1744,6 +1755,15 @@ window.addEventListener('keydown', e => {
         if(myPlayer.heroClass === 'thorfinn') trThr();
     }
     
+    // Toggle chat visibility with C
+    if(k === 'c') {
+        let cw = getEl('chat-wrapper');
+        if(cw) {
+            let hidden = cw.style.display === 'none';
+            cw.style.display = hidden ? 'flex' : 'none';
+        }
+    }
+    
     if(e.key === 'Shift' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && myPlayer.heroClass === 'corsair') {
         if(myPlayer.corsairStance === 'cannon') {
             // Switch to on-foot: drop cannon at current position
@@ -1926,6 +1946,24 @@ window.addEventListener('mouseup', () => {
     }
 });
 
+// ===== Cursor stealth: fade a circular hole in any UI overlay near the cursor =====
+// Each .cursor-stealth element gets --cx/--cy CSS vars set to the cursor's local
+// position, which a radial-gradient mask uses to make that area transparent.
+window.addEventListener('mousemove', (e) => {
+    document.querySelectorAll('.cursor-stealth').forEach(el => {
+        if(el.style.display === 'none') return;
+        const r = el.getBoundingClientRect();
+        const lx = e.clientX - r.left, ly = e.clientY - r.top;
+        // Only update when cursor is reasonably near the element, otherwise park offscreen
+        if(lx > -120 && ly > -120 && lx < r.width + 120 && ly < r.height + 120) {
+            el.style.setProperty('--cx', lx + 'px');
+            el.style.setProperty('--cy', ly + 'px');
+        } else {
+            el.style.setProperty('--cx', '-9999px');
+            el.style.setProperty('--cy', '-9999px');
+        }
+    });
+}, {passive:true});
 
 function trBlTp(){let b=localCombat.blitzTp;if(b.ch>0&&b.dTm<=0&&!myPlayer.grabbedLocked){if(Math.hypot(myPlayer.targetX-myPlayer.x,myPlayer.targetY-myPlayer.y)>350)return;b.ch--;let s=b.cds.findIndex(c=>c<=0);if(s!==-1)b.cds[s]=b.maxCd;let p=gnV(myPlayer.targetX,myPlayer.targetY);b.dTm=0.085;b.dx=p.x;b.dy=p.y;sdEv({type:'blitz_tp_windup',x:myPlayer.x,y:myPlayer.y});}}
 function trBlG(){if(localCombat.blitzGrab.cd<=0&&!myPlayer.grabbedLocked){let cI=null,cD=60,iC=false;for(let id in gameState.players){if(id===myId||gameState.players[id].isDead)continue;let d=Math.hypot(gameState.players[id].x-myPlayer.targetX,gameState.players[id].y-myPlayer.targetY);if(d<cD){cD=d;cI=id;}}for(let c of gameState.clones){let d=Math.hypot(c.x-myPlayer.targetX,c.y-myPlayer.targetY);if(d<cD){cD=d;cI=c.id;iC=true;}}if(cI!==null){localCombat.blitzGrab.cd=(activeServerMode==='CHAOS')?0.05:localCombat.blitzGrab.maxCd;myPlayer.grabbedLocked=true;sdEv({type:'blitz_grab_init',targetId:cI,isClone:iC,angle:myPlayer.angle});}}}
@@ -1970,7 +2008,12 @@ function chD(t, id) {
         
         if(t.lastAttacker && (Date.now() - t.lastHitTime < 5000)) {
             k = t.lastAttacker;
-            if(gameState.players[k]) gameState.players[k].kills = (gameState.players[k].kills || 0) + 1;
+            if(gameState.players[k]) {
+                gameState.players[k].kills = (gameState.players[k].kills || 0) + 1;
+                // Siphon: heal 80 HP on kill (capped at maxHp)
+                let kp = gameState.players[k];
+                if(!kp.isDead) kp.hp = Math.min(kp.maxHp, (kp.hp||0) + 80);
+            }
             
             if(activeServerMode === 'JUGG' && id === gameState.juggernautId) {
                 t.isJuggernaut = false;
@@ -2581,7 +2624,8 @@ function updateGameState(dt) {
                 for(let id in gameState.players) {
                     let p = gameState.players[id];
                     if(!p.isDead && p.hp < p.maxHp && Math.hypot(p.x - h.x, p.y - h.y) < 40) {
-                        p.hp = Math.min(p.maxHp, p.hp * 1.5); h.active = false; h.timer = 12.0; break;
+                        // Health pack: heals 40% of max HP, respawns in 8s
+                        p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.4); h.active = false; h.timer = 8.0; break;
                     }
                 }
             }
@@ -3232,7 +3276,138 @@ function updateUI(now = performance.now()) {
         html += `<div class="sb-row"><div>${d}${p.name}</div><div><span style="color:#22c55e">${p.kills||0} K</span> <span style="color:#71717a">|</span> <span style="color:#ef4444">${p.deaths||0} D</span></div></div>`;
     });
     if(html !== lastScoreboardHtml) { sb.innerHTML = html; lastScoreboardHtml = html; }
+    updateCursorHud();
 }
+
+// === Cursor-Attached Semicircle Ammo / Cooldown HUD ===
+// Renders a right-side arc next to the crosshair. Segmented bars represent
+// magazine charges (Fortnite-style) for weapons with ammo; a continuous arc
+// represents cooldown progress; a spinning dashed ring shows reload state.
+function _chBuildSegArc(filled, total, color) {
+    // Builds an SVG path string for `total` segments along a right-side semicircle.
+    // The arc spans from -75deg (top) to +75deg (bottom), centered at (42,42), radius 30.
+    if(total <= 0) return '';
+    const cx=42, cy=42, r=30;
+    const startA = -75, endA = 75;
+    const span = endA - startA;
+    const gap = total > 1 ? 4 : 0; // degrees between segments
+    const segSpan = (span - gap*(total-1)) / total;
+    let parts = '';
+    for(let i=0; i<total; i++){
+        const a0 = startA + i*(segSpan+gap);
+        const a1 = a0 + segSpan;
+        const x0 = cx + r*Math.cos(a0*Math.PI/180), y0 = cy + r*Math.sin(a0*Math.PI/180);
+        const x1 = cx + r*Math.cos(a1*Math.PI/180), y1 = cy + r*Math.sin(a1*Math.PI/180);
+        const isFilled = i < filled;
+        const stroke = isFilled ? color : 'rgba(120,120,130,0.35)';
+        parts += `<path d="M ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1}" stroke="${stroke}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+    }
+    return parts;
+}
+function _chBuildProgressArc(progress, color) {
+    // Progress 0..1 along the right-side semicircle (-75 to +75 deg)
+    const cx=42, cy=42, r=30;
+    const startA = -75, endA = 75;
+    const span = endA - startA;
+    const bg = `<path d="M ${cx + r*Math.cos(startA*Math.PI/180)} ${cy + r*Math.sin(startA*Math.PI/180)} A ${r} ${r} 0 0 1 ${cx + r*Math.cos(endA*Math.PI/180)} ${cy + r*Math.sin(endA*Math.PI/180)}" stroke="rgba(120,120,130,0.35)" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+    if(progress <= 0) return bg;
+    const a1 = startA + span*Math.min(1,progress);
+    const fg = `<path d="M ${cx + r*Math.cos(startA*Math.PI/180)} ${cy + r*Math.sin(startA*Math.PI/180)} A ${r} ${r} 0 0 1 ${cx + r*Math.cos(a1*Math.PI/180)} ${cy + r*Math.sin(a1*Math.PI/180)}" stroke="${color}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+    return bg + fg;
+}
+function _chBuildReloadSpinner() {
+    // A dashed ring that spins via CSS class .ch-spin
+    const cx=42, cy=42, r=30;
+    return `<g class="ch-spin"><circle cx="${cx}" cy="${cy}" r="${r}" stroke="rgba(120,120,130,0.25)" stroke-width="4" fill="none"/><path d="M ${cx+r} ${cy} A ${r} ${r} 0 0 1 ${cx} ${cy+r}" stroke="#fbbf24" stroke-width="5" stroke-linecap="round" fill="none"/></g>`;
+}
+function updateCursorHud() {
+    const hud = getEl('cursor-hud');
+    if(!hud) return;
+    if(!gCon.classList.contains('active') || myPlayer.isDead) { hud.style.display = 'none'; return; }
+    let mode = null; // 'segments' | 'progress' | 'reload' | 'ready'
+    let filled = 0, total = 0, progress = 0, color = '#4ade80';
+    const hc = myPlayer.heroClass;
+    try {
+        if(hc === 'thorfinn') {
+            mode = 'segments'; total = 2; filled = myPlayer.daggers||0;
+            color = filled > 0 ? '#fbbf24' : '#f87171';
+        }
+        else if(hc === 'kendo') {
+            const cd = localCombat.kendoShield?.cd || 0, max = localCombat.kendoShield?.maxCd || 12;
+            mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+            color = cd > 0 ? '#f87171' : '#4ade80';
+        }
+        else if(hc === 'glitch') {
+            const cd = localCombat.glitchShoot?.cd || 0, max = localCombat.glitchShoot?.maxCd || 0.45;
+            mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+            color = cd > 0 ? '#a78bfa' : '#4ade80';
+        }
+        else if(hc === 'jubilee') {
+            const cd = localCombat.jubileePrimary?.cd || 0, max = localCombat.jubileePrimary?.maxCd || 1.2;
+            mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+            color = cd > 0 ? '#ec4899' : '#4ade80';
+        }
+        else if(hc === 'misaki') {
+            const cd = localCombat.misakiShoot?.cd || 0, max = localCombat.misakiShoot?.maxCd || 1.8;
+            mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+            color = cd > 0 ? '#f2a401' : '#4ade80';
+        }
+        else if(hc === 'blitz') {
+            if(myPlayer.blitzWeapon === 'katana') {
+                const cd = localCombat.blitzPrimary?.cd || 0, max = 0.5;
+                mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+                color = cd > 0 ? '#f87171' : '#4ade80';
+            } else {
+                const r = localCombat.blitzPrimary?.rTm || 0;
+                if(r > 0) { mode = 'reload'; }
+                else {
+                    mode = 'segments'; total = 8; filled = myPlayer.blitzAmmo||0;
+                    color = filled > 0 ? '#fbbf24' : '#f87171';
+                }
+            }
+        }
+        else if(hc === 'aero') {
+            const cd = localCombat.aeroPaste?.cd || 0, max = localCombat.aeroPaste?.maxCd || 0.8;
+            mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+            color = cd > 0 ? '#60a5fa' : '#4ade80';
+        }
+        else if(hc === 'corsair') {
+            if(myPlayer.corsairStance === 'cannon') {
+                const cd = localCombat.corsairPrimary?.cd || 0, max = localCombat.corsairPrimary?.maxCd || 2.6;
+                mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+                color = cd > 0 ? '#f59e0b' : '#4ade80';
+            } else {
+                mode = 'segments'; total = 3; filled = (myPlayer.corsairComboStep||0);
+                color = '#fbbf24';
+            }
+        }
+        else if(hc === 'tim') {
+            const cd = localCombat.timPrimary?.cd || 0, max = localCombat.timPrimary?.maxCd || 0.1;
+            mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+            color = '#22c55e';
+        }
+        else if(hc === 'trace') {
+            const cd = localCombat.traceShoot?.cd || 0, max = localCombat.traceShoot?.maxCd || 1.0;
+            mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
+            color = cd > 0 ? '#06b6d4' : '#4ade80';
+        }
+    } catch(err) { mode = null; }
+    if(!mode) { hud.style.display = 'none'; return; }
+    let inner = '';
+    if(mode === 'segments') inner = _chBuildSegArc(filled, total, color);
+    else if(mode === 'progress') inner = _chBuildProgressArc(progress, color);
+    else if(mode === 'ready') inner = _chBuildProgressArc(1, '#4ade80');
+    else if(mode === 'reload') inner = _chBuildReloadSpinner();
+    hud.style.display = 'block';
+    hud.innerHTML = `<svg viewBox="0 0 84 84">${inner}</svg>`;
+    // Position centered on cursor (sMx/sMy are canvas-relative pixel coords)
+    const r = can.getBoundingClientRect();
+    const ratioX = r.width / can.width, ratioY = r.height / can.height;
+    hud.style.left = (sMx * ratioX) + 'px';
+    hud.style.top = (sMy * ratioY) + 'px';
+}
+
+
 
 function drawTrains() {
     let p = (6.0 - gameState.train.timer) / 6.0, L = 12000, yp = -L + (p * (H + L));
@@ -3242,7 +3417,8 @@ function drawTrains() {
         // === TOKYO BULLET TRAIN - One Piece Egghead Style ===
         // True top-down 2D, flat bold colors, no shadows/gradients, soft outlines
         const cL = 600, g = 25, nC = Math.floor(L / (cL + g));
-        const bodyW = 160, halfW = bodyW / 2;
+        // Train body fills the full 200px death zone (4 grid cells of 50px)
+        const bodyW = 200, halfW = bodyW / 2;
         
         for(let i = 0; i < nC; i++) {
             let cy = i * (cL + g); if(cy > L) break;
@@ -3393,8 +3569,11 @@ function drawTrains() {
         }
         ctx.restore();
     };
+    // Translate to the CENTER of each track (death zones span 1350-1550 and 1650-1850)
     dT(1350); dT(1650); ctx.restore();
 }
+
+// ============================================================================
 
 function drawGrid() {
     ctx.drawImage(mapCanvas, 0, 0);
@@ -3484,7 +3663,7 @@ function drawHPs() {
             ctx.fillStyle = '#86efac'; ctx.shadowBlur = 0; ctx.fillRect(-2, -14, 4, 28); ctx.fillRect(-14, -2, 28, 4);
             ctx.lineWidth = 1; ctx.strokeStyle = '#052e16'; ctx.strokeRect(-6, -18, 12, 36); ctx.strokeRect(-18, -6, 36, 12);
         } else {
-            ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 0, 15, -1.57, -1.57 + (6.28 * (1 - h.timer / 4.0))); ctx.stroke();
+            ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 0, 15, -1.57, -1.57 + (6.28 * (1 - h.timer / 8.0))); ctx.stroke();
         }
         ctx.restore();
     });
@@ -4165,37 +4344,7 @@ function drawPlayers() {
             if(o.daggers >= 2) { ctx.save(); ctx.translate(12, 12); ctx.rotate(-0.4 + sw); drawDag(ctx); ctx.restore(); }
         } else if(!iC && o.heroClass === 'corsair') {
             let trimC = o.customization?.corsairColors?.trim || '#dc2626';
-            // === CORSAIR HAT (2.5D, drawn behind/below body) ===
-            // One Piece Egghead style pirate tricorn hat
-            let hatAngle = o.angle || 0;
-            ctx.save();
-            // Hat brim - flat dark oval behind head
-            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
-            ctx.beginPath(); ctx.ellipse(0, -2, 28, 14, 0, 0, 6.28); ctx.fill();
-            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 2.5; ctx.stroke();
-            // Hat brim trim
-            ctx.strokeStyle = isImpactFlash ? '#000' : '#D4A04A'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.ellipse(0, -2, 28, 14, 0, 0, 6.28); ctx.stroke();
-            // Hat crown - rounded dome on top
-            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
-            ctx.beginPath(); ctx.ellipse(0, -8, 16, 12, 0, Math.PI, 0); ctx.fill();
-            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 2; ctx.stroke();
-            // Hat band - bright trim color
-            ctx.fillStyle = isImpactFlash ? '#000' : trimC;
-            ctx.fillRect(-16, -10, 32, 4);
-            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 1;
-            ctx.strokeRect(-16, -10, 32, 4);
-            // Skull emblem on hat - small and cute (One Piece style)
-            ctx.fillStyle = isImpactFlash ? '#000' : '#FFFFFF';
-            ctx.beginPath(); ctx.arc(0, -14, 5, 0, 6.28); ctx.fill();
-            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
-            ctx.beginPath(); ctx.arc(-2, -15, 1.5, 0, 6.28); ctx.fill();
-            ctx.beginPath(); ctx.arc(2, -15, 1.5, 0, 6.28); ctx.fill();
-            // Crossbones
-            ctx.strokeStyle = isImpactFlash ? '#000' : '#FFFFFF'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
-            ctx.beginPath(); ctx.moveTo(-6, -17); ctx.lineTo(6, -11); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(6, -17); ctx.lineTo(-6, -11); ctx.stroke();
-            ctx.restore();
+            // (Hat is drawn LAST so it layers above body/cannon/cutlass/pistol — see end of corsair block)
             
             if(o.corsairStance === 'cannon') {
                 // === CANNON MODE (One Piece Egghead Style) ===
@@ -4302,6 +4451,35 @@ function drawPlayers() {
                     ctx.globalAlpha = 1;
                 }
             }
+            // === CORSAIR HAT (drawn LAST so it layers ABOVE body, cannon, cutlass, and pistol) ===
+            ctx.save();
+            // Hat brim - flat dark oval
+            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
+            ctx.beginPath(); ctx.ellipse(0, -2, 28, 14, 0, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 2.5; ctx.stroke();
+            // Hat brim trim
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#D4A04A'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.ellipse(0, -2, 28, 14, 0, 0, 6.28); ctx.stroke();
+            // Hat crown
+            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
+            ctx.beginPath(); ctx.ellipse(0, -8, 16, 12, 0, Math.PI, 0); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 2; ctx.stroke();
+            // Hat band - bright trim color
+            ctx.fillStyle = isImpactFlash ? '#000' : trimC;
+            ctx.fillRect(-16, -10, 32, 4);
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#1A1A2A'; ctx.lineWidth = 1;
+            ctx.strokeRect(-16, -10, 32, 4);
+            // Skull emblem
+            ctx.fillStyle = isImpactFlash ? '#000' : '#FFFFFF';
+            ctx.beginPath(); ctx.arc(0, -14, 5, 0, 6.28); ctx.fill();
+            ctx.fillStyle = isImpactFlash ? '#000' : '#2A2A3A';
+            ctx.beginPath(); ctx.arc(-2, -15, 1.5, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(2, -15, 1.5, 0, 6.28); ctx.fill();
+            // Crossbones
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#FFFFFF'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(-6, -17); ctx.lineTo(6, -11); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(6, -17); ctx.lineTo(-6, -11); ctx.stroke();
+            ctx.restore();
         } else if(!iC && o.heroClass === 'tim') {
             // === TINY TIM: Green Alien (45% size, so scale is already in the transform) ===
             let timScale = 0.45;
@@ -5157,7 +5335,7 @@ function drawAeroContextMenuWorld(ctx2) {
         ctx2.fillStyle = '#000'; ctx2.font = 'bold 9px sans-serif';
         ctx2.fillText('📋 Copy', 6, 28);
         ctx2.fillStyle = '#aaa'; ctx2.font = '9px sans-serif';
-        ctx2.fillText('📄 Paste', 6, 44);
+        ctx2.fillText('📄 67PAste', 6, 44);
         ctx2.restore();
     }
 }
