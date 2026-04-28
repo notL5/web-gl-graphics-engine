@@ -67,7 +67,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 #aero-context-menu .ctx-item .ctx-shortcut{margin-left:auto;padding-left:20px;color:#888;font-size:11px;}
 #aero-context-menu .ctx-separator{height:1px;background:#d0d0d0;margin:2px 2px;}
 /* Cursor stealth: when cursor hovers a UI overlay, fade out an area around it so it doesn't block the view */
-.cursor-stealth{--cx:-9999px;--cy:-9999px;pointer-events:none;-webkit-mask-image:radial-gradient(circle 110px at var(--cx) var(--cy), transparent 0%, transparent 55%, rgba(0,0,0,0.4) 78%, #000 100%);mask-image:radial-gradient(circle 199px at var(--cx) var(--cy), transparent 0%, transparent 55%, rgba(0,0,0,0.4) 78%, #000 100%);}
+.cursor-stealth{--cx:-9999px;--cy:-9999px;pointer-events:none;-webkit-mask-image:radial-gradient(circle 200px at var(--cx) var(--cy), transparent 0%, transparent 55%, rgba(0,0,0,0.4) 78%, #000 100%);mask-image:radial-gradient(circle 199px at var(--cx) var(--cy), transparent 0%, transparent 55%, rgba(0,0,0,0.4) 78%, #000 100%);}
 /* Cursor-attached semicircle ammo/cooldown HUD (right-side arc) */
 #cursor-hud{position:absolute;pointer-events:none;z-index:60;width:24px;height:24px;margin-left:-17px;margin-top:-19px;display:none;}
 #cursor-hud svg{width:100%;height:100%;overflow:visible;display:block;}
@@ -81,7 +81,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
     <canvas id="gameCanvas" width="800" height="600" oncontextmenu="return false;"></canvas>
     <div id="cursor-hud"></div>
     <div id="aero-context-menu">
-        <div class="ctx-item disabled"><span class="ctx-icon">✂</span>Cut<span class="ctx-shortcut">Ctrl+X</span></div>
+        <div class="ctx-item disabled"><span class="ctx-icon">😱</span>67 Button<span class="ctx-shortcut">Ctrl+6+7</span></div>
         <div class="ctx-item" id="ctx-copy-btn"><span class="ctx-icon">📋</span>Copy<span class="ctx-shortcut">Ctrl+C</span></div>
         <div class="ctx-item disabled"><span class="ctx-icon">📄</span>Paste<span class="ctx-shortcut">Ctrl+V</span></div>
     </div>
@@ -264,11 +264,11 @@ let currentHostPeerId = null; // last known host peer id (for migration)
 // =====================================================================
 const BALANCE = {
     tim: {
-        coreBeamMinDps: 9,    // DPS at 0 charge
-        coreBeamMaxDps: 65,   // DPS at full (4.0) charge
+        coreBeamMinDps: 20,    // DPS at 0 charge
+        coreBeamMaxDps: 300,   // DPS at full (4.0) charge
     },
     blitz: {
-        handgunCooldown: 0.12,    // seconds between shots (auto-fire)
+        handgunCooldown: 0.2,    // seconds between shots (auto-fire)
         katanaCooldown: 0.7,      // seconds between swings (manual click)
         katanaDamage: 50,         // per hit
     },
@@ -311,7 +311,7 @@ const HERO_DATA = {
     misaki:{name:'Misaki and Kisaki',role:'Sniper',hp:300,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
     corsair:{name:'Corsair',role:'Tank',hp:400,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
     aero:{name:'Aero',role:'Controller',hp:250,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},
-    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Tectonic-Disruption and Matter-Vaporization Cannon',role:'Tank',hp:380,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']}
+    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Tank',hp:380,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']}
 };
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
@@ -960,13 +960,13 @@ can.addEventListener('mousemove', e => {
     let wx=(sMx/cam.zoom)+cam.x, wy=(sMy/cam.zoom)+cam.y;
     
     if (myPlayer.heroClass === 'trace') {
-        if (myPlayer.traceShooting && myPlayer.traceNodes && myPlayer.traceNodes.length < 70) {
+        if (myPlayer.traceShooting && myPlayer.traceNodes && myPlayer.traceNodes.length < 40) {
             let ln = myPlayer.traceNodes[myPlayer.traceNodes.length - 1];
-            if (Math.hypot(wx - ln.x, wy - ln.y) >32) myPlayer.traceNodes.push({x: wx, y: wy});
+            if (Math.hypot(wx - ln.x, wy - ln.y) >60) myPlayer.traceNodes.push({x: wx, y: wy});
         }
-        if (myPlayer.traceDashing && myPlayer.traceDashNodes && myPlayer.traceDashNodes.length < 19) {
+        if (myPlayer.traceDashing && myPlayer.traceDashNodes && myPlayer.traceDashNodes.length < 8) {
             let ln = myPlayer.traceDashNodes[myPlayer.traceDashNodes.length - 1];
-            if (Math.hypot(wx - ln.x, wy - ln.y) > 22) myPlayer.traceDashNodes.push({x: wx, y: wy});
+            if (Math.hypot(wx - ln.x, wy - ln.y) > 80) myPlayer.traceDashNodes.push({x: wx, y: wy});
         }
     }
 });
@@ -3901,7 +3901,7 @@ function drawEnts() {
             ctx.shadowBlur = 12; ctx.shadowColor = beamColor;
             // Main bullet
             ctx.fillStyle = beamColor; ctx.globalAlpha = 0.9;
-            ctx.beginPath(); ctx.moveTo(80, 0); ctx.quadraticCurveTo(0, -2.5, -6, 0); ctx.quadraticCurveTo(0, 2.5, 8, 0); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(3, 0); ctx.quadraticCurveTo(0, -2.5, -6, 0); ctx.quadraticCurveTo(0, 2.5, 8, 0); ctx.fill();
             // Bright core
             ctx.fillStyle = beamColor; ctx.globalAlpha = 0.7;
             ctx.beginPath(); ctx.arc(4, 0, 2, 0, 6.28); ctx.fill();
@@ -5327,15 +5327,15 @@ function drawAeroContextMenuWorld(ctx2) {
         ctx2.fillStyle = 'rgba(240,240,240,0.95)';
         ctx2.strokeStyle = '#a0a0a0';
         ctx2.lineWidth = 1;
-        let mW = 80, mH = 48;
+        let mW = 90, mH = 48;
         ctx2.fillRect(0, 0, mW, mH);
         ctx2.strokeRect(0, 0, mW, mH);
-        ctx2.fillStyle = '#aaa'; ctx2.font = '9px sans-serif';
-        ctx2.fillText('✂ Cut', 6, 12);
+        ctx2.fillStyle = '#000'; ctx2.font = '9px sans-serif';
+        ctx2.fillText('             😱 67 Button', 6, 12);
         ctx2.fillStyle = '#000'; ctx2.font = 'bold 9px sans-serif';
-        ctx2.fillText('📋 Copy', 6, 28);
-        ctx2.fillStyle = '#aaa'; ctx2.font = '9px sans-serif';
-        ctx2.fillText('📄 Paste', 6, 44);
+        ctx2.fillText('          📋 Copy', 6, 28);
+        ctx2.fillStyle = '#000'; ctx2.font = '9px sans-serif';
+        ctx2.fillText('           📄 Paste', 6, 44);
         ctx2.restore();
     }
 }
