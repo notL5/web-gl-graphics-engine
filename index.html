@@ -131,6 +131,11 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
         <div class="ability-slot" id="ui-glitch-clone"><div class="key">SPACE</div><div class="name">Clone</div><div class="status" id="status-glitch-clone">Ready</div><div class="cooldown-overlay" id="cd-glitch-clone"></div></div>
         <div class="ability-slot" id="ui-glitch-swap"><div class="key">E</div><div class="name">Swap</div><div class="status" id="status-glitch-swap">Ready</div><div class="cooldown-overlay" id="cd-glitch-swap"></div></div>
 
+        <div class="ability-slot" id="ui-rift-primary"><div class="key">L-CLICK</div><div class="name">Rift Rifle</div><div class="status" id="status-rift-primary">18/18</div><div class="cooldown-overlay" id="cd-rift-primary"></div></div>
+        <div class="ability-slot" id="ui-rift-orb"><div class="key">E</div><div class="name">Rift Orb</div><div class="status" id="status-rift-orb">Ready</div><div class="cooldown-overlay" id="cd-rift-orb"></div></div>
+        <div class="ability-slot" id="ui-rift-jab"><div class="key">R-CLICK</div><div class="name">Rift Jab</div><div class="status" id="status-rift-jab">Ready</div><div class="cooldown-overlay" id="cd-rift-jab"></div></div>
+        <div class="ability-slot" id="ui-rift-shift"><div class="key">SPACE</div><div class="name">Vector Shift</div><div class="status" id="status-rift-shift">Ch: 2</div><div class="cooldown-overlay" id="cd-rift-shift"></div></div>
+
         <div class="ability-slot" id="ui-jubilee-primary"><div class="key">L-CLICK</div><div class="name">Fireworks</div><div class="status" id="status-jubilee-primary">Ready</div><div class="cooldown-overlay" id="cd-jubilee-primary"></div></div>
 
         <div class="ability-slot" id="ui-corsair-primary"><div class="key">L-CLICK</div><div class="name" id="name-corsair-primary">Broadside</div><div class="status" id="status-corsair-primary">Ready</div><div class="cooldown-overlay" id="cd-corsair-primary"></div></div>
@@ -185,6 +190,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                         <button class="class-list-btn" id="btn-misaki" onclick="selectHero('misaki')">Misaki</button>
                         <button class="class-list-btn" id="btn-kendo" onclick="selectHero('kendo')">Kendo</button>
                         <button class="class-list-btn" id="btn-glitch" onclick="selectHero('glitch')">Glitch</button>
+                        <button class="class-list-btn" id="btn-rift" onclick="selectHero('rift')">Rift</button>
                         <button class="class-list-btn" id="btn-aero" onclick="selectHero('aero')">Aero</button>
                         <button class="class-list-btn" id="btn-jubilee" onclick="selectHero('jubilee')">Jubilee</button>
                         <button class="class-list-btn" id="btn-corsair" onclick="selectHero('corsair')">Corsair</button>
@@ -307,6 +313,7 @@ const HERO_DATA = {
     blitz:{name:'Blitz',role:'Assassin',hp:220,speed:'Fast',color:'#ffffff',desc:'Spatial illusionist capable of teleportation and stance swaps.',abilities:['Swap Stance','Handgun/Katana','Spatial Shift','Displace Grab','[ULT] Paradox Rift']},
     kendo:{name:'Kendo',role:'Sniper',hp:250,speed:'Medium',color:'#ef4444',desc:'Tactical sniper with a ridable arrow and modular shield.',abilities:['Y-Arrow','Arrow Ride','Subsonic Shield']},
     glitch:{name:'Glitch',role:'Support',hp:260,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
+    rift:{name:'Rift',role:'Controller',hp:250,speed:'Medium',color:'#f8fafc',desc:'Space-warp controller wielding a heavy burst rifle and decaying portal infrastructure. Visual target: matte-black rifle, glitch-warp body shader, and jagged monochrome portal cracks.',abilities:['Burst Fire Rift Rifle (3-round burst, 18 damage each, 1.5 bursts/sec, 18-round mag)','Condensed Rift Orb (8s CD): wall impact spawns portal, mid-air detonation by shooting orb deals 75 AoE','Rift Jab (6s CD): 45 damage + instant backward micro-blink and knockback','Vector Shift: dodge-teleport 3 grid blocks, 2 charges, 5s per charge','Passive Rift Portals: linked pair max, shrink 33% per traversal, collapse after 3 uses, 1s re-entry immunity, ally/Rift exit speed +30% for 1.5s']},
     jubilee:{name:'Jubilee',role:'Damage Dealer',hp:220,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
     misaki:{name:'Misaki and Kisaki',role:'Sniper',hp:260,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
     corsair:{name:'Corsair',role:'Tank',hp:350,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
@@ -548,7 +555,8 @@ let localCombat = {
     traceShoot:{cd:0,maxCd:1.0}, traceDash:{cd:0,maxCd:4.0,active:false,path:[],idx:0},
     aeroPaste:{cd:0,maxCd:0.8}, aeroCopy:{cd:0,maxCd:0},
     corsairPrimary:{cd:0,maxCd:2.0}, corsairParry:{cd:0,maxCd:6.0}, corsairCombo:{cd:0,maxCd:0.4},
-    timPrimary:{cd:0,maxCd:0.1}, timVents:{cd:0,maxCd:2.0}, timUlt:{cd:0,maxCd:0.0}
+    timPrimary:{cd:0,maxCd:0.1}, timVents:{cd:0,maxCd:2.0}, timUlt:{cd:0,maxCd:0.0},
+    riftPrimary:{cd:0,maxCd:0.67,burstShots:0,burstTimer:0,ammo:18,reload:0}, riftOrb:{cd:0,maxCd:8.0}, riftJab:{cd:0,maxCd:6.0}, riftShift:{ch:2,maxCh:2,cds:[0,0],maxCd:5.0}
 };
 
 function resetAllCooldowns() {
@@ -1716,6 +1724,7 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'misaki') trMisG();
             else if(myPlayer.heroClass === 'blitz') trBlTp();
             else if(myPlayer.heroClass === 'tim') trTimVents();
+            else if(myPlayer.heroClass === 'rift') trRiftShift();
             else if(myPlayer.heroClass === 'corsair') {
         setVisibleAbilities(['corsair-primary','corsair-stance','corsair-parry']);
         let cp = localCombat.corsairPrimary.cd; 
@@ -1749,6 +1758,7 @@ window.addEventListener('keydown', e => {
         else if(myPlayer.heroClass === 'kendo') trKndS();
         else if(myPlayer.heroClass === 'glitch') trGlS();
         else if(myPlayer.heroClass === 'blitz') trBlG();
+        else if(myPlayer.heroClass === 'rift') trRiftOrb();
     }
     
     if(k === 'p' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
@@ -1904,6 +1914,7 @@ can.addEventListener('mousedown', e => {
         else if(myPlayer.heroClass === 'jubilee') trJubP();
         else if(myPlayer.heroClass === 'misaki') trMisS();
         else if(myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'katana') trBlKt();
+        else if(myPlayer.heroClass === 'rift') trRiftPrimary();
     }
 }); 
 
@@ -1965,6 +1976,11 @@ window.addEventListener('mousemove', (e) => {
     });
 }, {passive:true});
 
+
+function trRiftPrimary(){let r=localCombat.riftPrimary;if(r.reload>0||r.burstShots>0)return;if(r.ammo<3){r.reload=(activeServerMode==='CHAOS')?0.05:1.4;return;}r.burstShots=3;r.burstTimer=0;}
+function trRiftOrb(){if(localCombat.riftOrb.cd<=0){localCombat.riftOrb.cd=(activeServerMode==='CHAOS')?0.05:localCombat.riftOrb.maxCd;sdEv({type:'rift_orb_fire',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});}}
+function trRiftJab(){if(localCombat.riftJab.cd>0)return;let t=null,tid=null,d=70;for(let id in gameState.players){if(id===myId||gameState.players[id].isDead||!cDm(myId,id))continue;let q=gameState.players[id],dd=Math.hypot(q.x-myPlayer.x,q.y-myPlayer.y);if(dd<d){d=dd;t=q;tid=id;}}if(t){localCombat.riftJab.cd=(activeServerMode==='CHAOS')?0.05:localCombat.riftJab.maxCd;sdEv({type:'rift_jab',targetId:tid,angle:myPlayer.angle});}}
+function trRiftShift(){let b=localCombat.riftShift;if(b.ch<=0)return;let dx=0,dy=0;if(keys['w'])dy=-1;if(keys['s'])dy=1;if(keys['a'])dx=-1;if(keys['d'])dx=1;if(dx===0&&dy===0)return;let m=Math.hypot(dx,dy);dx/=m;dy/=m;let nx=myPlayer.x+dx*GRID*3,ny=myPlayer.y+dy*GRID*3,p=gnV(nx,ny);if(iW(p.x,p.y))return;b.ch--;let si=b.cds.findIndex(c=>c<=0);if(si!==-1)b.cds[si]=b.maxCd;myPlayer.x=p.x;myPlayer.y=p.y;sdUp();}
 function trBlTp(){let b=localCombat.blitzTp;if(b.ch>0&&b.dTm<=0&&!myPlayer.grabbedLocked){if(Math.hypot(myPlayer.targetX-myPlayer.x,myPlayer.targetY-myPlayer.y)>350)return;b.ch--;let s=b.cds.findIndex(c=>c<=0);if(s!==-1)b.cds[s]=b.maxCd;let p=gnV(myPlayer.targetX,myPlayer.targetY);b.dTm=0.085;b.dx=p.x;b.dy=p.y;sdEv({type:'blitz_tp_windup',x:myPlayer.x,y:myPlayer.y});}}
 function trBlG(){if(localCombat.blitzGrab.cd<=0&&!myPlayer.grabbedLocked){let cI=null,cD=60,iC=false;for(let id in gameState.players){if(id===myId||gameState.players[id].isDead)continue;let d=Math.hypot(gameState.players[id].x-myPlayer.targetX,gameState.players[id].y-myPlayer.targetY);if(d<cD){cD=d;cI=id;}}for(let c of gameState.clones){let d=Math.hypot(c.x-myPlayer.targetX,c.y-myPlayer.targetY);if(d<cD){cD=d;cI=c.id;iC=true;}}if(cI!==null){localCombat.blitzGrab.cd=(activeServerMode==='CHAOS')?0.05:localCombat.blitzGrab.maxCd;myPlayer.grabbedLocked=true;sdEv({type:'blitz_grab_init',targetId:cI,isClone:iC,angle:myPlayer.angle});}}}
 function trBlSh(){if(localCombat.blitzPrimary.cd<=0&&localCombat.blitzPrimary.rTm<=0&&!myPlayer.grabbedLocked&&myPlayer.blitzAmmo>0){localCombat.blitzPrimary.cd=(activeServerMode==='CHAOS')?0.05:BALANCE.blitz.handgunCooldown;myPlayer.blitzAmmo--;myPlayer.slashAnimTimer=0.15;applyShake(3,0.1);sdEv({type:'blitz_shoot',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});if(myPlayer.blitzAmmo<=0)localCombat.blitzPrimary.rTm=(activeServerMode==='CHAOS')?0.05:0.8;}}
@@ -2098,6 +2114,9 @@ function processCombatEvent(sId, e) {
     else if(e.type==='blitz_tp_finish'){s.flicker=false;connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'blitz_tp_vfx',sx:e.startX,sy:e.startY,ex:e.endX,ey:e.endY});});if(sId!==myId){vfx.push({type:'blitzTransmission',x:e.startX,y:e.startY,life:0.3,maxLife:0.3});vfx.push({type:'blitzTransmission',x:e.endX,y:e.endY,life:0.3,maxLife:0.3});}}
     else if(e.type==='blitz_grab_init'){s.grabbedLocked=true;gameState.projectiles.push({type:'blitz_grab_manager',id:Math.random().toString(),ownerId:sId,targetId:e.targetId,isClone:e.isClone,originalX:s.x,originalY:s.y,originalAngle:e.angle,phase:1,timer:0.085});}
     else if(e.type==='blitz_ult'){s.slashAnimTimer=0.5;gameState.projectiles.push({type:'paradox_rift',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:3.0});connections.forEach(c=>{if(c.open)c.send({type:'blitz_ult_vfx',x:e.x,y:e.y});});if(sId!==myId)applyShake(10,0.4);}
+    else if(e.type==='rift_burst_shot'){let sx=e.x+Math.cos(e.angle)*30,sy=e.y+Math.sin(e.angle)*30;gameState.projectiles.push({type:'rift_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*1700,vy:Math.sin(e.angle)*1700,life:1.0,dmg:18});}
+    else if(e.type==='rift_orb_fire'){let sx=e.x+Math.cos(e.angle)*28,sy=e.y+Math.sin(e.angle)*28;gameState.projectiles.push({type:'rift_orb',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*260,vy:Math.sin(e.angle)*260,angle:e.angle,life:4.0,age:0,armed:false});}
+    else if(e.type==='rift_jab'){let t=gameState.players[e.targetId];if(t&&!t.isDead&&cDm(sId,e.targetId)){if(Math.hypot(t.x-s.x,t.y-s.y)<85){dmgTk(t,45,sId);sendHitmarker(sId,t,45);t.lastAttacker=sId;t.lastHitTime=Date.now();let kbA=e.angle;t.x+=Math.cos(kbA)*55;t.y+=Math.sin(kbA)*55;s.x-=Math.cos(kbA)*GRID*0.9;s.y-=Math.sin(kbA)*GRID*0.9;chD(t,e.targetId);}}}
     else if(e.type==='copycat_steal_vfx'){connections.forEach(c=>{if(c.open)c.send({type:'copycat_steal_vfx',targetId:e.targetId,sourceId:sId});});if(sId!==myId)vfx.push({type:'stealLink',targetId:e.targetId,sourceId:sId,life:0.4,maxLife:0.4});}
     else if(e.type==='corsair_cannonball'){
         s.slashAnimTimer=0.3;
@@ -2278,7 +2297,14 @@ function updateMovement(dt) {
         myPlayer.targetX = wx; myPlayer.targetY = wy;
     }
     
-    if(mDwn && myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'handgun' && myPlayer.stunTimer <= 0 && !myPlayer.grabbedLocked) trBlSh();
+    
+    if(myPlayer.heroClass === 'rift') {
+        let rp=localCombat.riftPrimary;
+        if(rp.reload>0){rp.reload=Math.max(0,rp.reload-dt); if(rp.reload<=0)rp.ammo=18;}
+        if(rp.burstShots>0){rp.burstTimer-=dt; if(rp.burstTimer<=0){rp.burstTimer=0.08; rp.burstShots--; rp.ammo=Math.max(0,rp.ammo-1); sdEv({type:'rift_burst_shot',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle}); if(rp.ammo<=0&&rp.burstShots<=0)rp.reload=1.4;}}
+        if(mDwn&&rp.burstShots<=0&&rp.reload<=0&&rp.cd<=0){trRiftPrimary(); rp.cd=rp.maxCd;}
+    }
+if(mDwn && myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'handgun' && myPlayer.stunTimer <= 0 && !myPlayer.grabbedLocked) trBlSh();
     
     if(myPlayer.heroClass === 'blitz' && localCombat.blitzTp.dTm > 0 && !myPlayer.grabbedLocked) {
         localCombat.blitzTp.dTm -= dt; myPlayer.flicker = true;
@@ -2663,6 +2689,7 @@ function updateGameState(dt) {
                 continue;
             }
             
+            if(p.type === 'rift_orb'){p.age+=dt;if(p.age>0.35){p.armed=true;p.vx*=1.03;p.vy*=1.03;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;let hitWall=iW(p.x,p.y);if(hitWall||p.life<=0){if(hitWall){let owner=gameState.players[p.ownerId];if(owner&&owner.heroClass==='rift'){owner.riftPortalUses=owner.riftPortalUses||3;owner.riftPortals=owner.riftPortals||[];owner.riftPortals.push({x:p.x,y:p.y,r:70,uses:3});if(owner.riftPortals.length>2)owner.riftPortals.shift();}}gameState.projectiles.splice(i,1);continue;}for(let j=gameState.projectiles.length-1;j>=0;j--){let b=gameState.projectiles[j];if((b.type==='blitz_bullet'||b.type==='sniper_bullet'||b.type==='tim_pea_bullet')&&b.ownerId===p.ownerId&&Math.hypot(b.x-p.x,b.y-p.y)<26){emEx(p.x,p.y,75,170,p.ownerId,'#ffffff',false);gameState.projectiles.splice(i,1);break;}}continue;}
             if(p.type === 'paradox_rift') {
                 p.life -= dt;
                 for(let id in gameState.players) {
@@ -2818,6 +2845,7 @@ function updateGameState(dt) {
                     if(!a) break;
                 }
                 p.life -= dt; if(!a || p.life <= 0) gameState.projectiles.splice(i, 1);
+            } else if(p.type === 'rift_bullet') {p.x+=p.vx*sm*dt;p.y+=p.vy*sm*dt;p.life-=dt;let hw=iW(p.x,p.y),hd=false;if(!hw){for(let id in gameState.players){if(!gameState.players[id].isDead&&cDm(p.ownerId,id)){let t=gameState.players[id];if(Math.hypot(t.x-p.x,t.y-p.y)<20&&!t.invulnerable){dmgTk(t,p.dmg,p.ownerId);sendHitmarker(p.ownerId,t,p.dmg);t.lastAttacker=p.ownerId;t.lastHitTime=Date.now();chD(t,id);hd=true;break;}}}}if(hw||hd||p.life<=0)gameState.projectiles.splice(i,1);
             } else if(p.type === 'blitz_bullet') {
                 p.lastX = p.x; p.lastY = p.y; p.distTraveled += Math.hypot(p.vx * sm * dt, p.vy * sm * dt); p.x += p.vx * sm * dt; p.y += p.vy * sm * dt; p.life -= dt;
                 let hw = iW(p.x, p.y), dmg = Math.max(20, 40 - ((p.distTraveled - 350) * 0.08)) * (p.dmgMult||1.0);
@@ -3188,6 +3216,17 @@ function updateUI(now = performance.now()) {
         getEl('cd-blitz-tp').style.height = `${Math.max(...localCombat.blitzTp.cds) > 0 ? (Math.max(...localCombat.blitzTp.cds) / 4.0) * 100 : 0}%`;
         let bg = localCombat.blitzGrab.cd; getEl('cd-blitz-grab').style.height = `${bg > 0 ? (bg / 10.0) * 100 : 0}%`;
         getEl('status-blitz-grab').innerText = bg > 0 ? bg.toFixed(1) + 's' : 'Ready';
+    }
+
+    else if(myPlayer.heroClass === 'rift') {
+        setVisibleAbilities(['rift-primary','rift-orb','rift-jab','rift-shift']);
+        let rp=localCombat.riftPrimary;
+        getEl('status-rift-primary').innerText = rp.reload>0 ? 'Reloading' : `${rp.ammo}/18`;
+        getEl('cd-rift-primary').style.height = `${rp.reload>0 ? (rp.reload/1.4)*100 : 0}%`;
+        let ro=localCombat.riftOrb.cd; getEl('status-rift-orb').innerText = ro>0 ? ro.toFixed(1)+'s' : 'Ready'; getEl('cd-rift-orb').style.height=`${ro>0?(ro/8.0)*100:0}%`;
+        let rj=localCombat.riftJab.cd; getEl('status-rift-jab').innerText = rj>0 ? rj.toFixed(1)+'s' : 'Ready'; getEl('cd-rift-jab').style.height=`${rj>0?(rj/6.0)*100:0}%`;
+        getEl('status-rift-shift').innerText = `Ch: ${localCombat.riftShift.ch}`;
+        getEl('cd-rift-shift').style.height = `${Math.max(...localCombat.riftShift.cds)>0 ? (Math.max(...localCombat.riftShift.cds)/5.0)*100 : 0}%`;
     }
     else if(myPlayer.heroClass === 'aero') {
         setVisibleAbilities(['aero-tab','aero-swipe','aero-mode','aero-copy','aero-paste']);
@@ -5209,6 +5248,7 @@ let aeroCtxCopyBtn = document.getElementById('ctx-copy-btn');
 can.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
 
 can.addEventListener('mousedown', e => {
+    if(e.button === 2 && myPlayer.heroClass === 'rift' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && gCon.classList.contains('active')) { trRiftJab(); return; }
     if(e.button === 2 && myPlayer.heroClass === 'aero' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && gCon.classList.contains('active')) {
         e.preventDefault();
         if(myPlayer.aeroContextMenu) return; // only one at a time
