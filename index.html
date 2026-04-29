@@ -264,8 +264,8 @@ let currentHostPeerId = null; // last known host peer id (for migration)
 // =====================================================================
 const BALANCE = {
     tim: {
-        coreBeamMinDps: 20,    // DPS at 0 charge
-        coreBeamMaxDps: 300,   // DPS at full (4.0) charge
+        coreBeamMinDps: 100,    // DPS at 0 charge
+        coreBeamMaxDps: 420,   // DPS at full (4.0) charge
     },
     blitz: {
         handgunCooldown: 0.2,    // seconds between shots (auto-fire)
@@ -283,7 +283,7 @@ const BALANCE = {
         beamDmgFast1Clone: 16,
         beamDmgSlow2Clone: 22,    // with 2 clones (player + 2)
         beamDmgFast2Clone: 13,
-        maxClones: 2,             // max clones (player + this many)
+        maxClones: 3,             // max clones (player + this many)
     }
 };
 // =====================================================================
@@ -308,10 +308,10 @@ const HERO_DATA = {
     kendo:{name:'Kendo',role:'Sniper',hp:250,speed:'Medium',color:'#ef4444',desc:'Tactical sniper with a ridable arrow and modular shield.',abilities:['Y-Arrow','Arrow Ride','Subsonic Shield']},
     glitch:{name:'Glitch',role:'Support',hp:260,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
     jubilee:{name:'Jubilee',role:'Damage Dealer',hp:220,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
-    misaki:{name:'Misaki and Kisaki',role:'Sniper',hp:300,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
-    corsair:{name:'Corsair',role:'Tank',hp:400,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
-    aero:{name:'Aero',role:'Controller',hp:250,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},
-    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Tank',hp:380,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']}
+    misaki:{name:'Misaki and Kisaki',role:'Sniper',hp:260,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
+    corsair:{name:'Corsair',role:'Tank',hp:350,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
+    aero:{name:'Aero',role:'Controller',hp:230,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},    
+    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']}
 };
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
@@ -540,7 +540,7 @@ function genProcWalls() {
 let localCombat = {
     dash:{charges:3,maxCharges:3,cds:[0,0,0],maxCd:4.0,v:{x:0,y:0},rec:0}, 
     slash:{cd:0,maxCd:0.5}, kendoRide:{cd:0,maxCd:9.0}, kendoShield:{cd:0,maxCd:8.0},
-    glitchShoot:{cd:0,maxCd:0.45}, glitchClone:{cd:0,maxCd:4.0}, glitchSwap:{cd:0,maxCd:1.5},
+    glitchShoot:{cd:0,maxCd:0.6}, glitchClone:{cd:0,maxCd:2.0}, glitchSwap:{cd:0,maxCd:2.0},
     jubileePrimary:{cd:0,maxCd:1.2}, jubileeDash:{cd:0,maxCd:5.0,delay:0,dTm:0,ang:0,spd:0,dr:0}, 
     misakiShoot:{cd:0,maxCd:1.8}, misakiGrapple:{cd:0,maxCd:6.0,dTm:0,ang:0,spd:1800}, misakiFlare:{cd:0,maxCd:10.0},
     blitzPrimary:{cd:0,rTm:0}, blitzTp:{ch:3,maxCh:3,cds:[0,0,0],maxCd:4.0,dTm:0,dx:0,dy:0}, blitzGrab:{cd:0,maxCd:10.0}, 
@@ -548,7 +548,7 @@ let localCombat = {
     traceShoot:{cd:0,maxCd:1.0}, traceDash:{cd:0,maxCd:4.0,active:false,path:[],idx:0},
     aeroPaste:{cd:0,maxCd:0.8}, aeroCopy:{cd:0,maxCd:0},
     corsairPrimary:{cd:0,maxCd:2.0}, corsairParry:{cd:0,maxCd:6.0}, corsairCombo:{cd:0,maxCd:0.4},
-    timPrimary:{cd:0,maxCd:0.1}, timVents:{cd:0,maxCd:2.0}, timUlt:{cd:0,maxCd:150.0}
+    timPrimary:{cd:0,maxCd:0.1}, timVents:{cd:0,maxCd:2.0}, timUlt:{cd:0,maxCd:0.0}
 };
 
 function resetAllCooldowns() {
