@@ -142,6 +142,10 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
         <div class="ability-slot" id="ui-tim-stance"><div class="key">SHIFT</div><div class="name" id="name-tim-stance">Macro Mode</div><div class="status" id="status-tim-stance">Heavy</div></div>
         <div class="ability-slot" id="ui-tim-vents"><div class="key">SPACE</div><div class="name">Lateral Vents</div><div class="status" id="status-tim-vents">Ready</div><div class="cooldown-overlay" id="cd-tim-vents"></div></div>
         
+        <div class="ability-slot" id="ui-rift-primary"><div class="key">L-CLICK</div><div class="name">Burst Rifle</div><div class="status" id="status-rift-primary">18/18</div><div class="cooldown-overlay" id="cd-rift-primary"></div></div>
+        <div class="ability-slot" id="ui-rift-orb"><div class="key">Q</div><div class="name">Rift Orb</div><div class="status" id="status-rift-orb">Ready</div><div class="cooldown-overlay" id="cd-rift-orb"></div></div>
+        <div class="ability-slot" id="ui-rift-jab"><div class="key">E</div><div class="name">Rift Jab</div><div class="status" id="status-rift-jab">Ready</div><div class="cooldown-overlay" id="cd-rift-jab"></div></div>
+        <div class="ability-slot" id="ui-rift-shift"><div class="key">SPACE</div><div class="name">Vector Shift</div><div class="status" id="status-rift-shift">Ch: 2</div><div class="cooldown-overlay" id="cd-rift-shift"></div></div>
 
     </div>
     <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="health-text">150 / 150</div></div>
@@ -182,8 +186,9 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                         <button class="class-list-btn selected" id="btn-thorfinn" onclick="selectHero('thorfinn')">Thorfinn</button>
                         <button class="class-list-btn" id="btn-trace" onclick="selectHero('trace')">Trace</button>
                         <button class="class-list-btn" id="btn-blitz" onclick="selectHero('blitz')">Blitz</button>
-                        <button class="class-list-btn" id="btn-misaki" onclick="selectHero('misaki')">Misaki</button>
                         <button class="class-list-btn" id="btn-kendo" onclick="selectHero('kendo')">Kendo</button>
+                        <button class="class-list-btn" id="btn-rift" onclick="selectHero('rift')">Rift</button>
+                        <button class="class-list-btn" id="btn-misaki" onclick="selectHero('misaki')">Misaki</button>
                         <button class="class-list-btn" id="btn-glitch" onclick="selectHero('glitch')">Glitch</button>
                         <button class="class-list-btn" id="btn-aero" onclick="selectHero('aero')">Aero</button>
                         <button class="class-list-btn" id="btn-jubilee" onclick="selectHero('jubilee')">Jubilee</button>
@@ -250,7 +255,6 @@ const aeroUrls = [
     '',
     '',
 'data:image/jpeg;base64,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',
-    'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxMTEhUTExMWFhUWFhUXGBcXFxoXGBUYGBcWFxUYFxUYHSggGBolHRUVITEhJSkrLi4uFx8zODMtNygtLisBCgoKDg0OGhAQGy0lICUtLS0tLS0tLS0tLS0tLS0tLS0rLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAMkA+gMBIgACEQEDEQH/xAAbAAACAwEBAQAAAAAAAAAAAAACAwEEBQYAB//EAD8QAAEDAQUFBQgBAgQGAwAAAAEAAhEDBCExQVEFEmFxkROBobHwBhQiMlLB0eFCYpIHFXLxFiNDgrKzM1Oi/8QAGwEAAwEBAQEBAAAAAAAAAAAAAAEDAgQFBgf/xAAvEQACAgIBAwIEBQQDAAAAAAAAAQIRAxIhBBMxQVEUImGRBRUycfBCUqHxgbHh/9oADAMBAAIRAxEAPwD6JavZGg5h7Pea6ZE3x/TByXNs2TWbeKLt4EzHxSMPllbX/FBjjOB/KHZPtJ/zTvi5wujUL2Mb6mEXfP7nnS7Mmq4Cp7PoVqXyta669t185tm4rDpbIe1xBaYBxwkczivoIDHNMtEHGRiVTdVbTduOBggwSJHKVHH1c1aX2KywxdMx6XsxvM+F8gi7eGB0kXrlrbYn0nuY9sOB6jIjUL6ZY7SzdxAjW5UfaPY7K7Q43Pbg7hodQtYOtlGdZPDFkwRcbj5PnsOAmLphTTLjgtqtZiGlhiTPceB4rGZTInekEYL04TUkcko6htqFaey9ovZIF443rHdIAJm+R3jFQ2tGaJ41NUOM9WfQdj7QY8SYDsInyVfbtOHBzXG/IZLjaVovx8VabbXG7ePXFcXwbjPZM6O8mqZ0dmtgnd3p/KsVd0icuGS5htQkzPgrtmtjmnG5ZngrlGlMu2uyg3HuK5+12Ag68V1THh4uieH4Va0WaQjFlcXTCUEzlAHNPBadhIdiVbNkniqNaylhnJdLmp8epPVxG2qtuEBUXbec266J44cIVu0VA9m6cciuY2lTIMFUw44y4kjGSbjyjT2ltlhbFMETe46lP9ldsjtWhzviN0m4clyfaEK3s2gHuA+IGcRnwhdE+mh22iMc8nNH26lWBGKLtRqvnFfblSygMgyRcTfleq+y/aQh433XZwMZXifl02nJeD0PiYp0fTXVgFVtVbdII71y1r9omg5nS5Zx9qxfIOf670sfQ5HzQSzx9z6BTrymdosHYtUvpteHAg+oWneuaePV0UUrRc30Dnqr2qhtfVZ0HsOdUUb4RtphwXvdkrQUz5gSiNYwBddhcvFqEhfTcHjcmtYduPFznHdjy0Vu2e0hc4AElhEEFoXOkISFF9NjbuiqzzSo3bFtFknecbhcTfI0Gq9R9qC0Bp+ISZJ0WAWpZan8NjfkO/JeDft+2GGC0TIvGYWQbXfeJ5qqQhKpDDGKpGZZZMuW63dpF0Xz3xCqbyFQqqKSpGHJt2xspjXBVpRB6GhqRepVSMpVlj5xaOqyxUTW1eKlKFlIzNuz14EtkLRo7QdneNCsSxVNY5gwtNu6RAXHlgr5R0wkabKzTkF610mkLONMz/um2e2z8LjyOnNc+lcxKbe5j7Qs0fKs3f3huOHXJb1vZic+GBXN2l4JvuK9DC9kc2TgzLdZixxBSKVVzTLXEHgYV60O3rjlgVWr0d08MQu+LtUzjkqdom32+pVjtHb26IBVei+DonV3g5QRA58+KRC1GKqqMuTu7Nqy13PgBrnAANJic8xmumobNpinO62cxEE9e9cbs5wGJIIIuyjPvXd7GoUqzSA91wHCLrl53V/J48Hd072RtbHobjWgYAYXm7LFa/ZSqFINYMcAse27TrMfLSHUxfAxPBeL25ZZOju2UVyP9oqVXea6lfBAI78ZyWpZLHcC68wsejtUVDdceK0rPtll4kSMVvJHIoqNeDMXG7NOm2MkcrJO2qZNxwGCAe0dLUdQufsZH6FO5Fepw5aoLU4tQwvoLPHoQWoYT91QWLVhQiEBCsFiAtWkxUILUtzVZLUJYtKQUVi1CQrDmIq1je0BzmuAOBIuPetbIWpUUJhah3VqzIKkOXlBCYWWKVYLQs1pGZuWMiaSpzxplI5GjsrK8kfC8+ar2qyb14IDuGa56hbntwK0qO2iRFRs8RcQuN4JxdxOpZoyVMTVrPbc5Z1reHZLoWMZVb8Jv0disK30dw3hWxSTdepPInRlOQzffemvSyF3I4mLcEMJkL0LVmRcKxY7Q5jhDi0T6uSt1e3UNJqmNNp2jqrB7Rhvwv8Ai0P5QW/bwqfC2WgZ6wuZDUzduyv6hcvwuNSs6PiZtUPq25xgTcMxceqTUtDr4cYQligMV1GKIOcmSyu8GQSpNZyu7Os0uvMajUaLbp2CnA/5OQ1Up5oxfgrDFKS8hlqgsVgtQli4ditFfcQ7qsiRghIWtgorkIdxWHNQ7qakFFmw2wU5D6bXNI3ThhjitG1beouZ2Zoy3Q3HgQRgsQhMplt+8OilLFCT2aKxySSpAWe1tpukU2kTg68gaSti2bXp2iiWOhjpG6MuuGqwXsGSWWLcsUJNS9UZWSSVegmvQLTBSXNV44XiRkVXLV0RkRaKxahLVZLUBYqKRmhELyaWod1OxUep0icATdN2ihNDoF0g6z9lNMtJ+LCMvBZs1QttaEVS2OIg380D2pRamop8i2aFVErdVgsUbiqmTasRur24trZfs7Xr3sb8N/xOMC7xVr/g61wT2Yuy32yeV6lLqsUXTkvubWCbVpM5vdUbquWmxvpuLXtLSMQRhok7qqpJ+Cbi0KhWLG4NMlu9zwQbqYx0XHBEuUOPDOg2dsynXfvPMXXtaLsIF8LTf7L2VsFz3RhcRjqg2DbBTpHcA569c0q37QpkyTJi+Ll5EpZnNqLaR6KjjUbaQG0fZMD46daRoQJ7iPwqAbaBdu1LuJWlY9qsBBgnjP2Oa1B7S0vpPh+U+5njw47C0xvlOjPLEO6rJahLVlSMUAx2RA6LQoWai8Xy0qhuomuIzWJK/Do3F15NKr7OtiWPnmqNTYjwr2z7Zum83LZ94aRIIhczzZcbp8l1jxyRxFeyuaYIKQWrp9rPa64E90eKwKlOF24crkuTnyQ1fBULUJarBahLVfYlRXOiAsVktU0aG8YkDicE9qDWykWLzKBJAGasvpwY0T7FUDTgDz1yxTc2laBRt8lGpZI5pLqJXdbKo03XPa0uJJF2WI4Lb91ZIO62RgYFy4p/iGjpo6V0myuz5T2aE019F23sqm+m9wY0PiQQIvF/fK4u22csMYjI6rpwdWsq4I5MDgZhYgLVfceCQWLpUiLiVjTWlszYhqug1GtGsyTwhM2VsepXJFMD4YkkwBMxxyKs22xdi6DvB7RfBuPEFSyZudIvkpDFxs1wdfsekygwUg7eIzP40Vy0W1rBJMBcRsexvrVCO1czvkk5Diugb7POvmuSDH8b5zzXkZsMIz+eXP7HfjnJx+VBVrbTqtdG64EQ7iNCuL2zswNcTTENxjTgNQuvb7I0wZ7V45ABLtewi4bmeTzhHJXwZ8eKXyy4JZcUpr5kfP8AcXt1dXaPZCsGl28wxNwmYHcsc7OdwXqQ6nHP9LOGWCcfKM8OIEA3aIYWh7g7RE2yEYtWu5Ez22Z4CmFvvtNJzd00mtugERdxSm7KZH/yeCws/wDcqNPC/R2bJahhPLUJavN2OmhO6hIT91QWp7BQiEynWIUlqAtT4fka4GvtAOX2VF4Ty1CWpxpeAfJXLUJanlqEtVNjOogtQlqeWoS1a2FqILVEKzAiIv1lLLU1IKH7NtzqTpHTzXUN9oKJE73dBXH7qjdUMvTwyO2VhllBUjpbdttjmwDjqIWJ72HfC+MbpvVYHUSngUTk8HuKI4owVIHNyLtnslKoN0wHZEfeFTq7GIduyADO6cZOh0VqzPpiIqRF3xNjxV7tyW7vaMPTyWHOcXx4N6Rl5L3s1Z2MpADd37w+McTE6jRFtvZrKuXxxAPiAeCw6dCox2/TcJ9ZZr1a12id4td0MKPak8m8ZG91rq0RssBlS+6DGsRouvY6RcZXE0bQ7e+IYrYsW0ty7EI6nFKTsMU0uDoQlVzAVU7TbkZ4YKradoEiA3HwXHHFKy7mqLFotlxAWHRshJMCVZLajhhCriyvnMDXkuzGlFNJkJW3yVrfZyw/E0icFnVXStm21i+BUN4BwVKrZWBoO684gmbpywXVjnSW3kjON+DM3Rndx/Smf6irJszdXdPupFg9QVfeJHSXsbpYhLFFO20nXtqNPf8AlDUt9IfynlJ8l5U8+OH6pJfuzo1J3FBaqtTa7Bg1x6BVqm2jkwd5/S5pfifTR/r+1sejNItQlqx37YqZNb0P5SnbVr5Bv9v7WPzjp/d/YO2zbLEJYsF207T/AE/2hIftK0/UOjfwmvxjp/r/AD/kO2zpmWZzrgJTDsyrE7h9cFx52la/rH9rPwpG27aP+r4D8I/N8Xp/1/6NY16nXDZdU/wPgPNJtOz6jPmaRxxHULnB7U25v8mnm0/YoavtnaT8zGHucPyqQ/FMbfn/AAxvHGjcLEO6sAe2Tpl1EH/u+26rDfbdkQaB7g0nrcupdfhfr/PsY7ZsNok4BQ6iRkVSs3tvSAiXtGhZPkSrtD2vs5/my/HelvmFtdVF+GvuGiA3NEVOzOcYAJRu2lRqfI6nPB7T5KzZLRuTdIMZ6K/cbVozqr5B/wAoqQYAJFxAN4+yrvsTxMsIjhd1W3T2q0GQ106XXnkrjS+oJDInUgKDz5I/qRTtxfg5htKoBvAOjWDHVQy0PGDj1XSClWYIcA4HJsT3yBKQ9vZXmjdOe79vNaWdP0TDtNepiutZI+Ib3EoW1uCv2qm153msIOYAMc+CMbLBIaDfEk/pb7kEueDOkjPbaSMFPvTltN2LTgSSLr4OJ1vTa+zqAZugGfqmXfhTefHfg12p+5lUNqObjeFcbtRrhGB4r1HZFKPie6cogDpejo7CpxJqa3CO5ZlLCxpZCrWrjKJyuVcmor/uFMHd34vi/wAFoDZLG/M4x0/KTywiPSTMCnvjIHgcFeFtf9PgEVrAY4gGRkUnt1pvbmjNV6mKY4nogJGirC093fKLtx9S/OqZUN1QZAIDV5ITU4jovdoNfXVPb6ACax18Us1Tr5phdxHl90LoOf36KikvYBRPFIeTp4qwaY1H3U9mPq81tSQFJ59Slu/ef5WgaA19ckBojitqcQozydChdvLQ7Hn0lLdQGh/tv8AtLJEDPczUKvUszVquoxh5H8IHs18luOUDGfZNEh9mIyC3hS4eaA0xnPSR5KqziOffQ4LzGvb8ry3k4jyK3H2YZR0VatZhoPH7q0c/sMqUtp2phltep/eT5ytKz+2+0Gf9aRo5jD47srOdZtD5JZs+kFWXUS9wR0VH/Em1ggvZSdHBzfIx4K6P8SQ+6pZyBI+R4PO5zQuNdS4JbqYVY9VJeo7Pptl/xDshGD6fF1MH/wBZK0rD7TWF5LjaackYPln/AJwvjpoDggdTVV1cgs+82O10HiWva/8A01AR4Fe3WT8xA7vuvgRp8PBWaG0azPlq1G8nujpMK0eqXqFn2+rRpi8PPIwT3JdZjXRukc4v7xK+OUfaC1NiKzrtTOOs4q072stREGp3gBp6tAVo9XD1bFwfUzQETvXjKE99ocQGh7SY+Xf+LpivkDtv1HAhzqh5vn7JLLe2QSeoz1uldKy4Zf1GT6u6k8zgIuvP2SOyfwXBM9pngQKpGkAn/wDTnXcoKWNsnOtUnhUAHcIuV45I+6MuKNXfHBSCMvXesg2huYHgD+0VO0jLzPlK+E7TKGzTtAw7spxyTDXHHoPysoWycPEforxrO5ciPJTeIDWL+J6fgqO2Gvgs7tiMz4flG228fXml22Bd7YanovGqOPRVRatT670Xa6FGrAsirwd3XfZF2gOblT7c6qDXOvrmlqxF0g6eaFpPqfuqvvHJG2prPrROmvIWWDfp1/EqA3WPMeSWCIifBeD0xhuZdPw+IQFnAdSfBEH8FBPL1zWkIA0zw8fJC6kf6e7eCe2dBPcvbp4I2aAovonl3/lAbOOHT9LShuo9dyncbr91ruMDGqUBw8fwgNmGnmtt9JvHy8UHuwyBK0soGG+xDj0SH2M6E+ua6E2fQHvSzSOngtrMwOcdYzx8PulusjuK6N9Hkkupj1/sqLOwOeNlKX7uVvPpcEt9Fovw5qqzAYzbIT6CMWMarV91QGy8k+8Bne6hT7rwV91BR7vw8k+6BQbbSi96GYz4fcrHbaDxXhXOmuf74J9v6GjY954jkY/a8LVx6m5Zbax0+yLtjp4/pPst+g6NN1q4/dG2uCMSToZWSKvL13KDUOUQl2WKjaZXGp6IxaeZ9cB91itepDvVyy8IUbotxw+5H2R+++pKwxU9QpDz6hT7SCjb985d9yllr5dVitJ1RB7uHrvS7SFRtC28FI2gcp9c1igu1GGn7RhxwkeP2S7UQo2RtE8RzARC38R0WQ0EnEJgpnT11S7cQo12W4cekBE21NKyhvaI2jh4/pYeNBRqi2D1K978NB0CoNHPoSikaHvlLRBRfFvOUDuheNrdr5fhU5HFSHpafQdMsGu7XwP+yltQnU9EkVfUwpFpGvijX6BqWWA6BSaZ4ef3VY2wcUs7QA9ftLSQal00OKjsfUqgdqs+odf2gO2WfW3qPymscw1NA0efrghdRPq5Zx21Tze09PNT/nbJi8/6Rd1hbWLJ7BqXhAxEHjd45pm76lZw2sDfuu/tJu43If8AMW/Sej1rtTFqcN7076U1lodp5LSNO75R0CY2m48P1whem80f7f8AJvZexmdrUyBPcfsFLW1vp6/tagpu1U+7nCdMrvJJ9R9EPf6GYKVbQdUTaNY/SPV6020zrf4Rei7I6rDzP2QtjPp2eoJvb0TWUambx0/atGAJJHh6CgVW69PDLks92X0+wbFZlCpnUu/08Oac2kfrPT9qXVhOBPIKRW/pdx/V6y5N/wCkKwmsP1ORNJ+p3X9ITU4HqEDXzi2MM+qyA4n+p3cQPGF7tCP5u7z+ksEaT1Pmjc7RvhekBBef/sd3O/Slrj9b+s/ZSC7RCATqlwATp+t/9wu6Dgjpl31O6/pLAPoqS0oEH2rsQXd7p87umih1Z0zvEaiUtzV7dARwATnHNzr+J8EL3DNx/uPnKEuHTjghNQDNvitIA94C8Tf/AFO8PiU9uYwOX8nc9UploAvMnHDlch94uJhx7kwH9rnBPVeeRGEzqLovkG/kq++ZwxRS7CAjgdjLtG90RwUdpd/HuCW2bpjSULA4mN4ASOQ1JT2Ac57hnBzx9YgonPdr9lWDTN7lDo1KLEPNU5uUdr/U7wSCWrxe3XxQBZlTvGboASDVP0omvOn7U7GGCfQRidSq3auyCJtR3RJtgOdzUCkNPNLc46qJdONyLYDm0hGCIwkO59F67OTciwHGF6B6KW105IgeAxSsAt8Tw1RB4xjwSzU5LxqcUmwGCscgfV68Kh07z90sWibgvE+uSACJdw4r2+dQh3x1UADRMQRePrQG/Mr26NMFIaUACGDU/lQaQkY3IgDB9cl40z69cU7AjsxooeBoETWr3ZJ2B7ejRLLjqO7wTBSy1CgMGqLA866Mb7+YwnqPBKBGN5hN7NoOOakFufr1ciwE7o04euiGU7eb5L282QfXFOwEGdF5rdQrLntEnFe7QXiE9goQ5uF18n7Rd1zUbp1Cs7/Be7gjYBLnzmo3wvD5h60Qfy7j5FTGOLxEqBUAyUn5R3+YU1PwgAHPdk2fwp34yVqnl/3eaVn60QAt+9kFLQ7X1env+buQZu5/dAANpm8G+7HzUsomL/WitNz5KSs2Aj3eFAoXXnVMd9/yhbgUJiBZQiL9VIYMyER+yq18D60TuxllrRqoaBOKhmB9ZoqePrilYHnkQvFxuu9FEcU04jmfIIAqQ6cPV68Q4n1wVqth64pB9eCa5AHsiFApm+9OOHXzQuTASLNeSXYeXopgptjj6lFr61SqnzdPJAHt0XcVDqTT3eoS2fMe9ebgef2TANzGi83+v2oIbHJIPynmpZmnQDW1Bp+l59SMkutj0XquI5jyKKEedUM80W/6uQ1MEkp0B//Z',
     'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=400&q=80'
 ];
 aeroUrls.forEach(src => { let img = new Image(); img.crossOrigin="anonymous"; img.src = src; aeroImgs.push(img); });
@@ -283,7 +287,7 @@ const BALANCE = {
         beamDmgFast1Clone: 16,
         beamDmgSlow2Clone: 22,    // with 2 clones (player + 2)
         beamDmgFast2Clone: 13,
-        maxClones: 3,             // max clones (player + this many)
+        maxClones: 3.0,             // max clones (player + this many)
     }
 };
 // =====================================================================
@@ -311,7 +315,8 @@ const HERO_DATA = {
     misaki:{name:'Misaki and Kisaki',role:'Sniper',hp:260,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
     corsair:{name:'Corsair',role:'Tank',hp:350,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
     aero:{name:'Aero',role:'Controller',hp:230,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},    
-    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']}
+    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']},
+    rift:{name:'Rift',role:'Controller',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']}
 };
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
@@ -339,7 +344,7 @@ let myPlayer = {
     x:W/2, y:H/2, angle:0, hp:250, maxHp:250, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol,timColors:timCol},
     kisakiDeployed:false, kisakiMirrorOn:false, kisakiMirrorAngle:0, blitzWeapon:'handgun', blitzAmmo:8, grabbedLocked:false, flicker:false,
     ultCharge: 0, hasUltAura: false, auraTimer: 0, isJuggernaut: false, aeroDrawing: false, aeroTabType: 1, traceShooting: false, traceNodes:[], traceDashing: false, traceDashNodes:[], traceFreeze: false,
-    copycatWeapons: [],
+    copycatWeapons: [], portalImmune: 0, speedBoost: 0, riftAmmo: 18,
     aeroContextMenu: false, aeroContextMenuTimer: 0, aeroContextMenuX: 0, aeroContextMenuY: 0, aeroContextMenuWorldX: 0, aeroContextMenuWorldY: 0, aeroPasting: false, aeroPasteFirstShot: false, aeroPasteTimers: {},
     thorfinnStrands: [],
     corsairStance: 'cannon', corsairCannonX: 0, corsairCannonY: 0, corsairComboStep: 0, corsairParryActive: false, corsairParryTimer: 0, corsairDmgReduction: 0.3,
@@ -548,20 +553,28 @@ let localCombat = {
     traceShoot:{cd:0,maxCd:1.0}, traceDash:{cd:0,maxCd:4.0,active:false,path:[],idx:0},
     aeroPaste:{cd:0,maxCd:0.8}, aeroCopy:{cd:0,maxCd:0},
     corsairPrimary:{cd:0,maxCd:2.0}, corsairParry:{cd:0,maxCd:6.0}, corsairCombo:{cd:0,maxCd:0.4},
-    timPrimary:{cd:0,maxCd:0.1}, timVents:{cd:0,maxCd:2.0}, timUlt:{cd:0,maxCd:0.0}
+    timPrimary:{cd:0,maxCd:0.1}, timVents:{cd:0,maxCd:2.0}, timUlt:{cd:0,maxCd:0.0},
+    riftPrimary: { cd: 0, maxCd: 0.66, ammo: 18, rTm: 0, burstCount: 0, burstTimer: 0 },
+    riftOrb: { cd: 0, maxCd: 8.0 },
+    riftJab: { cd: 0, maxCd: 6.0 },
+    riftShift: { charges: 2, maxCharges: 2, cds: [0, 0], maxCd: 5.0 }
 };
 
 function resetAllCooldowns() {
     Object.keys(localCombat).forEach(k => {
         if (localCombat[k]) {
             if (localCombat[k].cd !== undefined) localCombat[k].cd = 0;
-            if (localCombat[k].cds) localCombat[k].cds = [0,0,0];
+            if (localCombat[k].cds) {
+                if(k === 'riftShift') localCombat[k].cds = [0,0];
+                else localCombat[k].cds = [0,0,0];
+            }
             if (localCombat[k].charges !== undefined) localCombat[k].charges = localCombat[k].maxCharges || 3;
             if (localCombat[k].ch !== undefined) localCombat[k].ch = localCombat[k].maxCh || 3;
             if (localCombat[k].rTm !== undefined) localCombat[k].rTm = 0;
         }
     });
     myPlayer.blitzAmmo = 8;
+    myPlayer.riftAmmo = 18;
     myPlayer.daggers = 2;
 }
 
@@ -849,6 +862,19 @@ function drawPrev() {
         pCtx.lineWidth = 2;
         pCtx.beginPath(); pCtx.moveTo(14, 0); pCtx.lineTo(20, 0);
         pCtx.stroke();
+    } else if (heroClass === 'rift') {
+        getEl('generic-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        let rx = (Date.now() % 100) > 50 ? 1 : -1;
+        pCtx.fillStyle = '#e5e7eb';
+        pCtx.beginPath(); pCtx.arc(rx, 0, 16, 0, 6.28); pCtx.fill();
+        pCtx.strokeStyle = '#c084fc'; pCtx.lineWidth = 2; pCtx.stroke();
+        
+        pCtx.save(); pCtx.translate(14 + rx, 8); 
+        pCtx.fillStyle = '#111827'; pCtx.fillRect(0, -4, 28, 6);
+        pCtx.fillStyle = '#c084fc'; pCtx.fillRect(8, -3, 8, 4);
+        pCtx.fillStyle = '#374151'; pCtx.fillRect(-4, 2, 8, 4); 
+        pCtx.restore();
     } else if(heroClass === 'kendo') {
         getEl('kendo-custom-panel').style.display = 'block';
         pCtx.translate(0, Math.sin(Date.now()/150)*3);
@@ -1005,7 +1031,7 @@ function selectHero(id) {
     myPlayer.corsairStance='cannon'; myPlayer.corsairComboStep=0; myPlayer.corsairParryActive=false; myPlayer.corsairParryTimer=0;
     if(id==='corsair'){myPlayer.corsairCannonX=myPlayer.x; myPlayer.corsairCannonY=myPlayer.y; gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==myId); gameState.corsairCannons.push({ownerId:myId||'local',x:myPlayer.x,y:myPlayer.y,trimColor:myPlayer.customization?.corsairColors?.trim||'#dc2626'});}
     myPlayer.kisakiDeployed=false; myPlayer.kisakiMirrorOn=false; myPlayer.kisakiMirrorAngle=0; 
-    myPlayer.blitzWeapon='handgun'; myPlayer.blitzAmmo=8; myPlayer.grabbedLocked=false; myPlayer.flicker=false;
+    myPlayer.blitzWeapon='handgun'; myPlayer.blitzAmmo=8; myPlayer.riftAmmo=18; myPlayer.grabbedLocked=false; myPlayer.flicker=false;
     myPlayer.aeroDrawing=false; myPlayer.aeroTabType=1; 
     myPlayer.traceShooting=false; myPlayer.traceDashing=false; myPlayer.traceFreeze=false;
     myPlayer.copycatWeapons=[]; myPlayer.aeroContextMenu=false; myPlayer.aeroPasting=false; myPlayer.aeroPasteFirstShot=false;
@@ -1457,7 +1483,7 @@ function processVFX(d) {
     else if(d.type==='mirror_flash') vfx.push({type:'mirrorFlash', x:d.x, y:d.y, life:0.3, maxLife:0.3});
     else if(d.type==='flare_vfx') vfx.push({type:'flareVfx', x:d.x, y:d.y, life:0.5, maxLife:0.5});
     else if(d.type==='blitz_slash_vfx') vfx.push({type:'blitzSlash', x:d.x, y:d.y, angle:d.angle, life:0.2, maxLife:0.2});
-    else if(d.type==='blitz_tp_vfx') { vfx.push({type:'blitzTransmission', x:d.sx, y:d.sy, life:0.3, maxLife:0.3}); vfx.push({type:'blitzTransmission', x:d.ex, y:d.ey, life:0.3, maxLife:0.3}); }
+    else if(d.type==='blitz_tp_vfx') { vfx.push({type:'blitzTransmission', x:d.sx, y:d.sy, life:0.3, maxLife:0.3, color:d.color}); vfx.push({type:'blitzTransmission', x:d.ex, y:d.ey, life:0.3, maxLife:0.3, color:d.color}); }
     else if(d.type==='blitz_kick_apply') { if(myId===d.targetId){ localCombat.dash.v.x += Math.cos(d.angle)*35; localCombat.dash.v.y += Math.sin(d.angle)*35; localCombat.dash.rec = 0.2; myPlayer.grabbedLocked = false; } }
     else if(d.type==='blitz_grab_finish') { if(myId===d.blitzId || myId===d.targetId){ myPlayer.grabbedLocked = false; localCombat.dash.rec = 0.1; } }
     else if(d.type==='knockback_apply') { if(myId===d.targetId){ localCombat.dash.v.x += Math.cos(d.angle)*d.force; localCombat.dash.v.y += Math.sin(d.angle)*d.force; localCombat.dash.rec = 0.3; } }
@@ -1469,6 +1495,10 @@ function processVFX(d) {
     else if(d.type==='copycat_steal_vfx') { let t=gameState.players[d.targetId]||gameState.clones.find(c=>c.id===d.targetId), s=gameState.players[d.sourceId]; if(t&&s) vfx.push({type:'stealLink', targetId:d.targetId, sourceId:d.sourceId, life:0.4, maxLife:0.4}); }
     else if(d.type==='tim_core_beam_vfx') vfx.push({type:'timBeamFiring', x:d.x, y:d.y, angle:d.angle, charge:d.charge||0, beamColor:d.beamColor||'#ff6b6b', life:0.05, maxLife:0.05});
     else if(d.type==='tim_core_beam_end_vfx') vfx.push({type:'timBeamCollapse', x:d.x, y:d.y, angle:d.angle, charge:d.charge||0, life:0.3, maxLife:0.3});
+    else if(d.type==='rift_shift_vfx') {
+        vfx.push({type:'blitzTransmission', x:d.sx, y:d.sy, life:0.3, maxLife:0.3, color: '#c084fc'});
+        vfx.push({type:'blitzTransmission', x:d.ex, y:d.ey, life:0.3, maxLife:0.3, color: '#c084fc'});
+    }
 }
 
 function sendHitmarker(aId, t, d) {
@@ -1538,6 +1568,8 @@ function syncGS(s) {
             myPlayer.isDead = s.players[id].isDead; myPlayer.isJuggernaut = s.players[id].isJuggernaut;
             if(s.players[id].hasUltAura !== undefined) { myPlayer.hasUltAura = s.players[id].hasUltAura; myPlayer.auraTimer = s.players[id].auraTimer; }
             if(myPlayer.isJuggernaut) myPlayer.maxHp = 5000;
+            if(s.players[id].portalImmune !== undefined) myPlayer.portalImmune = s.players[id].portalImmune;
+            if(s.players[id].speedBoost !== undefined) myPlayer.speedBoost = s.players[id].speedBoost;
             gameState.players[id] = myPlayer;
         } else {
             // Store interpolation target for remote players
@@ -1629,6 +1661,7 @@ function sdUp() {
         blitzWeapon:myPlayer.blitzWeapon, blitzAmmo:myPlayer.blitzAmmo, aeroDrawing:myPlayer.aeroDrawing, aeroTabType:myPlayer.aeroTabType, aeroContextMenu:myPlayer.aeroContextMenu||false, aeroContextMenuWorldX:myPlayer.aeroContextMenuWorldX||0, aeroContextMenuWorldY:myPlayer.aeroContextMenuWorldY||0, 
         invulnerable:myPlayer.invulnerable||false, copycatWeapons:myPlayer.copycatWeapons, aeroContextMenu:myPlayer.aeroContextMenu||false,
         corsairStance:myPlayer.corsairStance||'cannon', corsairComboStep:myPlayer.corsairComboStep||0, corsairParryActive:myPlayer.corsairParryActive||false, corsairCannonX:myPlayer.corsairCannonX||0, corsairCannonY:myPlayer.corsairCannonY||0,
+        portalImmune:myPlayer.portalImmune, speedBoost:myPlayer.speedBoost,
         name:myPlayer.name, color:myPlayer.color, team:myPlayer.team, customization:myPlayer.customization
     };
     if(!isHost && hostConnection && hostConnection.open) hostConnection.send({type:'update', player:minP});
@@ -1703,6 +1736,12 @@ window.addEventListener('keydown', e => {
                 sdEv({type:'aero_context_menu_open', x:wx, y:wy});
                 sdUp();
             }
+        } else if(myPlayer.heroClass === 'rift' && !localCombat.mQ) {
+            localCombat.mQ = true;
+            if(localCombat.riftOrb.cd <= 0) {
+                localCombat.riftOrb.cd = (activeServerMode==='CHAOS')?0.05:localCombat.riftOrb.maxCd;
+                sdEv({type:'rift_orb_fire', x: myPlayer.x, y: myPlayer.y, angle: myPlayer.angle});
+            }
         }
     }
     
@@ -1716,6 +1755,7 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'misaki') trMisG();
             else if(myPlayer.heroClass === 'blitz') trBlTp();
             else if(myPlayer.heroClass === 'tim') trTimVents();
+            else if(myPlayer.heroClass === 'rift') trRiftShift();
             else if(myPlayer.heroClass === 'corsair') {
         setVisibleAbilities(['corsair-primary','corsair-stance','corsair-parry']);
         let cp = localCombat.corsairPrimary.cd; 
@@ -1749,6 +1789,7 @@ window.addEventListener('keydown', e => {
         else if(myPlayer.heroClass === 'kendo') trKndS();
         else if(myPlayer.heroClass === 'glitch') trGlS();
         else if(myPlayer.heroClass === 'blitz') trBlG();
+        else if(myPlayer.heroClass === 'rift') trRiftJab();
     }
     
     if(k === 'p' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
@@ -1861,6 +1902,7 @@ can.addEventListener('mousedown', e => {
         if(myPlayer.heroClass === 'thorfinn') trSl();
         else if(myPlayer.heroClass === 'kendo') tgKndA();
         else if(myPlayer.heroClass === 'glitch') trGlSh();
+        else if(myPlayer.heroClass === 'rift') trRiftShoot();
         else if(myPlayer.heroClass === 'tim') {
             if(!myPlayer.timTransitioning) {
                 if(myPlayer.timStance === 'macro') { 
@@ -1985,6 +2027,53 @@ function trSl(){if(localCombat.slash.cd<=0&&myPlayer.daggers>0){localCombat.slas
 function trThr(){if(myPlayer.daggers>0&&myPlayer.heroClass==='thorfinn'){myPlayer.daggers--;sdEv({type:'throw',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});sdUp();}}
 function trTimVents(){if(myPlayer.heroClass==='tim'&&localCombat.timVents.cd<=0){localCombat.timVents.cd=(activeServerMode==='CHAOS')?0.05:2.0;let ventAngle=myPlayer.angle+1.57;if(keys.a)ventAngle=myPlayer.angle+3.14;else if(keys.d)ventAngle=myPlayer.angle;localCombat.dash.v.x=Math.cos(ventAngle)*40;localCombat.dash.v.y=Math.sin(ventAngle)*40;localCombat.dash.rec=0.3;applyShake(5,0.15);sdEv({type:'tim_vents',angle:ventAngle,x:myPlayer.x,y:myPlayer.y});sdUp();}}
 
+function trRiftShift() {
+    let b = localCombat.riftShift;
+    if (b.charges > 0 && !myPlayer.grabbedLocked) {
+        b.charges--;
+        let s = b.cds.findIndex(c => c <= 0);
+        if (s !== -1) b.cds[s] = b.maxCd;
+
+        let dx = 0, dy = 0;
+        if(keys.w) dy -= 1; if(keys.s) dy += 1;
+        if(keys.a) dx -= 1; if(keys.d) dx += 1;
+        let ang = myPlayer.angle;
+        if(dx !== 0 || dy !== 0) ang = Math.atan2(dy, dx);
+
+        let nx = myPlayer.x, ny = myPlayer.y;
+        for(let i=0; i<150; i+=10) {
+            let testX = myPlayer.x + Math.cos(ang)*(i+10);
+            let testY = myPlayer.y + Math.sin(ang)*(i+10);
+            if(iW(testX, testY)) break;
+            nx = testX; ny = testY;
+        }
+        
+        vfx.push({type:'blitzTransmission', x:myPlayer.x, y:myPlayer.y, life:0.3, maxLife:0.3, color:'#c084fc'});
+        myPlayer.x = nx; myPlayer.y = ny;
+        vfx.push({type:'blitzTransmission', x:myPlayer.x, y:myPlayer.y, life:0.3, maxLife:0.3, color:'#c084fc'});
+        sdEv({type:'rift_shift_vfx', sx: myPlayer.x, sy: myPlayer.y, ex: nx, ey: ny});
+        sdUp();
+    }
+}
+
+function trRiftJab() {
+    if (localCombat.riftJab.cd <= 0 && !myPlayer.grabbedLocked) {
+        localCombat.riftJab.cd = (activeServerMode==='CHAOS')?0.05:localCombat.riftJab.maxCd;
+        myPlayer.slashAnimTimer = 0.3;
+        sdEv({type:'rift_jab', x: myPlayer.x, y: myPlayer.y, angle: myPlayer.angle});
+    }
+}
+
+function trRiftShoot() {
+    if (localCombat.riftPrimary.cd <= 0 && localCombat.riftPrimary.rTm <= 0 && myPlayer.riftAmmo > 0) {
+        localCombat.riftPrimary.cd = (activeServerMode==='CHAOS')?0.05:localCombat.riftPrimary.maxCd;
+        let shots = Math.min(3, myPlayer.riftAmmo);
+        myPlayer.riftAmmo -= shots;
+        localCombat.riftPrimary.burstCount = shots;
+        localCombat.riftPrimary.burstTimer = 0;
+    }
+}
+
 function cDm(a, t) {
     if(a === t) return false;
     if(!gameState.isTeamMode) return true;
@@ -2034,11 +2123,13 @@ function chD(t, id) {
             t.maxHp = t.isJuggernaut ? 5000 : (HERO_DATA[t.heroClass].hp * (activeServerMode === 'CHAOS' ? 12 : 1));
             t.hp = t.maxHp; t.x = sp.x; t.y = sp.y; t.isDead = false; t.daggers = 2; t.lastAttacker = null;
                 if(t.heroClass==='corsair'){gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==id);gameState.corsairCannons.push({ownerId:id,x:sp.x,y:sp.y,trimColor:t.customization?.corsairColors?.trim||'#dc2626'});}
+            if(t.heroClass==='rift') t.riftAmmo = 18;
             if(gameState.players[id]) {
                 gameState.players[id].grabbedLocked = gameState.players[id].flicker = false;
                 gameState.players[id].aeroDrawing = false;
                 gameState.players[id].traceShooting = gameState.players[id].traceDashing = gameState.players[id].traceFreeze = gameState.players[id].invulnerable = false;
                 gameState.players[id].stunTimer = 0; gameState.players[id].hasUltAura = false;
+                gameState.players[id].portalImmune = 0; gameState.players[id].speedBoost = 0;
                 if(t.heroClass==='corsair'){t.corsairStance='cannon';}
             }
         }, 3000);
@@ -2077,7 +2168,8 @@ function processCombatEvent(sId, e) {
     else if(e.type==='slash'){s.slashAnimTimer=0.15;connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'slash_vfx',x:e.x,y:e.y,angle:e.angle,daggers:e.daggerCount});});if(sId!==myId)vfx.push({type:'animeSlash',x:e.x,y:e.y,angle:e.angle,life:0.15,maxLife:0.15,daggerCount:e.daggerCount});let hx=e.x+Math.cos(e.angle)*30,hy=e.y+Math.sin(e.angle)*30,dmg=(e.daggerCount>=2?40:25)*(e.dmgMult||1);for(let c of gameState.clones)if(cDm(sId,c.ownerId)&&Math.hypot(c.x-hx,c.y-hy)<50&&!c.invulnerable){dmgTk(c,dmg,sId);sendHitmarker(sId,c,dmg);}for(let id in gameState.players)if(!gameState.players[id].isDead&&cDm(sId,id)){let t=gameState.players[id];if(Math.hypot(t.x-hx,t.y-hy)<50&&!t.invulnerable){dmgTk(t,dmg,sId);sendHitmarker(sId,t,dmg);t.lastAttacker=sId;t.lastHitTime=Date.now();chD(t,id);}}}
     else if(e.type==='throw'){gameState.projectiles.push({id:Math.random().toString(),ownerId:sId,x:s.x,y:s.y,vx:Math.cos(e.angle)*18,vy:Math.sin(e.angle)*18,angle:e.angle,life:1.5});}
     else if(e.type==='pickup'){const i=gameState.pickups.findIndex(p=>p.id===e.pickupId);if(i!==-1&&s.daggers<2){s.daggers++;gameState.pickups.splice(i,1);}}
-    else if(e.type==='deploy_arrow'){let x=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(!x)gameState.projectiles.push({type:'kinetic_arrow',mode:'normal',id:Math.random().toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns:{}});}
+    else if(e.type==='deploy_arrow'){let x=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(!x)gameState.projectiles.push({type:'kinetic_arrow',mode:'normal',id:Math.random().
+toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns:{}});}
     else if(e.type==='kendo_ride_recall'){let a=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(a&&(a.mode==='normal'||!a.mode))a.mode='recalling';}
     else if(e.type==='kendo_shield_start'){let a=gameState.projectiles.find(p=>p.type==='kinetic_arrow'&&p.ownerId===sId);if(a&&(a.mode==='normal'||!a.mode)){a.mode='building_shield';a.buildTimer=1.5;a.shieldTarget={x:e.targetX,y:e.targetY};}}
     else if(e.type==='copycat_kendo_shoot'){gameState.projectiles.push({type:'kinetic_arrow',mode:'copycat_cursor',id:Math.random().toString(),ownerId:sId,x:s.x,y:s.y,speed:750,angle:e.angle,life:3.0,hitCooldowns:{},dmgMult:e.dmgMult||1.0,deactivated:false});}
@@ -2095,7 +2187,7 @@ function processCombatEvent(sId, e) {
     else if(e.type==='blitz_shoot'){s.slashAnimTimer=0.15;let sx=s.x+Math.cos(e.angle)*35,sy=s.y+Math.sin(e.angle)*35;gameState.projectiles.push({type:'blitz_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*1500,vy:Math.sin(e.angle)*1500,angle:e.angle,life:0.8,distTraveled:0,dmgMult:e.dmgMult||1.0});connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'sniper_vfx',x:sx,y:sy,angle:e.angle});});if(sId!==myId)vfx.push({type:'sniperMuzzle',x:sx,y:sy,angle:e.angle,life:0.15,maxLife:0.15});}
     else if(e.type==='blitz_slash'){s.slashAnimTimer=0.3;connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'blitz_slash_vfx',x:e.x,y:e.y,angle:e.angle});});if(sId!==myId)vfx.push({type:'blitzSlash',x:e.x,y:e.y,angle:e.angle,life:0.2,maxLife:0.2});let hx=e.x+Math.cos(e.angle)*30,hy=e.y+Math.sin(e.angle)*30,kdmg=BALANCE.blitz.katanaDamage;for(let id in gameState.players)if(!gameState.players[id].isDead&&cDm(sId,id)){let t=gameState.players[id];if(Math.hypot(t.x-hx,t.y-hy)<55&&!t.invulnerable){dmgTk(t,kdmg,sId);sendHitmarker(sId,t,kdmg);t.lastAttacker=sId;t.lastHitTime=Date.now();chD(t,id);}}for(let c of gameState.clones)if(cDm(sId,c.ownerId)&&Math.hypot(c.x-hx,c.y-hy)<55&&!c.invulnerable){dmgTk(c,kdmg,sId);sendHitmarker(sId,c,kdmg);}}
     else if(e.type==='blitz_tp_windup'){s.tpTimer=0.085;s.flicker=true;}
-    else if(e.type==='blitz_tp_finish'){s.flicker=false;connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'blitz_tp_vfx',sx:e.startX,sy:e.startY,ex:e.endX,ey:e.endY});});if(sId!==myId){vfx.push({type:'blitzTransmission',x:e.startX,y:e.startY,life:0.3,maxLife:0.3});vfx.push({type:'blitzTransmission',x:e.endX,y:e.endY,life:0.3,maxLife:0.3});}}
+    else if(e.type==='blitz_tp_finish'){s.flicker=false;connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'blitz_tp_vfx',sx:e.startX,sy:e.startY,ex:e.endX,ey:e.endY,color: '#fff'});});if(sId!==myId){vfx.push({type:'blitzTransmission',x:e.startX,y:e.startY,life:0.3,maxLife:0.3,color: '#fff'});vfx.push({type:'blitzTransmission',x:e.endX,y:e.endY,life:0.3,maxLife:0.3,color: '#fff'});}}
     else if(e.type==='blitz_grab_init'){s.grabbedLocked=true;gameState.projectiles.push({type:'blitz_grab_manager',id:Math.random().toString(),ownerId:sId,targetId:e.targetId,isClone:e.isClone,originalX:s.x,originalY:s.y,originalAngle:e.angle,phase:1,timer:0.085});}
     else if(e.type==='blitz_ult'){s.slashAnimTimer=0.5;gameState.projectiles.push({type:'paradox_rift',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:3.0});connections.forEach(c=>{if(c.open)c.send({type:'blitz_ult_vfx',x:e.x,y:e.y});});if(sId!==myId)applyShake(10,0.4);}
     else if(e.type==='copycat_steal_vfx'){connections.forEach(c=>{if(c.open)c.send({type:'copycat_steal_vfx',targetId:e.targetId,sourceId:sId});});if(sId!==myId)vfx.push({type:'stealLink',targetId:e.targetId,sourceId:sId,life:0.4,maxLife:0.4});}
@@ -2192,6 +2284,78 @@ function processCombatEvent(sId, e) {
         connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'tim_ult_vfx',x:e.x,y:e.y,angle:e.angle});});
         if(sId!==myId)applyShake(12,0.3);
     }
+    else if(e.type==='rift_shoot') {
+        s.slashAnimTimer=0.15;
+        let sx=s.x+Math.cos(e.angle)*25,sy=s.y+Math.sin(e.angle)*25;
+        gameState.projectiles.push({
+            type:'rift_bullet', id:Math.random().toString(), ownerId:sId, 
+            x:sx, y:sy, vx:Math.cos(e.angle)*1600, vy:Math.sin(e.angle)*1600, 
+            angle:e.angle, life:1.5, dmg:18, dmgMult: e.dmgMult||1.0, hitIds:{}
+        });
+        if(sId!==myId) vfx.push({type:'sniperMuzzle', x:sx, y:sy, angle:e.angle, life:0.1, maxLife:0.1});
+    }
+    else if(e.type==='rift_orb_fire') {
+        s.slashAnimTimer=0.3;
+        gameState.projectiles.push({
+            type:'rift_orb', id:Math.random().toString(), ownerId:sId,
+            x: s.x+Math.cos(e.angle)*20, y: s.y+Math.sin(e.angle)*20,
+            vx: Math.cos(e.angle)*200, vy: Math.sin(e.angle)*200,
+            angle: e.angle, life: 5.0, phase: 'slow', timer: 0.5
+        });
+    }
+    else if(e.type==='rift_portal_create') {
+        let pActive = gameState.projectiles.filter(p => p.type==='rift_portal' && p.ownerId===sId);
+        if(pActive.length >= 2) {
+            let o = pActive.reduce((pv,cv) => (pv.createTime<cv.createTime?pv:cv));
+            gameState.projectiles = gameState.projectiles.filter(p => p.id !== o.id);
+        }
+        gameState.projectiles.push({
+            type:'rift_portal', id:Math.random().toString(), ownerId: sId,
+            x: e.x, y: e.y, size: 100, life: 999, createTime: Date.now(), uses: 0
+        });
+    }
+    else if(e.type==='rift_portal_use') {
+        let p1 = gameState.projectiles.find(p => p.id === e.p1Id);
+        let p2 = gameState.projectiles.find(p => p.id === e.p2Id);
+        if(p1 && p2) {
+            p1.uses++; p2.uses++;
+            p1.size = Math.max(20, 100 - p1.uses*33);
+            p2.size = Math.max(20, 100 - p2.uses*33);
+            if(p1.uses >= 3) {
+                gameState.projectiles = gameState.projectiles.filter(p => p.id !== p1.id && p.id !== p2.id);
+            }
+        }
+    }
+    else if(e.type==='rift_orb_detonate') {
+        emEx(e.x, e.y, 75, 120, sId, '#c084fc', false);
+    }
+    else if(e.type==='rift_jab') {
+        s.slashAnimTimer=0.3;
+        let hx=e.x+Math.cos(e.angle)*30, hy=e.y+Math.sin(e.angle)*30;
+        let hit = false;
+        
+        for(let id in gameState.players) {
+            if(!gameState.players[id].isDead && cDm(sId, id)) {
+                let t = gameState.players[id];
+                if(Math.hypot(t.x-hx, t.y-hy) < 40 && !t.invulnerable) {
+                    dmgTk(t, 45, sId); sendHitmarker(sId, t, 45);
+                    t.lastAttacker=sId; t.lastHitTime=Date.now(); chD(t, id);
+                    connections.forEach(c=>{if(c.open)c.send({type:'knockback_apply', targetId:id, angle:e.angle, force:40});});
+                    if(myId === id) { localCombat.dash.v.x += Math.cos(e.angle)*40; localCombat.dash.v.y += Math.sin(e.angle)*40; localCombat.dash.rec=0.3; }
+                    hit = true;
+                }
+            }
+        }
+        for(let c of gameState.clones) {
+            if(cDm(sId, c.ownerId) && Math.hypot(c.x-hx, c.y-hy) < 40 && !c.invulnerable) {
+                dmgTk(c, 45, sId); sendHitmarker(sId, c, 45); hit = true;
+            }
+        }
+        if(hit) {
+            connections.forEach(c=>{if(c.open)c.send({type:'knockback_apply', targetId:sId, angle:e.angle + Math.PI, force:60});});
+            if(myId === sId) { localCombat.dash.v.x += Math.cos(e.angle + Math.PI)*60; localCombat.dash.v.y += Math.sin(e.angle + Math.PI)*60; localCombat.dash.rec=0.3; }
+        }
+    }
 }
 
 function iW(x,y) {
@@ -2217,7 +2381,7 @@ function updateMovement(dt) {
         let sp = gameState.players[myId];
         if(!sp.isDead && myPlayer.isDead) { myPlayer.x = sp.x; myPlayer.y = sp.y; }
         myPlayer.hp = sp.hp; myPlayer.isDead = sp.isDead;
-        ['stunTimer','flicker'].forEach(k => { if(sp[k] !== undefined) myPlayer[k] = sp[k]; });
+        ['stunTimer','flicker','portalImmune','speedBoost'].forEach(k => { if(sp[k] !== undefined) myPlayer[k] = sp[k]; });
         
         if(sp.grabbedLocked) {
             myPlayer.grabbedLocked = true; myPlayer.x = sp.x; myPlayer.y = sp.y;
@@ -2284,9 +2448,9 @@ function updateMovement(dt) {
         localCombat.blitzTp.dTm -= dt; myPlayer.flicker = true;
         if(localCombat.blitzTp.dTm <= 0) {
             myPlayer.flicker = false;
-            vfx.push({type:'blitzTransmission', x:myPlayer.x, y:myPlayer.y, life:0.3, maxLife:0.3});
+            vfx.push({type:'blitzTransmission', x:myPlayer.x, y:myPlayer.y, life:0.3, maxLife:0.3, color: '#fff'});
             myPlayer.x = localCombat.blitzTp.dx; myPlayer.y = localCombat.blitzTp.dy;
-            vfx.push({type:'blitzTransmission', x:myPlayer.x, y:myPlayer.y, life:0.3, maxLife:0.3});
+            vfx.push({type:'blitzTransmission', x:myPlayer.x, y:myPlayer.y, life:0.3, maxLife:0.3, color: '#fff'});
             sdEv({type:'blitz_tp_finish', startX:myPlayer.x, startY:myPlayer.y, endX:myPlayer.x, endY:myPlayer.y});
             sdUp();
         }
@@ -2362,6 +2526,8 @@ function updateMovement(dt) {
             let ds = Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y);
             if(localCombat.dash.rec > 0) localCombat.dash.rec -= dt;
             if(myPlayer.slashAnimTimer > 0) myPlayer.slashAnimTimer -= dt;
+            if(myPlayer.portalImmune > 0) myPlayer.portalImmune -= dt;
+            if(myPlayer.speedBoost > 0) myPlayer.speedBoost -= dt;
             
             if(ds > 0.1) {
                 let nx = myPlayer.x + localCombat.dash.v.x, ny = myPlayer.y + localCombat.dash.v.y;
@@ -2396,11 +2562,32 @@ function updateMovement(dt) {
                 }
                 if(myPlayer.heroClass === 'thorfinn' && myPlayer.daggers === 0) bs = 8.0;
                 if(localCombat.dash.rec > 0) bs = 3.0;
+                
+                if(myPlayer.speedBoost > 0) bs *= 1.3;
+
                 let mx = 0, my = 0;
                 if(keys.w) my -= bs; if(keys.s) my += bs; if(keys.a) mx -= bs; if(keys.d) mx += bs;
                 
                 if(!iW(myPlayer.x + mx, myPlayer.y)) { myPlayer.x += mx; if(mx !== 0) md = wM = true; }
                 if(!iW(myPlayer.x, myPlayer.y + my)) { myPlayer.y += my; if(my !== 0) md = wM = true; }
+
+                if (myPlayer.portalImmune <= 0 && (mx !== 0 || my !== 0)) {
+                    let portals = gameState.projectiles.filter(p => p.type === 'rift_portal');
+                    if (portals.length === 2) {
+                        let entered = null, dest = null;
+                        if(Math.hypot(myPlayer.x - portals[0].x, myPlayer.y - portals[0].y) < portals[0].size/2) { entered = portals[0]; dest = portals[1]; }
+                        else if(Math.hypot(myPlayer.x - portals[1].x, myPlayer.y - portals[1].y) < portals[1].size/2) { entered = portals[1]; dest = portals[0]; }
+                        
+                        if(entered && dest) {
+                            myPlayer.x = dest.x; myPlayer.y = dest.y;
+                            myPlayer.portalImmune = 1.0;
+                            if(!cDm(myId, entered.ownerId)) myPlayer.speedBoost = 1.5;
+                            sdEv({type: 'rift_portal_use', p1Id: entered.id, p2Id: dest.id});
+                            md = wM = true;
+                        }
+                    }
+                }
+
             }
         }
         myPlayer.x = Math.max(15, Math.min(W - 15, myPlayer.x));
@@ -2428,9 +2615,33 @@ function updateMovement(dt) {
 
 function updateGameState(dt) {
     let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt'].forEach(k => {
+    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab'].forEach(k => {
         if(localCombat[k] && localCombat[k].cd > 0) localCombat[k].cd -= dt * cdM;
     });
+
+    if (myPlayer.heroClass === 'rift') {
+        if (localCombat.riftPrimary.burstCount > 0) {
+            localCombat.riftPrimary.burstTimer -= dt;
+            if (localCombat.riftPrimary.burstTimer <= 0) {
+                sdEv({type:'rift_shoot', x: myPlayer.x, y: myPlayer.y, angle: myPlayer.angle});
+                applyShake(2, 0.1);
+                localCombat.riftPrimary.burstCount--;
+                localCombat.riftPrimary.burstTimer = 0.1;
+                if(myPlayer.riftAmmo <= 0 && localCombat.riftPrimary.burstCount <= 0) localCombat.riftPrimary.rTm = (activeServerMode==='CHAOS')?0.05:1.2;
+            }
+        }
+        if (localCombat.riftPrimary.rTm > 0) {
+            localCombat.riftPrimary.rTm -= dt * cdM;
+            if(localCombat.riftPrimary.rTm <= 0) myPlayer.riftAmmo = 18;
+        }
+        
+        for(let i=0; i<2; i++) {
+            if(localCombat.riftShift.cds[i] > 0) { 
+                localCombat.riftShift.cds[i] -= dt * cdM; 
+                if(localCombat.riftShift.cds[i] <= 0) localCombat.riftShift.charges++; 
+            }
+        }
+    }
     
     // Tim's beam charging logic
     if(myPlayer.timBeamActive && myPlayer.timStance === 'macro') {
@@ -2521,7 +2732,7 @@ function updateGameState(dt) {
             for(let c of gameState.clones) if(!c.isFlying && inT(c.x, c.y) && !c.invulnerable) c.hp = 0;
             for(let i=gameState.projectiles.length-1; i>=0; i--) {
                 let proj = gameState.projectiles[i];
-                if(!['blitz_grab_manager','kinetic_arrow','kisaki','aero_tab'].includes(proj.type) && inT(proj.x, proj.y)) gameState.projectiles.splice(i,1);
+                if(!['blitz_grab_manager','kinetic_arrow','kisaki','aero_tab','rift_portal'].includes(proj.type) && inT(proj.x, proj.y)) gameState.projectiles.splice(i,1);
             }
         }
         
@@ -2818,9 +3029,9 @@ function updateGameState(dt) {
                     if(!a) break;
                 }
                 p.life -= dt; if(!a || p.life <= 0) gameState.projectiles.splice(i, 1);
-            } else if(p.type === 'blitz_bullet') {
+            } else if(p.type === 'blitz_bullet' || p.type === 'rift_bullet') {
                 p.lastX = p.x; p.lastY = p.y; p.distTraveled += Math.hypot(p.vx * sm * dt, p.vy * sm * dt); p.x += p.vx * sm * dt; p.y += p.vy * sm * dt; p.life -= dt;
-                let hw = iW(p.x, p.y), dmg = Math.max(20, 40 - ((p.distTraveled - 350) * 0.08)) * (p.dmgMult||1.0);
+                let hw = iW(p.x, p.y), dmg = p.type === 'blitz_bullet' ? Math.max(20, 40 - ((p.distTraveled - 350) * 0.08)) * (p.dmgMult||1.0) : p.dmg * (p.dmgMult||1.0);
                 if(!hw) {
                     for(let c of gameState.clones) if(cDm(p.ownerId, c.ownerId) && !c.invulnerable && Math.hypot(c.x - p.x, c.y - p.y) < 20) { dmgTk(c, dmg, p.ownerId); sendHitmarker(p.ownerId, c, dmg); hw = true; break; }
                     if(!hw) {
@@ -3069,6 +3280,60 @@ function updateGameState(dt) {
                 if(p.life <= 0 || p.x < -200 || p.x > W + 200 || p.y < -200 || p.y > H + 200) {
                     gameState.projectiles.splice(i, 1);
                 }
+            } else if(p.type === 'rift_orb') {
+                p.life -= dt;
+                if(p.phase === 'slow') {
+                    p.timer -= dt;
+                    if(p.timer <= 0) p.phase = 'fast';
+                } else {
+                    p.vx = Math.cos(p.angle) * 600;
+                    p.vy = Math.sin(p.angle) * 600;
+                }
+                
+                p.x += p.vx * dt; p.y += p.vy * dt;
+                
+                let hw = iW(p.x, p.y);
+                let hitPlayer = false;
+                
+                if(!hw) {
+                    for(let id in gameState.players) {
+                        let t = gameState.players[id];
+                        if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && Math.hypot(t.x - p.x, t.y - p.y) < 30) {
+                            dmgTk(t, 20, p.ownerId); sendHitmarker(p.ownerId, t, 20);
+                            t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id);
+                            connections.forEach(c=>{if(c.open)c.send({type:'knockback_apply', targetId:id, angle:p.angle, force:50});});
+                            if(myId === id) { localCombat.dash.v.x += Math.cos(p.angle)*50; localCombat.dash.v.y += Math.sin(p.angle)*50; localCombat.dash.rec=0.3; }
+                            hitPlayer = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Detonation check - if owner shoots it with primary
+                let shotByOwner = false;
+                for(let b of gameState.projectiles) {
+                    if(b.type === 'rift_bullet' && b.ownerId === p.ownerId && Math.hypot(b.x - p.x, b.y - p.y) < 40) {
+                        shotByOwner = true;
+                        b.life = 0; // consume bullet
+                        break;
+                    }
+                }
+
+                if(shotByOwner) {
+                    sdEv({type:'rift_orb_detonate', x: p.x, y: p.y});
+                    gameState.projectiles.splice(i, 1);
+                } else if(hw || hitPlayer || p.life <= 0) {
+                    if (hw) {
+                        // Create portal
+                        let px = p.x - Math.cos(p.angle)*20, py = p.y - Math.sin(p.angle)*20;
+                        if(p.ownerId === myId) {
+                            sdEv({type: 'rift_portal_create', x: px, y: py});
+                        }
+                    }
+                    gameState.projectiles.splice(i, 1);
+                }
+            } else if(p.type === 'rift_portal') {
+                if(p.size <= 0) gameState.projectiles.splice(i,1);
             } else if(p.type === 'matrix_beam') {
                 p.lastX = p.x; p.lastY = p.y;
                 if(p.phase === 'slow') { p.slowTimer -= dt; p.speed = 150; if(p.slowTimer <= 0) p.phase = 'fast'; } else p.speed = 1600;
@@ -3249,6 +3514,28 @@ function updateUI(now = performance.now()) {
         if(myPlayer.traceDashing) { getEl('ui-trace-dash').style.borderColor = myPlayer.customization?.traceColors?.neon || '#a855f7'; getEl('status-trace-dash').innerText = 'Drawing...'; } else getEl('ui-trace-dash').style.borderColor = '#52525b';
         if(myPlayer.traceShooting) { getEl('ui-trace-primary').style.borderColor = myPlayer.customization?.traceColors?.neon || '#a855f7'; getEl('status-trace-primary').innerText = 'Drawing...'; } else getEl('ui-trace-primary').style.borderColor = '#52525b';
     }
+    else if(myPlayer.heroClass === 'rift') {
+        setVisibleAbilities(['rift-primary','rift-orb','rift-jab','rift-shift']);
+        
+        let pc = localCombat.riftPrimary.cd;
+        let pcdH = pc > 0 ? (pc / localCombat.riftPrimary.maxCd) * 100 : 0;
+        let rt = localCombat.riftPrimary.rTm;
+        if(rt > 0) pcdH = (rt / 1.2) * 100;
+        getEl('cd-rift-primary').style.height = `${pcdH}%`;
+        getEl('status-rift-primary').innerText = rt > 0 ? 'Reloading' : `${myPlayer.riftAmmo}/18`;
+        
+        let oc = localCombat.riftOrb.cd;
+        getEl('cd-rift-orb').style.height = `${oc > 0 ? (oc / localCombat.riftOrb.maxCd) * 100 : 0}%`;
+        getEl('status-rift-orb').innerText = oc > 0 ? oc.toFixed(1) + 's' : 'Ready';
+        
+        let jc = localCombat.riftJab.cd;
+        getEl('cd-rift-jab').style.height = `${jc > 0 ? (jc / localCombat.riftJab.maxCd) * 100 : 0}%`;
+        getEl('status-rift-jab').innerText = jc > 0 ? jc.toFixed(1) + 's' : 'Ready';
+        
+        let sc = Math.max(...localCombat.riftShift.cds);
+        getEl('cd-rift-shift').style.height = `${sc > 0 ? (sc / localCombat.riftShift.maxCd) * 100 : 0}%`;
+        getEl('status-rift-shift').innerText = `Ch: ${localCombat.riftShift.charges}`;
+    }
 
     
     if(activeServerMode === 'KOTH' && gameState.koth && gCon.classList.contains('active')) {
@@ -3390,6 +3677,14 @@ function updateCursorHud() {
             const cd = localCombat.traceShoot?.cd || 0, max = localCombat.traceShoot?.maxCd || 1.0;
             mode = cd > 0 ? 'progress' : 'ready'; progress = cd>0 ? 1-(cd/max) : 1;
             color = cd > 0 ? '#06b6d4' : '#4ade80';
+        }
+        else if(hc === 'rift') {
+            const r = localCombat.riftPrimary?.rTm || 0;
+            if(r > 0) { mode = 'reload'; }
+            else {
+                mode = 'segments'; total = 18; filled = myPlayer.riftAmmo||0;
+                color = filled > 0 ? '#c084fc' : '#f87171';
+            }
         }
     } catch(err) { mode = null; }
     if(!mode) { hud.style.display = 'none'; return; }
@@ -3767,6 +4062,17 @@ function drawEnts() {
             ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1; ctx.setLineDash([]);
             for(let i = -200; i <= 200; i += 40) { ctx.beginPath(); ctx.moveTo(i, -250); ctx.lineTo(i, 250); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-250, i); ctx.lineTo(250, i); ctx.stroke(); }
             ctx.restore();
+        } else if(p.type === 'rift_portal') {
+            ctx.save(); ctx.translate(p.x, p.y);
+            let s = p.size / 2;
+            let o = gameState.players[p.ownerId];
+            let c = o ? (o.team === 'red' ? '#ef4444' : (o.team === 'blue' ? '#3b82f6' : '#c084fc')) : '#c084fc';
+            ctx.shadowBlur = 20; ctx.shadowColor = c;
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.ellipse(0, 0, s, s*0.3, Date.now()/500, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = c; ctx.lineWidth = 4 + Math.sin(Date.now()/100)*2;
+            ctx.stroke();
+            ctx.restore();
         } else if(p.type === 'aero_tab') { return; /* drawn separately in drawAeroTabs */
             ctx.save(); ctx.translate(p.x, p.y);
             if(p.phase === 'expiring') ctx.globalAlpha = Math.max(0, p.expireTimer / 0.1);
@@ -3886,6 +4192,18 @@ function drawEnts() {
             ctx.fillStyle = '#f59e0b'; ctx.globalAlpha = 0.4;
             ctx.beginPath(); ctx.moveTo(-10, -4); ctx.lineTo(-28, 0); ctx.lineTo(-10, 4); ctx.fill();
             ctx.globalAlpha = 1;
+            ctx.restore();
+        } else if(p.type === 'rift_bullet') {
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); 
+            ctx.fillStyle = '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#c084fc';
+            ctx.fillRect(0, -2, 20, 4);
+            ctx.fillStyle = '#c084fc'; ctx.fillRect(-10, -1, 10, 2);
+            ctx.restore();
+        } else if(p.type === 'rift_orb') {
+            ctx.save(); ctx.translate(p.x, p.y);
+            ctx.fillStyle = '#fff'; ctx.shadowBlur = 20; ctx.shadowColor = '#c084fc';
+            ctx.beginPath(); ctx.arc(0, 0, 12 + Math.sin(Date.now()/50)*3, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.stroke();
             ctx.restore();
         } else if(['sniper_bullet','blitz_bullet'].includes(p.type)) {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.fillStyle = '#fef08a'; ctx.shadowBlur = 15; ctx.shadowColor = '#f59e0b';
@@ -4638,7 +4956,8 @@ function drawPlayers() {
 
                 // Muzzle glow if charging
                 if(o.timBeamActive) {
-                    let glowSize = 8 + o.timBeamCharge * 9;
+                    let glowSize = 8 +
+o.timBeamCharge * 9;
                     let glowIntensity = 0.3 + (o.timBeamCharge / 4.0) * 0.7;
                     ctx.fillStyle = `${beamColor}${Math.round(glowIntensity * 255).toString(16).padStart(2, '0')}`;
                     ctx.beginPath(); ctx.arc(52, 0, glowSize, 0, 6.28); ctx.fill();
@@ -4713,6 +5032,17 @@ function drawPlayers() {
                 let a = ro + s * 2.094;
                 ctx.beginPath(); ctx.arc(Math.cos(a) * 22, Math.sin(a) * 22, 2.5, 0, 6.28); ctx.fill();
             }
+        } else if(!iC && o.heroClass === 'rift') {
+            let rx = (Date.now() % 100) > 50 ? 1 : -1;
+            ctx.fillStyle = isImpactFlash ? '#000' : '#e5e7eb';
+            ctx.beginPath(); ctx.arc(rx, 0, 16, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#c084fc'; ctx.lineWidth = 2; ctx.stroke();
+            
+            ctx.save(); ctx.translate(14 + rx, 8); 
+            ctx.fillStyle = isImpactFlash ? '#000' : '#111827'; ctx.fillRect(0, -4, 28, 6);
+            ctx.fillStyle = isImpactFlash ? '#000' : '#c084fc'; ctx.fillRect(8, -3, 8, 4);
+            ctx.fillStyle = isImpactFlash ? '#000' : '#374151'; ctx.fillRect(-4, 2, 8, 4); 
+            ctx.restore();
         }
         ctx.restore();
         
@@ -5064,7 +5394,8 @@ function drawVFX() {
             ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, 55, -1.04, 1.04); ctx.fill();
             ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.stroke();
         } else if(e.type === 'blitzTransmission') {
-            ctx.translate(e.x, e.y); ctx.globalAlpha = e.life / e.maxLife; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+            let col = e.color || '#fff';
+            ctx.translate(e.x, e.y); ctx.globalAlpha = e.life / e.maxLife; ctx.strokeStyle = col; ctx.lineWidth = 2;
             for(let i = 0; i < 4; i++) {
                 ctx.beginPath(); ctx.moveTo((Math.random() - 0.5) * 40, -40 + Math.random() * 80);
                 ctx.lineTo((Math.random() - 0.5) * 40 + (Math.random() > 0.5 ? 20 : -20), -40 + Math.random() * 80); ctx.stroke();
@@ -5282,6 +5613,7 @@ function fireAeroCopiedWeapon(w, dM) {
     else if(w==='trace') { let dist=Math.hypot(myPlayer.targetX-myPlayer.x, myPlayer.targetY-myPlayer.y); let n1={x:myPlayer.x+Math.cos(myPlayer.angle)*dist*0.33, y:myPlayer.y+Math.sin(myPlayer.angle)*dist*0.33}, n2={x:myPlayer.x+Math.cos(myPlayer.angle)*dist*0.66, y:myPlayer.y+Math.sin(myPlayer.angle)*dist*0.66}, n3={x:myPlayer.x+Math.cos(myPlayer.angle)*dist, y:myPlayer.y+Math.sin(myPlayer.angle)*dist}; sdEv({type:'trace_shoot', nodes:[n1,n2,n3], x:myPlayer.x, y:myPlayer.y, dmgMult:dM}); }
     else if(w==='kendo') sdEv({type:'copycat_kendo_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
     else if(w==='corsair') sdEv({type:'corsair_cannonball', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
+    else if(w==='rift') sdEv({type:'rift_shoot', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, dmgMult:dM});
 }
 
 // === GLOBAL CURSOR (Passive) - Draw pixel cursor at Aero's aim position ===
