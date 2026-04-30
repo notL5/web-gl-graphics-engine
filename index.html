@@ -986,7 +986,7 @@ can.addEventListener('mousemove', e => {
     let wx=(sMx/cam.zoom)+cam.x, wy=(sMy/cam.zoom)+cam.y;
     
     if (myPlayer.heroClass === 'trace') {
-        if (myPlayer.traceShooting && myPlayer.traceNodes && myPlayer.traceNodes.length < 40) {
+        if (myPlayer.traceShooting && (activeServerMode === 'CHAOS' || myPlayer.traceNodes.length < 40)) {
             let ln = myPlayer.traceNodes[myPlayer.traceNodes.length - 1];
             if (Math.hypot(wx - ln.x, wy - ln.y) >60) myPlayer.traceNodes.push({x: wx, y: wy});
         }
@@ -2251,7 +2251,10 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='tim_pea_shoot'){
         s.slashAnimTimer=0.1;
         let sx=s.x+Math.cos(e.angle)*25,sy=s.y+Math.sin(e.angle)*25;
-        gameState.projectiles.push({type:'tim_pea_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*1200,vy:Math.sin(e.angle)*1200,angle:e.angle,life:1.5,dmg:7,hitIds:{}});
+        let _timChaos = (activeServerMode === 'CHAOS');
+        let _peaSpd = _timChaos ? 4500 : 1200;
+        let _peaLife = _timChaos ? 6.0 : 1.5;
+        gameState.projectiles.push({type:'tim_pea_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*_peaSpd,vy:Math.sin(e.angle)*_peaSpd,angle:e.angle,life:_peaLife,dmg:7,hitIds:{}});
         if(sId!==myId)vfx.push({type:'timMuzzleFlash',x:sx,y:sy,angle:e.angle,life:0.1,maxLife:0.1});
     }
     else if(e.type==='tim_core_beam_firing'){
@@ -2280,7 +2283,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     }
     else if(e.type==='tim_ult_fire'){
         s.slashAnimTimer=0.3;
-        gameState.projectiles.push({type:'tim_rainbow_beam',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,angle:e.angle,life:0.8,damage:100,hitIds:{},initializing:true,initTimer:4.0});
+        gameState.projectiles.push({type:'tim_rainbow_beam',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,angle:e.angle,life:(activeServerMode==='CHAOS'?3.0:0.8),damage:100,hitIds:{},initializing:true,initTimer:4.0});
         connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'tim_ult_vfx',x:e.x,y:e.y,angle:e.angle});});
         if(sId!==myId)applyShake(12,0.3);
     }
@@ -3187,7 +3190,7 @@ function updateGameState(dt) {
                 p.life -= dt;
 
                 // Damage everyone in line of the beam
-                let beamLength = 150 + (p.charge / 4.0) * 100;
+                let beamLength = (activeServerMode === 'CHAOS') ? (3000 + (p.charge / 4.0) * 1500) : (150 + (p.charge / 4.0) * 100);
                 let beamRadius = 20;
 
                 for(let id in gameState.players) {
@@ -3250,8 +3253,9 @@ function updateGameState(dt) {
                     }
                     p.life -= dt;
                 } else {
-                    p.x += Math.cos(p.angle) * 1500 * sm * dt;
-                    p.y += Math.sin(p.angle) * 1500 * sm * dt;
+                    let _rbSpd = (activeServerMode === 'CHAOS') ? 5000 : 1500;
+                    p.x += Math.cos(p.angle) * _rbSpd * sm * dt;
+                    p.y += Math.sin(p.angle) * _rbSpd * sm * dt;
                     p.life -= dt;
 
                     let hitRadius = 80;
@@ -4255,7 +4259,7 @@ function drawEnts() {
         } else if(p.type === 'tim_core_beam') {
             // Core beam - continuous laser from cannon with custom colors
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
-            let beamLen = 150 + (p.charge / 4.0) * 100;
+            let beamLen = (activeServerMode === 'CHAOS') ? (3000 + (p.charge / 4.0) * 1500) : (150 + (p.charge / 4.0) * 100);
             let beamWidth = 4 + (p.charge / 4.0) * 5;  // 4 to 9 width
             
             // Get beam color from owner's customization
