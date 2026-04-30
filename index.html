@@ -2862,17 +2862,22 @@ function updateGameState(dt) {
                 for(let w of gameState.walls) { if(nx > w.x && nx < w.x + GRID && ny > w.y && ny < w.y + GRID) { hw = true; break; } }
                 if(hw) { gameState.projectiles.splice(i,1); continue; }
                 
+                if(!p.hitCooldowns) p.hitCooldowns = {};
+                for(let _k in p.hitCooldowns) { p.hitCooldowns[_k] -= dt; if(p.hitCooldowns[_k] <= 0) delete p.hitCooldowns[_k]; }
+
                 for(let id in gameState.players) {
                     let t = gameState.players[id];
-                    if(!t.isDead && cDm(p.ownerId, id) && !p.hitIds[id] && !t.invulnerable && Math.hypot(t.x - nx, t.y - ny) < 25) {
+                    if(!t.isDead && cDm(p.ownerId, id) && !p.hitCooldowns[id] && !t.invulnerable && Math.hypot(t.x - nx, t.y - ny) < 25) {
                         let dg = 64 * (p.dmgMult||1); dmgTk(t, dg, p.ownerId); sendHitmarker(p.ownerId, t, dg);
-                        t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id); p.hitIds[id] = true;
+                        t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id);
+                        p.hitCooldowns[id] = 0.25; // re-hit allowed every 0.25s
                     }
                 }
-                
+
                 for(let c of gameState.clones) {
-                    if(cDm(p.ownerId, c.ownerId) && !p.hitIds[c.id] && !c.invulnerable && Math.hypot(c.x - nx, c.y - ny) < 25) {
-                        let dg = 64 * (p.dmgMult||1); dmgTk(c, dg, p.ownerId); sendHitmarker(p.ownerId, c, dg); p.hitIds[c.id] = true;
+                    if(cDm(p.ownerId, c.ownerId) && !p.hitCooldowns[c.id] && !c.invulnerable && Math.hypot(c.x - nx, c.y - ny) < 25) {
+                        let dg = 64 * (p.dmgMult||1); dmgTk(c, dg, p.ownerId); sendHitmarker(p.ownerId, c, dg);
+                        p.hitCooldowns[c.id] = 0.25;
                     }
                 }
                 
