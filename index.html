@@ -194,6 +194,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
                         <button class="class-list-btn" id="btn-jubilee" onclick="selectHero('jubilee')">Jubilee</button>
                         <button class="class-list-btn" id="btn-corsair" onclick="selectHero('corsair')">Corsair</button>
                         <button class="class-list-btn" id="btn-tim" onclick="selectHero('tim')">Tiny Tim</button>
+                        <button class="class-list-btn" id="btn-roulette" onclick="selectHero('roulette')" style="background:linear-gradient(135deg,#fbbf24,#dc2626);color:#000;font-weight:900;">🎰 Roulette</button>
                     </div>
                 </div>
             </div>
@@ -316,8 +317,12 @@ const HERO_DATA = {
     corsair:{name:'Corsair',role:'Tank',hp:350,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
     aero:{name:'Aero',role:'Controller',hp:230,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},    
     tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']},
-    rift:{name:'Rift',role:'Controller',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']}
+    rift:{name:'Rift',role:'Controller',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']},
+    roulette:{name:'Roulette',role:'Wildcard',hp:250,speed:'Variable',color:'#fbbf24',desc:'Not a hero — a randomized game mode. Spawns as a random hero. Every 35s OR on kill, the One-Armed Bandit spins and you transform into a different hero (no repeats). Full stats and abilities of whoever you become.',abilities:['Random Hero on Spawn','Auto-Swap Every 35s','Kill = Instant Re-Spin','Gold Outline (You are the Jackpot)']}
 };
+
+// Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
+const ROULETTE_POOL = ['trace','thorfinn','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift'];
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
 let tCol = JSON.parse(localStorage.getItem('rivals_traceColors'))||{bow:'#3b0764',neon:'#a855f7'}; getEl('tColorBow').value=tCol.bow; getEl('tColorNeon').value=tCol.neon;
@@ -1007,14 +1012,37 @@ function selectHero(id) {
     document.querySelectorAll('.class-list-btn').forEach(b=>b.classList.remove('selected')); 
     getEl('btn-'+id).classList.add('selected');
     localStorage.setItem('rivals_lastHero', id);
-    myPlayer.heroClass = id; myPlayer.color = HERO_DATA[id].color;
-    
-    // Initialize Thorfinn hair if switching to Thorfinn
-    if(id === 'thorfinn') {
-        initThorfinnHair(myPlayer);
+
+    // Roulette mode: pick a random base hero, but flag as roulette
+    if(id === 'roulette') {
+        const startHero = ROULETTE_POOL[Math.floor(Math.random() * ROULETTE_POOL.length)];
+        myPlayer.isRoulette = true;
+        myPlayer.rouletteTimer = 20.0;
+        myPlayer.rouletteSpin = null;
+        _applyHeroState(startHero, true);
+        // Roulette-flavored panel info (overrides the per-hero text)
+        getEl('info-name').innerText = '🎰 Roulette → ' + HERO_DATA[startHero].name;
+        getEl('info-role').innerText = HERO_DATA.roulette.role;
+        getEl('info-role').style.color = '#fbbf24';
+        getEl('info-stats').innerText = `${HERO_DATA.roulette.hp} HP • Variable`;
+        getEl('info-desc').innerText = `[ ${HERO_DATA.roulette.desc} ]`;
+        let aR = ''; HERO_DATA.roulette.abilities.forEach(a => aR += `<li>${a}</li>`); getEl('info-abilities').innerHTML = aR;
+        updateLobbyState();
+        return;
     }
-    
-    // Initialize Tim if switching to Tim
+    myPlayer.isRoulette = false;
+    myPlayer.rouletteSpin = null;
+    _applyHeroState(id, false);
+    updateLobbyState();
+}
+
+// Apply per-hero state initialization (used by selectHero AND Roulette swaps).
+// When keepRoulette is true, do NOT clear isRoulette flag and do NOT reset score.
+function _applyHeroState(id, keepRoulette) {
+    myPlayer.heroClass = id; myPlayer.color = HERO_DATA[id].color;
+
+    if(id === 'thorfinn') initThorfinnHair(myPlayer);
+
     if(id === 'tim') {
         myPlayer.timStance = 'macro';
         myPlayer.timCannonX = myPlayer.x;
@@ -1022,30 +1050,94 @@ function selectHero(id) {
         myPlayer.timBeamCharge = 0;
         myPlayer.timUltCharge = 0;
     }
-    
+
     let baseHp = HERO_DATA[id].hp;
     if (activeServerMode === 'CHAOS') baseHp *= 12;
-    myPlayer.maxHp = myPlayer.hp = baseHp; 
+    myPlayer.maxHp = myPlayer.hp = baseHp;
     myPlayer.ultCharge = 0;
-    
+
     myPlayer.corsairStance='cannon'; myPlayer.corsairComboStep=0; myPlayer.corsairParryActive=false; myPlayer.corsairParryTimer=0;
     if(id==='corsair'){myPlayer.corsairCannonX=myPlayer.x; myPlayer.corsairCannonY=myPlayer.y; gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==myId); gameState.corsairCannons.push({ownerId:myId||'local',x:myPlayer.x,y:myPlayer.y,trimColor:myPlayer.customization?.corsairColors?.trim||'#dc2626'});}
-    myPlayer.kisakiDeployed=false; myPlayer.kisakiMirrorOn=false; myPlayer.kisakiMirrorAngle=0; 
+    myPlayer.kisakiDeployed=false; myPlayer.kisakiMirrorOn=false; myPlayer.kisakiMirrorAngle=0;
     myPlayer.blitzWeapon='handgun'; myPlayer.blitzAmmo=8; myPlayer.riftAmmo=18; myPlayer.grabbedLocked=false; myPlayer.flicker=false;
-    myPlayer.aeroDrawing=false; myPlayer.aeroTabType=1; 
+    myPlayer.aeroDrawing=false; myPlayer.aeroTabType=1;
     myPlayer.traceShooting=false; myPlayer.traceDashing=false; myPlayer.traceFreeze=false;
     myPlayer.copycatWeapons=[]; myPlayer.aeroContextMenu=false; myPlayer.aeroPasting=false; myPlayer.aeroPasteFirstShot=false;
-    
+
     localCombat.traceShoot={cd:0,maxCd:1.0}; localCombat.traceDash={cd:0,maxCd:4.0,active:false,path:[],idx:0};
     localCombat.aeroPaste={cd:0,maxCd:0.8}; localCombat.aeroCopy={cd:0,maxCd:0};
-    
-    getEl('info-name').innerText=HERO_DATA[id].name; 
-    getEl('info-role').innerText=HERO_DATA[id].role; 
-    getEl('info-role').style.color=HERO_DATA[id].color;
-    getEl('info-stats').innerText=`${HERO_DATA[id].hp} HP • ${HERO_DATA[id].speed}`; 
-    getEl('info-desc').innerText=`[ ${HERO_DATA[id].desc} ]`;
-    let as=''; HERO_DATA[id].abilities.forEach(a=>as+=`<li>${a}</li>`); getEl('info-abilities').innerHTML=as; 
-    updateLobbyState();
+
+    if(!keepRoulette) {
+        getEl('info-name').innerText=HERO_DATA[id].name;
+        getEl('info-role').innerText=HERO_DATA[id].role;
+        getEl('info-role').style.color=HERO_DATA[id].color;
+        getEl('info-stats').innerText=`${HERO_DATA[id].hp} HP • ${HERO_DATA[id].speed}`;
+        getEl('info-desc').innerText=`[ ${HERO_DATA[id].desc} ]`;
+        let as=''; HERO_DATA[id].abilities.forEach(a=>as+=`<li>${a}</li>`); getEl('info-abilities').innerHTML=as;
+    } else {
+        // Update the small "→ HeroName" hint while keeping Roulette branding
+        getEl('info-name').innerText = '🎰 Roulette → ' + HERO_DATA[id].name;
+    }
+}
+
+// === ROULETTE: One-Armed Bandit Mode ===
+function pickRouletteHero(excludeId) {
+    let pool = ROULETTE_POOL.filter(h => h !== excludeId);
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function startRouletteSpin() {
+    if(!myPlayer.isRoulette || myPlayer.isDead) return;
+    if(myPlayer.rouletteSpin && myPlayer.rouletteSpin.active) return; // already spinning
+    const finalHero = pickRouletteHero(myPlayer.heroClass);
+    // Build a strobe sequence: 0.4s per face, 3.0s total = ~7-8 flashes ending on finalHero
+    const STEP = 0.4, DURATION = 3.0;
+    const steps = Math.round(DURATION / STEP);
+    let seq = [];
+    let last = myPlayer.heroClass;
+    for(let i = 0; i < steps - 1; i++) {
+        let pick;
+        do { pick = ROULETTE_POOL[Math.floor(Math.random() * ROULETTE_POOL.length)]; } while(pick === last);
+        seq.push(pick); last = pick;
+    }
+    seq.push(finalHero);
+    myPlayer.rouletteSpin = {
+        active: true, sequence: seq, idx: 0, stepDur: STEP, t: 0, total: DURATION, finalHero: finalHero, lockGlow: 0
+    };
+    // Visually shapeshift to the first face immediately (no stat change during spin — stats locked at end)
+    myPlayer.rouletteSpinVisualHero = seq[0];
+    sdEv({type:'roulette_spin_start', finalHero: finalHero, sequence: seq, stepDur: STEP});
+    sdUp();
+}
+
+function tickRoulette(dt) {
+    if(!myPlayer.isRoulette || myPlayer.isDead) return;
+    const sp = myPlayer.rouletteSpin;
+    if(sp && sp.active) {
+        sp.t += dt;
+        let newIdx = Math.min(sp.sequence.length - 1, Math.floor(sp.t / sp.stepDur));
+        if(newIdx !== sp.idx) {
+            sp.idx = newIdx;
+            myPlayer.rouletteSpinVisualHero = sp.sequence[sp.idx];
+        }
+        if(sp.t >= sp.total) {
+            // LOCK IN — actually swap stats/abilities
+            sp.active = false;
+            sp.lockGlow = 1.0;
+            myPlayer.rouletteSpinVisualHero = null;
+            _applyHeroState(sp.finalHero, true);
+            myPlayer.rouletteTimer = 3.0;
+            sdEv({type:'roulette_lock', heroClass: sp.finalHero});
+            sdUp();
+        }
+        return;
+    }
+    if(sp && sp.lockGlow > 0) sp.lockGlow = Math.max(0, sp.lockGlow - dt);
+    // Tick the 35s timer
+    myPlayer.rouletteTimer = (myPlayer.rouletteTimer ?? 20.0) - dt;
+    if(myPlayer.rouletteTimer <= 0) {
+        startRouletteSpin();
+    }
 }
 
 function setTeam(c) {
@@ -1662,6 +1754,11 @@ function sdUp() {
         invulnerable:myPlayer.invulnerable||false, copycatWeapons:myPlayer.copycatWeapons, aeroContextMenu:myPlayer.aeroContextMenu||false,
         corsairStance:myPlayer.corsairStance||'cannon', corsairComboStep:myPlayer.corsairComboStep||0, corsairParryActive:myPlayer.corsairParryActive||false, corsairCannonX:myPlayer.corsairCannonX||0, corsairCannonY:myPlayer.corsairCannonY||0,
         portalImmune:myPlayer.portalImmune, speedBoost:myPlayer.speedBoost,
+        isRoulette:!!myPlayer.isRoulette, rouletteTimer:myPlayer.rouletteTimer||0,
+        rouletteSpinVisualHero:myPlayer.rouletteSpinVisualHero||null,
+        rouletteSpinActive:!!(myPlayer.rouletteSpin && myPlayer.rouletteSpin.active),
+        rouletteSpinT:myPlayer.rouletteSpin?.t||0, rouletteSpinTotal:myPlayer.rouletteSpin?.total||3.0,
+        rouletteLockGlow:myPlayer.rouletteSpin?.lockGlow||0,
         name:myPlayer.name, color:myPlayer.color, team:myPlayer.team, customization:myPlayer.customization
     };
     if(!isHost && hostConnection && hostConnection.open) hostConnection.send({type:'update', player:minP});
@@ -2103,6 +2200,12 @@ function chD(t, id) {
                 let kp = gameState.players[k];
                 if(!kp.isDead) kp.hp = Math.min(kp.maxHp, (kp.hp||0) + 80);
             }
+
+            // ROULETTE: a kill instantly resets the 35s timer and triggers a re-spin
+            if(k === myId && myPlayer.isRoulette && !myPlayer.isDead) {
+                myPlayer.rouletteTimer = 20.0;
+                startRouletteSpin();
+            }
             
             if(activeServerMode === 'JUGG' && id === gameState.juggernautId) {
                 t.isJuggernaut = false;
@@ -2131,6 +2234,16 @@ function chD(t, id) {
                 gameState.players[id].stunTimer = 0; gameState.players[id].hasUltAura = false;
                 gameState.players[id].portalImmune = 0; gameState.players[id].speedBoost = 0;
                 if(t.heroClass==='corsair'){t.corsairStance='cannon';}
+            }
+            // ROULETTE: on respawn, pick a fresh random hero (no repeat) and reset timer
+            if(id === myId && myPlayer.isRoulette) {
+                const next = pickRouletteHero(myPlayer.heroClass);
+                _applyHeroState(next, true);
+                myPlayer.rouletteTimer = 20.0;
+                myPlayer.rouletteSpin = null;
+                myPlayer.rouletteSpinVisualHero = null;
+                t.heroClass = next; t.maxHp = HERO_DATA[next].hp * (activeServerMode === 'CHAOS' ? 12 : 1); t.hp = t.maxHp; t.color = HERO_DATA[next].color;
+                sdUp();
             }
         }, 3000);
     }
@@ -4484,6 +4597,14 @@ function drawPlayers() {
     ents.forEach(e => {
         let iC = e.ownerId !== undefined, o = iC ? gameState.players[e.ownerId] : e;
         if(!o || !iV(e.x, e.y, 250)) return;
+
+        // ROULETTE: while spinning, override the visible hero model to strobe through the reel.
+        // We restore the real heroClass after drawing so gameplay/abilities are unaffected.
+        let _rouletteSavedHero = null;
+        if(!iC && o.isRoulette && o.rouletteSpinVisualHero && o.rouletteSpinActive) {
+            _rouletteSavedHero = o.heroClass;
+            o.heroClass = o.rouletteSpinVisualHero;
+        }
         
         if(o.id === myId && o.heroClass === 'misaki' && localCombat.misakiGrapple.dTm > 0) {
             let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === myId);
@@ -5200,19 +5321,133 @@ o.timBeamCharge * 9;
             drawHair(o);
         }
         
+        // === ROULETTE: Gold outline around the player ===
+        if(!iC && o.isRoulette) {
+            ctx.save();
+            const goldPulse = 0.7 + Math.sin(Date.now() / 180) * 0.3;
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 3.5;
+            ctx.globalAlpha = goldPulse;
+            ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 18;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, 24, 0, 6.28);
+            ctx.stroke();
+            // Inner thinner ring
+            ctx.globalAlpha = goldPulse * 0.6;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, 28, 0, 6.28);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         let tw = getNameWidth(o.name), bg = 'rgba(24,24,27,0.8)';
         if(o.isJuggernaut) bg = 'rgba(234,179,8,0.85)';
         else if(gameState.isTeamMode) {
             if(o.team === 'red') bg = 'rgba(185,28,28,0.85)';
             else if(o.team === 'blue') bg = 'rgba(29,78,216,0.85)';
         }
-        
+
         ctx.fillStyle = bg; ctx.beginPath();
         let yO = o.isJuggernaut ? 95 : 56;
         ctx.roundRect(e.x - (tw / 2) - 8, e.y - yO, tw + 16, 18, 4); ctx.fill();
         ctx.fillStyle = '#fff'; ctx.font = '11px "Dela Gothic One", sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(o.name, e.x, e.y - (yO - 12));
+
+        // === ROULETTE: One-Armed Bandit slot UI overhead ===
+        if(!iC && o.isRoulette && (o.rouletteSpinActive || (o.rouletteLockGlow && o.rouletteLockGlow > 0))) {
+            drawRouletteSlotUI(e.x, e.y - yO - 14, o);
+        }
+
+        // Restore real heroClass if we overrode it for the roulette spin visual
+        if(_rouletteSavedHero) o.heroClass = _rouletteSavedHero;
     });
+}
+
+// Draw the slot machine strip above a Roulette player.
+// cx,cy = top-center anchor (world-space). Owner data drives sequence/idx/lockGlow.
+function drawRouletteSlotUI(cx, cy, o) {
+    const isMe = (o.id === myId);
+    const baseAlpha = isMe ? 0.6 : 0.3;
+    const cellW = 44, cellH = 44, visibleCells = 5;
+    const stripW = cellW * visibleCells;
+    const stripH = cellH;
+    const top = cy - stripH - 6;
+    const left = cx - stripW / 2;
+
+    ctx.save();
+    ctx.globalAlpha = baseAlpha;
+
+    // Frame background
+    ctx.fillStyle = '#0a0a0f';
+    ctx.beginPath(); ctx.roundRect(left - 6, top - 6, stripW + 12, stripH + 12, 8); ctx.fill();
+
+    // Lock glow border
+    let glow = o.rouletteLockGlow || 0;
+    if(glow > 0) {
+        ctx.globalAlpha = baseAlpha + glow * 0.4;
+        ctx.strokeStyle = '#22ff88';
+        ctx.lineWidth = 4;
+        ctx.shadowColor = '#22ff88'; ctx.shadowBlur = 20;
+        ctx.beginPath(); ctx.roundRect(left - 6, top - 6, stripW + 12, stripH + 12, 8); ctx.stroke();
+        ctx.shadowBlur = 0;
+    } else {
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(left - 6, top - 6, stripW + 12, stripH + 12, 8); ctx.stroke();
+    }
+
+    ctx.globalAlpha = baseAlpha;
+
+    // Compute reel offset for smooth scrolling effect
+    const t = o.rouletteSpinT || 0, total = o.rouletteSpinTotal || 35.0;
+    const progress = Math.min(1, t / total);
+    // Show 5 portraits with the center one being the "current" face
+    const center = Math.floor(visibleCells / 2);
+    const currentHero = o.rouletteSpinVisualHero || o.heroClass;
+
+    // Build neighborhood from ROULETTE_POOL around currentHero
+    let baseIdx = ROULETTE_POOL.indexOf(currentHero);
+    if(baseIdx < 0) baseIdx = 0;
+
+    // Add a rolling offset for visual scroll (shifts each step)
+    const rollOffset = (t * 60) % cellW; // pixels of horizontal scroll feel
+
+    ctx.save();
+    // Clip to strip
+    ctx.beginPath(); ctx.rect(left, top, stripW, stripH); ctx.clip();
+
+    for(let i = -1; i <= visibleCells; i++) {
+        const heroIdx = ((baseIdx + i - center) % ROULETTE_POOL.length + ROULETTE_POOL.length) % ROULETTE_POOL.length;
+        const hero = ROULETTE_POOL[heroIdx];
+        const cellX = left + i * cellW - (o.rouletteSpinActive ? rollOffset : 0);
+        const cellY = top;
+        const isCenter = (i === center);
+
+        // Cell bg
+        ctx.fillStyle = isCenter ? '#fbbf24' : '#1c1c24';
+        ctx.fillRect(cellX + 2, cellY + 2, cellW - 4, cellH - 4);
+
+        // Hero color disc as the "icon"
+        ctx.fillStyle = HERO_DATA[hero].color;
+        ctx.beginPath(); ctx.arc(cellX + cellW/2, cellY + cellH/2 - 4, cellH/2 - 9, 0, 6.28); ctx.fill();
+        ctx.strokeStyle = isCenter ? '#000' : '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+        // Hero initial letter
+        ctx.fillStyle = isCenter ? '#000' : '#fff';
+        ctx.font = '900 11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(HERO_DATA[hero].name.charAt(0).toUpperCase(), cellX + cellW/2, cellY + cellH - 5);
+    }
+    ctx.restore();
+
+    // Center indicator arrows
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.moveTo(cx, top - 4); ctx.lineTo(cx - 6, top - 12); ctx.lineTo(cx + 6, top - 12); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx, top + stripH + 4); ctx.lineTo(cx - 6, top + stripH + 12); ctx.lineTo(cx + 6, top + stripH + 12); ctx.closePath(); ctx.fill();
+
+    ctx.restore();
 }
 
 function drawHair(p) {
@@ -5602,7 +5837,7 @@ function gLoop(t) {
         localHitStop -= dt; requestAnimationFrame(gLoop); return;
     }
     
-    updateMovement(dt); updateGameState(dt); if(!isHost) interpRemotePlayers(dt); updateHair(dt); updateUI(t);
+    updateMovement(dt); updateGameState(dt); if(!isHost) interpRemotePlayers(dt); updateHair(dt); tickRoulette(dt); updateUI(t);
     
     let isF = (Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y) > 10) || myPlayer.isFlying || localCombat.jubileeDash?.dTm > 0 || localCombat.misakiGrapple?.dTm > 0 || myPlayer.traceDashing;
     cam.targetZoom = myPlayer.isJuggernaut ? 0.45 : (isF ? 0.55 : 0.65);
