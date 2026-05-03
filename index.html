@@ -414,7 +414,8 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
                         <button id="btn-corsair" class="class-list-btn" onclick="selectHero('corsair')" style="--glow-color: #ea580c; background:url('https://64.media.tumblr.com/709c60a6224b5cffc4d68ec85ca88392/7592cf26fa3c5cea-1b/s500x750/11f1136fbd1cd0d58480f3d46eadcad3de6b791e.gif') center/cover;">Corsair</button>
                         <button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
                         <button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://gifdb.com/images/thumbnail/dice-roll-jump-scare-angry-birds-meme-bhr66fsxdyaipbt5.gif') center/95%;">Roulette!</button>
-                             <button id="bt-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>
+                             <button id="bt-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
+                           <button id="bt-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>  
                     </div>
 
                 </div>
@@ -492,9 +493,9 @@ const hexToRgb = hex => {
 
 const aeroImgs = [];
 const aeroUrls = [
-    'https://i.pinimg.com/originals/db/6c/25/db6c257fbbfb451244070c5b15b4f609.gif',
-    'https://i.pinimg.com/originals/f2/ff/82/f2ff82037fcc5a2305be0ee82d79e893.gif',
-    'https://i.redd.it/xmcldq048tvd1.gif'
+    'https://static.wikia.nocookie.net/frutigeraero/images/8/8c/HelveticaAquaAero1.jpg/revision/latest?cb=20240814061051',
+    'data:image/jpeg;base64,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',
+    'https://i.sstatic.net/D3y4G.jpg'
 ];
 aeroUrls.forEach(src => { let img = new Image(); img.crossOrigin="anonymous"; img.src = src; aeroImgs.push(img); });
 
@@ -556,7 +557,8 @@ const HERO_DATA = {
     tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Stance-Shifting Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']},
     rift:{name:'Rift',role:'Portal-Hopping Duelist',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']},
     roulette:{name:'Roulette',role:'Randomized Wildcard',hp:250,speed:'Variable',color:'#fbbf24',desc:'Not a hero — a randomized game mode. Spawns as a random hero. Every 35s OR on kill, the One-Armed Bandit spins and you transform into a different hero (no repeats). Full stats and abilities of whoever you become.',abilities:['Random Hero on Spawn','Auto-Swap Every 35s','Kill = Instant Re-Spin','Gold Outline (You are the Jackpot)']},
-mystery:{name:'???',role:'idk',hp:250,speed:'fast',color:'#000',desc:'idk',abilities:[]}
+bread:{name:'The Bread-Burner',role:'Toaster',hp:250,speed:'slow',color:'#000',desc:'idk',abilities:[]},
+         mystery:{name:'???',role:'idk',hp:250,speed:'fast',color:'#000',desc:'idk',abilities:[]}
 };
 
 // Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
@@ -1359,7 +1361,7 @@ function selectHero(id) {
     if(id === 'roulette') {
         const startHero = ROULETTE_POOL[Math.floor(Math.random() * ROULETTE_POOL.length)];
         myPlayer.isRoulette = true;
-        myPlayer.rouletteTimer = 20.0;
+        myPlayer.rouletteTimer =3.0;
         myPlayer.rouletteSpin = null;
         _applyHeroState(startHero, true);
         // Roulette-flavored panel info (overrides the per-hero text)
@@ -1433,7 +1435,7 @@ function startRouletteSpin() {
     if(myPlayer.rouletteSpin && myPlayer.rouletteSpin.active) return; // already spinning
     const finalHero = pickRouletteHero(myPlayer.heroClass);
     // Build a strobe sequence: 0.4s per face, 3.0s total = ~7-8 flashes ending on finalHero
-    const STEP = 0.4, DURATION = 3.0;
+    const STEP = 0.1, DURATION = 3.0;
     const steps = Math.round(DURATION / STEP);
     let seq = [];
     let last = myPlayer.heroClass;
@@ -1483,7 +1485,7 @@ function tickRoulette(dt) {
             myPlayer.rouletteLockGlow = 1.0;
             myPlayer.rouletteSpinVisualHero = null;
             _applyHeroState(sp.finalHero, true);
-            myPlayer.rouletteTimer = 3.0;
+            myPlayer.rouletteTimer = 10.0;
             sdEv({type:'roulette_lock', heroClass: sp.finalHero});
             sdUp();
         }
@@ -2722,8 +2724,20 @@ function chD(t, id) {
                 myPlayer.rouletteTimer = 20.0;
                 myPlayer.rouletteSpin = null;
                 myPlayer.rouletteSpinVisualHero = null;
-                t.heroClass = next; t.maxHp = HERO_DATA[next].hp * (activeServerMode === 'CHAOS' ? 12 : 1); t.hp = t.maxHp; t.color = HERO_DATA[next].color;
-                sdUp();
+                
+                t.heroClass = next; 
+                t.maxHp = HERO_DATA[next].hp * (activeServerMode === 'CHAOS' ? 12 : 1); 
+                t.hp = t.maxHp; 
+                t.color = HERO_DATA[next].color;
+                
+                // --- ADDED RESPAWN LOGIC ---
+                t.isDead = false;    // Adjust this to match your game's actual death flag
+                t.x = getSpawnX();   // Move them back to a valid spawn coordinate
+                t.y = getSpawnY(); 
+                t.visible = true;    // If you hide dead bodies, make them visible again
+                // ---------------------------
+
+                sdUp(); // Assuming this sends the state to the server/UI
             }
         }, 3000);
     }
@@ -6011,7 +6025,7 @@ function drawRouletteSlotUI(cx, cy, o) {
     ctx.globalAlpha = baseAlpha;
 
     // Compute reel offset for smooth scrolling effect
-    const t = o.rouletteSpinT || 0, total = o.rouletteSpinTotal || 35.0;
+    const t = o.rouletteSpinT || 0, total = o.rouletteSpinTotal || 3.0;
     const progress = Math.min(1, t / total);
     // Show 5 portraits with the center one being the "current" face
     const center = Math.floor(visibleCells / 2);
