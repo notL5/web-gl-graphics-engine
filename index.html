@@ -9,34 +9,230 @@
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <style>
-body{font-family:"Dela Gothic One",-apple-system,BlinkMacSystemFont,sans-serif;background-color:#09090b;color:#f4f4f5;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;overflow:hidden;user-select:none}
-.screen-wrapper{position:relative;z-index:10;width:95vw;max-width:1100px;height:90vh;border-radius:16px;padding:2px;background:linear-gradient(60deg,#ff0055,#ffaa00,#55ff00,#00ffaa,#0055ff,#aa00ff,#ff0055);background-size:300% 300%;animation:rainbowFlow 8s linear infinite}
-@keyframes rainbowStroke{0%{-webkit-text-stroke-color:#ff0055}20%{-webkit-text-stroke-color:#ffaa00}40%{-webkit-text-stroke-color:#55ff00}60%{-webkit-text-stroke-color:#00f0ff}80%{-webkit-text-stroke-color:#aa00ff}100%{-webkit-text-stroke-color:#ff0055}}
-.screen{display:none;background:#18181b;padding:2vh 2vw;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,0.8);height:100%;box-sizing:border-box;overflow:hidden;}
-.screen-wrapper.active .screen{display:flex;flex-direction:column;}.screen-wrapper.hidden{display:none}
-.lobby-title{text-align:center;font-style:italic;font-size:3.8rem;margin:0 0 1vh 0;font-weight:900;letter-spacing:1px;line-height:1;color:#000;-webkit-text-stroke:0.01px #ff0055;animation:rainbowStroke 8s linear infinite;text-shadow:3px 3px 0px rgba(0,0,0,0.5)}
-.lobby-container{display:flex;gap:1.5vw;text-align:left;align-items:stretch;flex-grow:1;min-height:0;}
-.lobby-col{flex:1;display:flex;flex-direction:column;gap:1.5vh;min-height:0;overflow-y:auto;}
-.col-box{background:#27272a;border:1px solid #3f3f46;border-radius:12px;display:flex;flex-direction:column;padding:1.5vh 1vw;box-sizing:border-box;}
-input[type="text"]{width:100%;padding:1vh 1vw;border-radius:8px;border:1px solid #3f3f46;background:#121212;color:#f4f4f5;box-sizing:border-box;font-size:1rem;transition:0.2s}
-input[type="text"]:focus{outline:none;border-color:#a855f7;box-shadow:0 0 8px rgba(168,85,247,0.4)}
-button{width:100%;padding:1vh;border-radius:8px;border:1px solid #52525b;background-color:#3f3f46;color:white;font-size:0.9rem;font-weight:600;cursor:pointer;transition:0.15s}
-button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button:active:not(:disabled){transform:scale(0.98)}button:disabled{opacity:0.4;cursor:not-allowed}
-.server-btn{flex:1;padding:1vh;font-size:0.85rem;background:#27272a;border:2px solid #3f3f46;color:#a1a1aa;border-radius:8px;font-weight:bold;cursor:pointer;transition:0.2s}
-.server-btn:hover:not(:disabled){background:#3f3f46;color:#f4f4f5}
-.server-btn.active{border-color:#a855f7;color:#fff;background:#3f3f46;box-shadow:0 0 10px rgba(168,85,247,0.4)}
-.team-btn{flex:1;padding:1vh;}.team-btn.red{background-color:#450a0a;border-color:#991b1b;color:#fca5a5}.team-btn.red.selected{background-color:#991b1b;color:white;box-shadow:0 0 10px #dc2626}
-.team-btn.blue{background-color:#172554;border-color:#1e40af;color:#bfdbfe}.team-btn.blue.selected{background-color:#1e40af;color:white;box-shadow:0 0 10px #2563eb}
-.char-preview-box{flex-grow:1;background:#121212;border:1px solid #3f3f46;border-radius:8px;margin:1.5vh 0;display:flex;justify-content:center;align-items:center;font-style:italic;color:#71717a;min-height:10vh;text-align:center;padding:1vh}
-.class-list-btn{background:#18181b;text-align:left;padding-left:0.6vw;font-weight:normal;border-color:#3f3f46;padding:0.5vh 0.5vw;font-size:0.8rem;}.class-list-btn.selected{background:#3f3f46;border-color:#a855f7;font-weight:bold}
-.roster-grid{display:flex;flex-direction:column;gap:0.4vh;width:100%;overflow-y:auto;}
-.color-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1vh;font-size:0.85rem;color:#a1a1aa}.color-row input[type="color"]{width:2vw;min-width:30px;height:2vw;min-height:30px;padding:0;border:none;border-radius:4px;cursor:pointer;background:transparent}
+/* Base Setup */
+body {
+    font-family: "Dela Gothic One", -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #050505;
+    background-image: radial-gradient(circle at 50% 50%, #1a1025 0%, #050505 100%);
+    color: #f4f4f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* The Rainbow Animated Border */
+.screen-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 95vw;
+    max-width: 1200px;
+    height: 90vh;
+    border-radius: 16px;
+    padding: 3px;
+    background: linear-gradient(60deg, #ff0055, #ffaa00, #55ff00, #00ffaa, #0055ff, #aa00ff, #ff0055);
+    background-size: 300% 300%;
+    animation: rainbowFlow 4s linear infinite;
+}
+@keyframes rainbowFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+/* The Glassmorphism Screen */
+.screen {
+    display: none;
+    background: rgba(15, 15, 20, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 3vh 2vw;
+    border-radius: 14px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.8);
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.screen-wrapper.active .screen { display: flex; flex-direction: column; }
+.screen-wrapper.hidden { display: none; }
+
+/* Typography */
+.lobby-title {
+    font-family: "Dela Gothic One", sans-serif;
+    text-align: center;
+    font-style: italic;
+    font-size: 3.5rem;
+    margin: 0 0 2vh 0;
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height: 1;
+    color: #000;
+    -webkit-text-stroke: 1px #a855f7;
+    text-shadow: 4px 4px 0px rgba(0,0,0,0.8);
+}
+
+/* 3-Column Layout Setup */
+.lobby-container {
+    display: flex;
+    gap: 1.5vw;
+    align-items: stretch;
+    flex-grow: 1;
+    min-height: 0;
+}
+.lobby-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+    min-height: 0;
+}
+
+/* Glassy Column Boxes - BRIGHTER OUTLINES FOR Y2K AESTHETIC */
+.col-box {
+    background: rgba(30, 30, 35, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4); 
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 2vh 1.5vw;
+    box-sizing: border-box;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Elements */
+input[type="text"] {
+    width: 100%;
+    padding: 1.2vh 1vw;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(0, 0, 0, 0.4);
+    color: #f4f4f5;
+    box-sizing: border-box;
+    font-family: "Dela Gothic One", sans-serif; 
+    font-size: 0.85rem;
+    transition: 0.2s;
+}
+input[type="text"]:focus { outline: none; border-color: #a855f7; background: rgba(0, 0, 0, 0.6); }
+
+/* Buttons */
+.server-btn {
+    flex: 1;
+    padding: 1vh;
+    font-family: "Dela Gothic One", sans-serif; 
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #a1a1aa;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.server-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.15); color: #fff; }
+.server-btn.active { border-color: #a855f7; color: #fff; background: rgba(168, 85, 247, 0.2); box-shadow: 0 0 10px rgba(168,85,247,0.3); }
+
+.team-btn { flex: 1; padding: 1vh; border-radius: 8px; border: 1px solid #52525b; font-weight: 600; cursor: pointer; transition: 0.15s; }
+.team-btn.red { background-color: #450a0a; border-color: #991b1b; color: #fca5a5; }
+.team-btn.red.selected { background-color: #991b1b; color: white; box-shadow: 0 0 10px #dc2626; }
+.team-btn.blue { background-color: #172554; border-color: #1e40af; color: #bfdbfe; }
+.team-btn.blue.selected { background-color: #1e40af; color: white; box-shadow: 0 0 10px #2563eb; }
+
+/* THE MASSIVE START BUTTON (Now with Hue Rotate Rainbow) */
+#btn-start-game {
+    width: 100%;
+    padding: 2vh;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Dela Gothic One', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: auto; 
+    background: linear-gradient(45deg, #a855f7, #ff0055);
+    color: white;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+    animation: hueRainbow 8s linear infinite, pulseGlow 2s infinite; 
+    transition: transform 0.1s, opacity 0.2s;
+}
+#btn-start-game:active:not(:disabled) { transform: scale(0.97); }
+#btn-start-game:disabled { opacity: 0.5; cursor: not-allowed; animation: none; background: #3f3f46; box-shadow: none; color: #a1a1aa;}
+
+@keyframes hueRainbow {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 15px rgba(168,85,247,0.4); }
+    50% { box-shadow: 0 0 30px rgba(255,0,85,0.7); }
+    100% { box-shadow: 0 0 15px rgba(168,85,247,0.4); }
+}
+
+/* --------- THE ROSTER GRID --------- */
+.roster-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 1fr;
+    gap: 1.5vh 1vw; 
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.class-list-btn {
+    font-family: 'Dela Gothic One', sans-serif;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 1vh 0.8vw; 
+    font-size: 0.8rem; 
+    text-transform: none; 
+    font-weight: 700;
+    border-radius: 12px; 
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    text-shadow: none; 
+    cursor: pointer;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    
+    /* Y2K PARTIAL DESATURATION */
+    filter: saturate(75%) brightness(0.8); 
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.class-list-btn:hover {
+    filter: saturate(89%) brightness(0.92);
+    transform: scale(1.01);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.class-list-btn.selected {
+    filter: saturate(100%) brightness(1.1);
+    border-color: var(--glow-color, #ffffff);
+    transform: scale(1.03); 
+    z-index: 2; 
+    box-shadow: 0 0 15px var(--glow-color, #ffffff), inset 0 0 15px rgba(0,0,0,0.4);
+}
+
+/* Customization & Info Elements */
+h3.section-header { margin:0 0 1.5vh 0; color:#a1a1aa; font-size:0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 800;}
+.char-preview-box { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); border-radius:8px; display:flex; justify-content:center; align-items:center; font-style:italic; color:#71717a; min-height:8vh; text-align:center; padding:1vh; font-size: 0.8rem; }
+.color-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1vh;font-size:0.85rem;color:#a1a1aa; font-weight: 600;}
+.color-row input[type="color"]{width:2vw;min-width:30px;height:2vw;min-height:30px;padding:0;border:none;border-radius:6px;cursor:pointer;background:transparent}
+.right-col-box { flex: 1; min-height: 0; overflow-y: auto; }
+
+/* IN-GAME HUD STYLES (Restored from Original File) */
 #game-container{display:none;position:relative;width:95vw;height:85vh;max-width:1400px;max-height:900px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid #27272a;background-color:#000;overflow:hidden;z-index:5}
-#game-container.active{display:block}canvas{display:block;width:100%;height:100%;background:transparent;cursor:crosshair;position:relative;z-index:5}
+#game-container.active{display:block}
+canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cursor:crosshair;position:relative;z-index:5}
 #scoreboard{position:absolute;top:0;left:0;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;padding:1vh 1vw;border-radius:0 0 12px 0;min-width:12vw;z-index:40;color:white;display:none;backdrop-filter:blur(4px);font-size:0.85rem}
 #scoreboard.active{display:block}.sb-row{display:flex;justify-content:space-between;padding:0.5vh 0;border-bottom:1px solid #3f3f46;font-size:0.9vw;font-weight:bold}.sb-row:last-child{border-bottom:none}
 #koth-ui{display:none;position:absolute;top:2vh;left:50%;transform:translateX(-50%);background:rgba(24,24,27,0.85);border:1px solid #3f3f46;border-radius:12px;padding:1vh 1.5vw;z-index:40;color:white;font-weight:bold;font-size:1.5vw;text-align:center;backdrop-filter:blur(4px);box-shadow:0 4px 15px rgba(0,0,0,0.5)}
-#chat-wrapper {position:absolute;left:0;bottom:0;width:18vw;min-width:220px;height:25vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:0 8px 0 0;display:flex;flex-direction:column;z-index:100;backdrop-filter:blur(4px);pointer-events:none;opacity:0.6;transition:opacity 0.2s}#chat-wrapper:hover,#chat-wrapper:focus-within{opacity:1}
+#chat-wrapper {position:absolute;left:0;bottom:0;width:18vw;min-width:220px;height:25vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:0 8px 0 0;display:flex;flex-direction:column;z-index:100;backdrop-filter:blur(4px);pointer-events:none;opacity:0.6;transition:opacity 0.2s}
+#chat-wrapper:hover,#chat-wrapper:focus-within{opacity:1}
 #chat-input{pointer-events:auto;}
 #chat-messages {flex-grow:1;overflow-y:auto;padding:1vh;color:white;font-size:0.85rem;display:flex;flex-direction:column;gap:5px;}
 #chat-input {border:none;border-top:1px solid #3f3f46;background:rgba(0,0,0,0.5);color:white;padding:1vh;font-size:0.85rem;border-radius:0 0 8px 8px;}
@@ -46,18 +242,24 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 #kill-feed{position:absolute;bottom:2vh;left:2vw;display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none;z-index:40}
 .kill-entry{background:rgba(24,24,27,0.85);padding:1vh 1vw;border-radius:8px;color:white;font-weight:bold;font-size:0.9rem;border:1px solid #3f3f46;animation:fadeOut 5s forwards}
 @keyframes fadeOut{0%{opacity:1}80%{opacity:1}100%{opacity:0}}
-#leave-btn-container{position:absolute;right:2vw;top:2vh;background:#18181b;border:2px solid #ef4444;color:#ef4444;padding:0.8vh 1.2vw;border-radius:8px;cursor:pointer;z-index:40;display:none;overflow:hidden;font-weight:bold;text-align:center;font-size:0.75rem;opacity:0.7;transition:opacity 0.2s}#leave-btn-container:hover{opacity:1}
-#leave-btn-container.active{display:block}#leave-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:#ef4444;z-index:-1;transition:width 0.05s linear}
+#leave-btn-container{position:absolute;right:2vw;top:2vh;background:#18181b;border:2px solid #ef4444;color:#ef4444;padding:0.8vh 1.2vw;border-radius:8px;cursor:pointer;z-index:40;display:none;overflow:hidden;font-weight:bold;text-align:center;font-size:0.75rem;opacity:0.7;transition:opacity 0.2s}
+#leave-btn-container:hover{opacity:1}
+#leave-btn-container.active{display:block}
+#leave-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:#ef4444;z-index:-1;transition:width 0.05s linear}
 #ability-ui{display:none;position:absolute;bottom:0;right:0;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:12px 0 0 0;padding:0.6vh 0.6vw;gap:0.3vw;z-index:40;backdrop-filter:blur(4px);flex-wrap:wrap;max-width:45vw;justify-content:flex-end;}
-#ability-ui.active{display:flex}.ability-slot{display:flex;flex-direction:column;align-items:center;width:6vw;min-width:75px;background:rgba(39,39,42,0.7);border-radius:8px;padding:1vh 0.5vw;border:1px solid #52525b;position:relative;overflow:hidden}
-.ability-slot .key{font-size:0.7rem;color:#a855f7;font-weight:bold;margin-bottom:0.5vh}.ability-slot .name{font-size:0.8rem;font-weight:600;text-align:center}.ability-slot .status{font-size:0.7rem;margin-top:0.5vh;color:#a1a1aa}
+#ability-ui.active{display:flex}
+.ability-slot{display:flex;flex-direction:column;align-items:center;width:6vw;min-width:75px;background:rgba(39,39,42,0.7);border-radius:8px;padding:1vh 0.5vw;border:1px solid #52525b;position:relative;overflow:hidden}
+.ability-slot .key{font-size:0.7rem;color:#a855f7;font-weight:bold;margin-bottom:0.5vh}
+.ability-slot .name{font-size:0.8rem;font-weight:600;text-align:center}
+.ability-slot .status{font-size:0.7rem;margin-top:0.5vh;color:#a1a1aa}
 .ability-slot .cooldown-overlay{position:absolute;bottom:0;left:0;width:100%;background:rgba(220,38,38,0.5);transition:height 0.1s;height:0%;pointer-events:none}
 #health-ui{display:none;position:absolute;bottom:1vh;left:50%;transform:translateX(-50%);width:22vw;min-width:220px;height:2.5vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:8px;overflow:hidden;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,0.4);backdrop-filter:blur(4px)}
-#health-ui.active{display:block}#health-fill{height:100%;width:100%;background:#22c55e;transition:width 0.2s ease-out,background-color 0.2s}#health-text{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1vw;font-weight:bold;color:white;text-shadow:1px 1px 2px rgba(0,0,0,0.8);pointer-events:none}
+#health-ui.active{display:block}
+#health-fill{height:100%;width:100%;background:#22c55e;transition:width 0.2s ease-out,background-color 0.2s}
+#health-text{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1vw;font-weight:bold;color:white;text-shadow:1px 1px 2px rgba(0,0,0,0.8);pointer-events:none}
 #ult-ui {display:none;position:absolute;bottom:4vh;left:50%;transform:translateX(-50%);width:14vw;min-width:140px;height:1.2vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:6px;overflow:hidden;z-index:40;}
 #ult-fill {width:0%;height:100%;background:#a855f7;transition:width 0.2s ease-out, background-color 0.2s;}
 #ult-text {position:absolute;top:0;left:0;width:100%;height:100%;text-align:center;font-size:0.75vw;font-weight:bold;display:flex;align-items:center;justify-content:center;color:white;pointer-events:none;}
-
 #aero-context-menu{display:none;position:absolute;z-index:200;background:#f0f0f0;border:1px solid #a0a0a0;box-shadow:2px 2px 6px rgba(0,0,0,0.3);font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-size:12px;color:#222;min-width:100px;padding:2px 0;border-radius:2px;user-select:none;}
 #aero-context-menu .ctx-item{display:flex;align-items:center;padding:3px 16px 3px 24px;cursor:default;white-space:nowrap;position:relative;}
 #aero-context-menu .ctx-item:hover{background:#91c9f7;color:#000;}
@@ -66,9 +268,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 #aero-context-menu .ctx-item .ctx-icon{position:absolute;left:4px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:12px;}
 #aero-context-menu .ctx-item .ctx-shortcut{margin-left:auto;padding-left:20px;color:#888;font-size:11px;}
 #aero-context-menu .ctx-separator{height:1px;background:#d0d0d0;margin:2px 2px;}
-/* Cursor stealth: when cursor hovers a UI overlay, fade out an area around it so it doesn't block the view */
 .cursor-stealth{--cx:-9999px;--cy:-9999px;pointer-events:none;-webkit-mask-image:radial-gradient(circle 200px at var(--cx) var(--cy), transparent 0%, transparent 55%, rgba(0,0,0,0.4) 78%, #000 100%);mask-image:radial-gradient(circle 199px at var(--cx) var(--cy), transparent 0%, transparent 55%, rgba(0,0,0,0.4) 78%, #000 100%);}
-/* Cursor-attached semicircle ammo/cooldown HUD (right-side arc) */
 #cursor-hud{position:absolute;pointer-events:none;z-index:60;width:24px;height:24px;margin-left:-17px;margin-top:-19px;display:none;}
 #cursor-hud svg{width:100%;height:100%;overflow:visible;display:block;}
 #cursor-hud .ch-spin{animation:chSpin 0.85s linear infinite;transform-origin:42px 42px;transform-box:fill-box;}
@@ -77,6 +277,7 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
 </head>
 <body>
 
+<!-- FULL GAME HUD (Restored) -->
 <div id="game-container">
     <canvas id="gameCanvas" width="800" height="600" oncontextmenu="return false;"></canvas>
     <div id="cursor-hud"></div>
@@ -151,86 +352,124 @@ button:hover:not(:disabled){background-color:#52525b;border-color:#71717a}button
     <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="health-text">150 / 150</div></div>
 </div>
 
+<!-- LOBBY UI -->
 <div id="screen-wrapper" class="screen-wrapper active">
     <div id="lobby-screen" class="screen">
         <h1 class="lobby-title">RIVALS</h1>
+        
         <div class="lobby-container">
-            <div class="lobby-col" style="flex: 1.1;">
-                <input type="text" id="playerName" placeholder="Enter Display Name">
-                <div class="server-selection" style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
-                    <button class="server-btn active" id="btn-srv-ffa" onclick="selectServer('FFA')">FFA Mode</button>
-                    <button class="server-btn" id="btn-srv-rvb" onclick="selectServer('RVB')">Red vs Blue</button>
-                    <button class="server-btn" id="btn-srv-koth" onclick="selectServer('KOTH')">KOTH Mode</button>
-                    <button class="server-btn" id="btn-srv-chaos" onclick="selectServer('CHAOS')" style="color:#f43f5e;">Chaos Mode</button>
-                    <button class="server-btn" id="btn-srv-jugg" onclick="selectServer('JUGG')" style="color:#eab308;">Juggernaut</button>
-                </div>
-                <div class="col-box" style="flex-grow: 1; margin-top:1.5vh;">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:1vh;border-bottom:1px solid #3f3f46;padding-bottom:1vh;">
-                        <span style="font-weight:600;">Server: <span id="display-server-name" style="color:#a855f7;">FFA Mode</span></span>
+            
+            <!-- COLUMN 1: LOBBY & SYSTEM -->
+            <div class="lobby-col" style="flex: 1;">
+                <div class="col-box" style="flex-grow: 1;">
+                    <h3 class="section-header">Lobby Setup</h3>
+                    <input type="text" id="playerName" placeholder="Enter Display Name">
+                    
+                    <div style="display:flex; gap:8px; margin-top:1.5vh; flex-wrap:wrap;">
+                        <button class="server-btn active" id="btn-srv-ffa" onclick="selectServer('FFA')"style="color:#ffaa27;">FFA Mode</button>
+               <button class="server-btn" id="btn-srv-rvb" onclick="selectServer('RVB')">
+  <span style="color: #d14747;">Red</span> vs <span style="color: #0354ff;">Blue</span>
+</button>
+                        <button class="server-btn" id="btn-srv-chaos" onclick="selectServer('CHAOS')" style="color:#f43f5e;">Chaos!</button>
                     </div>
-                    <div id="team-selector" style="display:none;margin-bottom:1.5vh;border-bottom:1px solid #3f3f46;padding-bottom:1.5vh;">
-                        <div style="display:flex;gap:10px;">
+
+                    <!-- Team Selector (Hidden by default, used for RVB) -->
+                    <div id="team-selector" style="display:none; margin-top:1.5vh; border-top:1px solid rgba(255,255,255,0.1); padding-top:1.5vh;">
+                        <div style="display:flex; gap:10px;">
                             <button id="btn-team-red" class="team-btn red" onclick="setTeam('red')">Red</button>
                             <button id="btn-team-blue" class="team-btn blue" onclick="setTeam('blue')">Blue</button>
                         </div>
                     </div>
-                    <div style="color:#a1a1aa;font-size:0.8rem;margin-bottom:5px;">Connected Players:</div>
-                    <ul id="lobby-player-list" style="list-style-type:none;padding:0;margin:0;flex-grow:1;color:#d4d4d8;display:flex;flex-direction:column;gap:5px;overflow-y:auto;max-height:20vh;"></ul>
-                </div>
-                <button id="btn-start-game" onclick="startGame()" disabled style="background:#27272a;font-size:1.1rem;margin-top:1.5vh;">Connecting...</button>
-            </div>
-            <div class="lobby-col" style="flex: 0.7;">
-                <div class="col-box" style="overflow:hidden;flex-grow:1;min-height:0;">
-                    <h3 style="margin:0 0 1vh 0;color:#a1a1aa;font-size:0.9rem;">Roster</h3>
-                    <div class="roster-grid">
-                        <button class="class-list-btn selected" id="btn-thorfinn" onclick="selectHero('thorfinn')">Thorfinn</button>
-                        <button class="class-list-btn" id="btn-trace" onclick="selectHero('trace')">Trace</button>
-                        <button class="class-list-btn" id="btn-blitz" onclick="selectHero('blitz')">Blitz</button>
-                        <button class="class-list-btn" id="btn-kendo" onclick="selectHero('kendo')">Kendo</button>
-                        <button class="class-list-btn" id="btn-rift" onclick="selectHero('rift')">Rift</button>
-                        <button class="class-list-btn" id="btn-misaki" onclick="selectHero('misaki')">Misaki</button>
-                        <button class="class-list-btn" id="btn-glitch" onclick="selectHero('glitch')">Glitch</button>
-                        <button class="class-list-btn" id="btn-aero" onclick="selectHero('aero')">Aero</button>
-                        <button class="class-list-btn" id="btn-jubilee" onclick="selectHero('jubilee')">Jubilee</button>
-                        <button class="class-list-btn" id="btn-corsair" onclick="selectHero('corsair')">Corsair</button>
-                        <button class="class-list-btn" id="btn-tim" onclick="selectHero('tim')">Tiny Tim</button>
-                        <button class="class-list-btn" id="btn-roulette" onclick="selectHero('roulette')" style="background:linear-gradient(135deg,#fbbf24,#dc2626);color:#000;font-weight:900;">🎰 Roulette</button>
+
+                    <div style="margin-top:2.5vh; border-top:1px solid rgba(255,255,255,0.1); padding-top:2vh; flex-grow:1; display:flex; flex-direction: column;">
+                        <div style="display:flex;justify-content:space-between; margin-bottom:1vh;">
+                            <span style="font-size:0.85rem; color:#a1a1aa; font-weight: 600;">Connected Players:</span>
+                            <span style="font-size:0.85rem; color:#a855f7; font-weight: 600;" id="display-server-name">FFA Mode</span>
+                        </div>
+                        
+                        <!-- Empty UL ready for real PeerJS player injection -->
+                        <ul id="lobby-player-list" style="list-style-type:none; padding:0; margin:0; flex-grow:1; color:#d4d4d8; font-size: 0.9rem; overflow-y:auto; max-height:20vh;"></ul>
                     </div>
                 </div>
+                
+                <!-- START BUTTON (Uses real function and starts disabled) -->
+                <button id="btn-start-game" onclick="startGame()" disabled>Connecting...</button>
             </div>
-            <div class="lobby-col" style="flex: 1.0;">
-                <div class="col-box" style="flex-shrink:0; align-items:center;">
-                    <h3 style="margin:0 0 1.5vh 0;color:#a1a1aa;font-size:0.9rem;">Customization</h3>
-                    <canvas id="previewCanvas" width="160" height="160" style="background:#121212;border:1px solid #3f3f46;border-radius:8px;margin-bottom:1.5vh;width:100%;aspect-ratio:1/1;"></canvas>
+            
+            <!-- COLUMN 2: THE ROSTER GRID -->
+            <div class="lobby-col" style="flex: 1.5;">
+                <div class="col-box" style="overflow:hidden; flex-grow:1;">
+                    <h3 class="section-header">Select Hero</h3>
+                    
+                    <div class="roster-grid">
+                        
+                        <button id="btn-trace" class="class-list-btn selected" onclick="selectHero('trace')" style="--glow-color: #a855f7; background:url('https://cdn.dribbble.com/userupload/20458852/file/original-68a5cddf4d8bad135c3791b2ebc891df.gif') center/cover;">Trace</button>
+                        <button id="btn-blitz" class="class-list-btn" onclick="selectHero('blitz')" style="--glow-color:#d4d4d8;background:url('https://i.imgur.com/2jH4ZiT.gif') center / 100% 160%; color:#fff;">Blitz</button>
+                        <button id="btn-kendo" class="class-list-btn" onclick="selectHero('kendo')" style="--glow-color:var(--kendoColorGlow, #dc2626); background:var(--kendoColorPrimary, #dc2626);">Kendo</button>
+                        <button id="btn-rift" class="class-list-btn" onclick="selectHero('rift')" style="--glow-color: #3b82f6; background:url('https://i.makeagif.com/media/7-22-2024/QhOTv4.gif') center/cover;">Rift</button>
+                        <button id="btn-misaki" class="class-list-btn" onclick="selectHero('misaki')" style="--glow-color: #fde047; background:url('https://giffiles.alphacoders.com/232/23298.gif') center/100% 160%; color:#fff;">Misaki</button>
+                        <button id="btn-glitch" class="class-list-btn" onclick="selectHero('glitch')" style="--glow-color: #22c55e; background:url('https://media.giphy.com/media/sULKEgDMX8LcI/giphy.gif') center/cover;">Glitch</button>
+                        <button id="btn-aero" class="class-list-btn" onclick="selectHero('aero')" style="--glow-color: #38bdf8; background:url('https://i.pinimg.com/originals/f2/ff/82/f2ff82037fcc5a2305be0ee82d79e893.gif') bottom/cover;">Aero</button>
+                        <button id="btn-jubilee" class="class-list-btn" onclick="selectHero('jubilee')" style="--glow-color: #ec4899; background:url('https://rguanime.wordpress.com/wp-content/uploads/2016/11/more-anime-fireworks-gif.gif');color:#fff;">Jubilee</button>
+                        <button id="btn-corsair" class="class-list-btn" onclick="selectHero('corsair')" style="--glow-color: #ea580c; background:url('https://64.media.tumblr.com/709c60a6224b5cffc4d68ec85ca88392/7592cf26fa3c5cea-1b/s500x750/11f1136fbd1cd0d58480f3d46eadcad3de6b791e.gif') center/cover;">Corsair</button>
+                        <button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
+                        <button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://gifdb.com/images/thumbnail/dice-roll-jump-scare-angry-birds-meme-bhr66fsxdyaipbt5.gif') center/95%;">Roulette!</button>
+                             <button id="bt-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>
+                    </div>
+
+                </div>
+            </div>
+            
+            <!-- COLUMN 3: DETAILS & CUSTOMIZATION -->
+            <div class="lobby-col" style="flex: 1; min-height: 0;">
+                
+                <!-- Top Half: Hero Lore & Stats -->
+                <div class="col-box right-col-box" style="margin-bottom: 0;">
+                    <h3 class="section-header">Hero Details</h3>
+                    <h2 id="info-name" style="margin:0 0 0.5vh 0; font-size:1.6rem; font-weight:900; font-family:'Dela Gothic One', sans-serif;">Trace</h2>
+                    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1vh;">
+                        <span id="info-role" style="font-size:0.85rem; font-weight:800; color:#f59e0b; text-transform: uppercase;">Brawler</span>
+                        <span id="info-stats" style="font-size:0.75rem; color:#a1a1aa; font-weight: bold; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px;">250 HP • Speed</span>
+                    </div>
+                    
+                    <div class="char-preview-box" id="info-desc" style="margin: 1vh 0; min-height: 8vh;">[]</div>
+                    
+                    <div style="font-weight:800; margin-bottom:0.5vh; color:#a1a1aa; font-size:0.75rem; text-transform: uppercase;">Core Abilities</div>
+                    <ul id="info-abilities" style="margin:0; padding-left:1.5vw; font-size:0.8rem; color:#d4d4d8; line-height:1.5;"></ul>
+                </div>
+
+                <!-- Bottom Half: ALL Customization Panels Restored -->
+                <div class="col-box right-col-box">
+                    <h3 class="section-header">Skin Customizer</h3>
+                    <canvas id="previewCanvas" width="160" height="160" style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; margin-bottom:1.5vh; width:100%; max-height: 12vh; object-fit: contain;"></canvas>
+                    
                     <div id="trace-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Bow Base</span><input type="color" id="tColorBow"></div><div class="color-row"><span>Neon Light</span><input type="color" id="tColorNeon"></div></div>
                     <div id="kisaki-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Body</span><input type="color" id="kColorBody"></div><div class="color-row"><span>Wing</span><input type="color" id="kColorW2"></div><div class="color-row"><span>Tips</span><input type="color" id="kColorW3"></div></div>
                     <div id="kendo-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Arrow</span><input type="color" id="kendoColorPrimary"></div><div class="color-row"><span>Glow</span><input type="color" id="kendoColorGlow"></div></div>
                     <div id="aero-custom-panel" style="display:none;width:100%;">
                         <div style="font-size:0.85rem;color:#a1a1aa;margin-bottom:0.5vh;">Custom Tab Image:</div>
-                        <input type="file" id="aeroBgUpload" accept="image/*" style="width:100%;font-size:0.75rem;padding:0.5vh;background:#18181b;color:#f4f4f5;border:1px solid #3f3f46;border-radius:4px;box-sizing:border-box;">
-                        <button onclick="clearAeroBg()" style="width:100%;padding:1vh;font-size:0.75rem;margin-top:1vh;background:#ef4444;border:none;border-radius:4px;cursor:pointer;color:#fff;">Clear Image</button>
+                        <input type="file" id="aeroBgUpload" accept="image/*" style="width:100%;font-size:0.75rem;padding:0.5vh;background:rgba(0,0,0,0.4);color:#f4f4f5;border:1px solid rgba(255,255,255,0.2);border-radius:4px;box-sizing:border-box;">
+                        <button onclick="clearAeroBg()" style="width:100%;padding:1vh;font-size:0.75rem;margin-top:1vh;background:#ef4444;border:none;border-radius:4px;cursor:pointer;color:#fff;font-family:'Unbounded', sans-serif;">Clear Image</button>
                     </div>
                     <div id="corsair-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Trim Color</span><input type="color" id="corsairColorTrim" value="#dc2626"></div></div>
                     <div id="tim-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Skin</span><input type="color" id="timColorSkin"></div><div class="color-row"><span>Antenna</span><input type="color" id="timColorAntenna"></div><div class="color-row"><span>Eyes</span><input type="color" id="timColorEyes"></div><div class="color-row"><span>Cannon Color</span><input type="color" id="timColorCannon"></div><div class="color-row"><span>Beam Color</span><input type="color" id="timColorBeam"></div></div>
                     <div id="generic-custom-panel" style="width:100%;text-align:center;font-style:italic;color:#71717a;font-size:0.85rem;">No customizations.</div>
                 </div>
-            </div>
-            <div class="lobby-col" style="flex: 0.6;">
-                <div class="col-box" style="padding: 1vh 0.7vw;">
-                    <h3 style="margin:0 0 0.7vh 0;color:#a1a1aa;font-size:0.8rem;">Info</h3>
-                    <h2 id="info-name" style="margin:0 0 0.4vh 0;font-size:1.2rem;font-weight:800;">Thorfinn</h2>
-                    <div id="info-role" style="font-size:0.8rem;font-weight:600;color:#f59e0b;margin-bottom:0.6vh;">Assassin</div>
-                    <div id="info-stats" style="font-size:0.75rem;color:#d4d4d8;margin-bottom:0.6vh;">250 HP • Speed</div>
-                    <div class="char-preview-box" id="info-desc" style="margin: 0.6vh 0; min-height: 8vh; font-size:0.7rem;">[]</div>
-                    <div style="font-weight:600;margin-bottom:0.5vh;color:#a1a1aa;font-size:0.7rem;">Abilities</div>
-                    <ul id="info-abilities" style="margin:0;padding-left:1.2vw;font-size:0.65rem;color:#d4d4d8;line-height:1.3;"></ul>
-                </div>
+
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    // This listens to EVERY input on the entire page
+    document.addEventListener('input', function(event) {
+        // Check if the input that changed is a color picker
+        if (event.target.type === 'color') {
+            // Create a CSS variable using the input's ID
+            document.documentElement.style.setProperty('--' + event.target.id, event.target.value);
+        }
+    });
 // ==========================================
 // PASTE YOUR CUSTOM MAP JSON INSIDE THESE BACKTICKS
 // ==========================================
@@ -253,13 +492,11 @@ const hexToRgb = hex => {
 
 const aeroImgs = [];
 const aeroUrls = [
-    '',
-    '',
-'data:image/jpeg;base64,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',
-    'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=400&q=80'
+    'https://i.pinimg.com/originals/db/6c/25/db6c257fbbfb451244070c5b15b4f609.gif',
+    'https://i.pinimg.com/originals/f2/ff/82/f2ff82037fcc5a2305be0ee82d79e893.gif',
+    'https://i.redd.it/xmcldq048tvd1.gif'
 ];
 aeroUrls.forEach(src => { let img = new Image(); img.crossOrigin="anonymous"; img.src = src; aeroImgs.push(img); });
-const healImg = new Image(); healImg.crossOrigin="anonymous"; healImg.src = 'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=400&q=80';
 
 let peer, isHost=false, connections=[], hostConnection, myId=null, hostInGame=false, lobbyPlayers={};
 let currentHostPeerId = null; // last known host peer id (for migration)
@@ -303,26 +540,27 @@ function applyShake(mag, dur) { sShake.mag = mag; sShake.timer = dur; sShake.max
 function doHitStop(dur) { localHitStop = dur; }
 
 let activeServerMode = 'FFA';
-const SERVER_IDS = { 'FFA': 'rvls-pub-ffa-v10', 'RVB': 'rvls-pub-rvb-v10', 'KOTH': 'rvls-pub-koth-v10', 'CHAOS': 'rvls-pub-chaos-v10', 'JUGG': 'rvls-pub-jugg-v10' };
+const SERVER_IDS = { 'FFA': 'rvls-pub-ffa-v10', 'RVB': 'rvls-pub-rvb-v10', 'KOTH': 'rvls-pub-koth-v10', 'CHAOS': 'rvls-pub-chaos-v10'};
 const SPAWN_POINTS = [ {x: 300, y: 300}, {x: 2900, y: 300}, {x: 300, y: 2100}, {x: 2900, y: 2100}, {x: 1600, y: 300}, {x: 1600, y: 2100}, {x: 800, y: 1200}, {x: 2400, y: 1200}, {x: 300, y: 1200}, {x: 2900, y: 1200} ];
 
 const HERO_DATA = {
-    trace:{name:'Trace',role:'Assassin',hp:250,speed:'Fast',color:'#a855f7',desc:'High-speed precision flanker utilizing geometric light arrows and unpredictable pathing.',abilities:['Vector Arrow (Hold L-Click to Draw Nodes)','Slipstream Dash (Hold Space to Draw Nodes)']},
+    trace:{name:'Trace',role:'Path-Making Striker',hp:250,speed:'Fast',color:'#a855f7',desc:'High-speed precision flanker utilizing geometric light arrows and unpredictable pathing.',abilities:['Vector Arrow (Hold L-Click to Draw Nodes)','Slipstream Dash (Hold Space to Draw Nodes)']},
     thorfinn:{name:'Thorfinn',role:'Assassin',hp:250,speed:'Fast',color:'#f59e0b',desc:'Dual-dagger close quarters high-mobility assassin.',abilities:['X-Slash','Throw Dagger','Dash']},
-    blitz:{name:'Blitz',role:'Assassin',hp:220,speed:'Fast',color:'#ffffff',desc:'Spatial illusionist capable of teleportation and stance swaps.',abilities:['Swap Stance','Handgun/Katana','Spatial Shift','Displace Grab','[ULT] Paradox Rift']},
-    kendo:{name:'Kendo',role:'Sniper',hp:250,speed:'Medium',color:'#ef4444',desc:'Tactical sniper with a ridable arrow and modular shield.',abilities:['Y-Arrow','Arrow Ride','Subsonic Shield']},
-    glitch:{name:'Glitch',role:'Support',hp:260,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
-    jubilee:{name:'Jubilee',role:'Damage Dealer',hp:220,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
-    misaki:{name:'Misaki and Kisaki',role:'Sniper',hp:260,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
-    corsair:{name:'Corsair',role:'Tank',hp:350,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
-    aero:{name:'Aero',role:'Controller',hp:230,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},    
-    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']},
-    rift:{name:'Rift',role:'Controller',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']},
-    roulette:{name:'Roulette',role:'Wildcard',hp:250,speed:'Variable',color:'#fbbf24',desc:'Not a hero — a randomized game mode. Spawns as a random hero. Every 35s OR on kill, the One-Armed Bandit spins and you transform into a different hero (no repeats). Full stats and abilities of whoever you become.',abilities:['Random Hero on Spawn','Auto-Swap Every 35s','Kill = Instant Re-Spin','Gold Outline (You are the Jackpot)']}
+    blitz:{name:'Blitz',role:'Teleporting Assassin',hp:220,speed:'Fast',color:'#ffffff',desc:'Spatial illusionist capable of teleportation and stance swaps.',abilities:['Swap Stance','Handgun/Katana','Spatial Shift','Displace Grab','[ULT] Paradox Rift']},
+    kendo:{name:'Kendo',role:'Guided Arrow Sniper',hp:250,speed:'Medium',color:'#ef4444',desc:'Tactical sniper with a ridable arrow and modular shield.',abilities:['Y-Arrow','Arrow Ride','Subsonic Shield']},
+    glitch:{name:'Glitch',role:'Matrix Clone Hacker',hp:260,speed:'Medium',color:'#22c55e',desc:'Hacker who controls matrix code clones and spread beams.',abilities:['Matrix Beam','Deploy Clone','Swap Clone']},
+    jubilee:{name:'Jubilee',role:'Explosive Brawler',hp:220,speed:'Medium',color:'#ec4899',desc:'Flashy area-denial DPS capable of wild rocket jumps!.',abilities:['Fireworks Show','Blast Dash']},
+    misaki:{name:'Misaki and Kisaki',role:'Trickshot Sniper',hp:260,speed:'Medium',color:'#f2a401',desc:'Deadly marksman bonded with a macaw that redirects shots.',abilities:['Heavy Sniper','Command Kisaki','Aim Mirror','Talon Grapple','Prism Flare']},
+    corsair:{name:'Corsair',role:'Heavy Artilery Tank',hp:350,speed:'Slow',color:'#8B4513',desc:'Stance-shifting artillery pirate. Manage cannon recoil for mobility and time perfect parries in close combat.',abilities:['Broadside Fireball (Cannon Mode)','Privateer Combo (On-Foot)','Iron Parry (On-Foot)','Shift Stance (Shift)']},
+    aero:{name:'Aero',role:'Browser Based Duelist',hp:230,speed:'Medium',color:'#0ea5e9',desc:'Digi-Web weapon thief with browser tab warfare. Spawns with no gun — steals weapons via context menu and fires them all at once.',abilities:['Draw Tab (Hold L-Click)','Close Tab (Edge Click)','Toggle Mode (1/2)','Copy (R-Click)','Paste (L-Click)']},    
+    tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Stance-Shifting Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']},
+    rift:{name:'Rift',role:'Portal-Hopping Duelist',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']},
+    roulette:{name:'Roulette',role:'Randomized Wildcard',hp:250,speed:'Variable',color:'#fbbf24',desc:'Not a hero — a randomized game mode. Spawns as a random hero. Every 35s OR on kill, the One-Armed Bandit spins and you transform into a different hero (no repeats). Full stats and abilities of whoever you become.',abilities:['Random Hero on Spawn','Auto-Swap Every 35s','Kill = Instant Re-Spin','Gold Outline (You are the Jackpot)']},
+mystery:{name:'???',role:'idk',hp:250,speed:'fast',color:'#000',desc:'idk',abilities:[]}
 };
 
 // Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
-const ROULETTE_POOL = ['trace','thorfinn','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift'];
+const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift'];
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
 let tCol = JSON.parse(localStorage.getItem('rivals_traceColors'))||{bow:'#3b0764',neon:'#a855f7'}; getEl('tColorBow').value=tCol.bow; getEl('tColorNeon').value=tCol.neon;
@@ -345,9 +583,9 @@ const saveCols = () => {
 ['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim','timColorSkin','timColorAntenna','timColorEyes','timColorCannon','timColorBeam'].forEach(id=>getEl(id).addEventListener('input',saveCols));
 
 let myPlayer = { 
-    id:null, name:getEl('playerName').value, heroClass:"thorfinn", team:"none", color:"#f59e0b", 
-    x:W/2, y:H/2, angle:0, hp:250, maxHp:250, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol,timColors:timCol},
-    kisakiDeployed:false, kisakiMirrorOn:false, kisakiMirrorAngle:0, blitzWeapon:'handgun', blitzAmmo:8, grabbedLocked:false, flicker:false,
+    id:null, name:getEl('playerName').value, heroClass:"trace", team:"none", color:"#f59e0b", 
+    x:W/2, y:H/2, z:0, jumpTimer:0, jumpDuration:0.4, angle:0, hp:250, maxHp:250, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol,timColors:timCol},
+    kisakiDeployed:false, kisakiMirrorOn:false, kisakiMirrorAngle:0, blitzWeapon:'handgun', blitzAmmo:8, blitzParryActive:false, blitzParryTimer:0, grabbedLocked:false, flicker:false,
     ultCharge: 0, hasUltAura: false, auraTimer: 0, isJuggernaut: false, aeroDrawing: false, aeroTabType: 1, traceShooting: false, traceNodes:[], traceDashing: false, traceDashNodes:[], traceFreeze: false,
     copycatWeapons: [], portalImmune: 0, speedBoost: 0, riftAmmo: 18,
     aeroContextMenu: false, aeroContextMenuTimer: 0, aeroContextMenuX: 0, aeroContextMenuY: 0, aeroContextMenuWorldX: 0, aeroContextMenuWorldY: 0, aeroPasting: false, aeroPasteFirstShot: false, aeroPasteTimers: {},
@@ -445,6 +683,109 @@ function getMatrixPat() {
     let p=ctx.createPattern(mCan,'repeat'); if(p&&p.setTransform)p.setTransform(new DOMMatrix().scale(0.35,0.35)); cachedMatrixPattern=p; cachedMatrixPatternAt=now; return cachedMatrixPattern;
 }
 
+// === SPACE PATTERN (Trace) — hyper-detailed cosmic field, cached per color ===
+// Hex (#rrggbb) -> baked 256x256 canvas + CanvasPattern. Twinkles via slow hue/alpha shift on the cached canvas.
+const _spacePatCache = {}; // { '#a855f7': { can, ctx, pattern, dropPhase, lastBakeAt, baseStars, planets } }
+function _hexToRgb(hex){ let h = hex.replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function _spaceInit(color){
+    const can = document.createElement('canvas'); can.width = can.height = 256;
+    const c2 = can.getContext('2d');
+    // Pre-generate stable star field + planet silhouettes so we only redraw twinkle layer each bake.
+    let stars = [];
+    for(let i=0;i<140;i++) stars.push({ x: Math.random()*256, y: Math.random()*256, r: Math.random()*1.4+0.2, phase: Math.random()*6.28, speed: 0.6 + Math.random()*1.6 });
+    let planets = [];
+    // Two distant planets at fixed positions
+    planets.push({ x: 60, y: 70, r: 18, ring: false });
+    planets.push({ x: 190, y: 180, r: 26, ring: true, ringTilt: 0.4 });
+    // Faint nebula blobs (also stable)
+    let neb = [];
+    for(let i=0;i<5;i++) neb.push({ x: Math.random()*256, y: Math.random()*256, r: 40 + Math.random()*60, a: 0.04 + Math.random()*0.05 });
+    return { can, ctx:c2, pattern:null, lastBakeAt:0, stars, planets, neb, color };
+}
+function _spaceBake(entry){
+    const c = entry.ctx, [r,g,b] = _hexToRgb(entry.color);
+    const tint = (a)=>`rgba(${r},${g},${b},${a})`;
+    // Deep space background tinted toward hero color
+    c.fillStyle = '#04030a'; c.fillRect(0,0,256,256);
+    // Subtle hero-color wash
+    c.fillStyle = tint(0.06); c.fillRect(0,0,256,256);
+    // Nebula blobs
+    entry.neb.forEach(n=>{
+        let grd = c.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+        grd.addColorStop(0, tint(n.a*2.2));
+        grd.addColorStop(0.6, tint(n.a*0.8));
+        grd.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = grd; c.beginPath(); c.arc(n.x,n.y,n.r,0,6.28); c.fill();
+    });
+    // Planets — silhouetted dark discs with hero-color rim light
+    entry.planets.forEach(p=>{
+        c.save();
+        // Rim glow
+        let rg = c.createRadialGradient(p.x, p.y, p.r*0.7, p.x, p.y, p.r*1.6);
+        rg.addColorStop(0, 'rgba(0,0,0,0)');
+        rg.addColorStop(0.5, tint(0.18));
+        rg.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = rg; c.beginPath(); c.arc(p.x,p.y,p.r*1.6,0,6.28); c.fill();
+        // Body
+        let bg = c.createRadialGradient(p.x - p.r*0.4, p.y - p.r*0.4, p.r*0.2, p.x, p.y, p.r);
+        bg.addColorStop(0, tint(0.45));
+        bg.addColorStop(0.4, '#0a0612');
+        bg.addColorStop(1, '#000');
+        c.fillStyle = bg; c.beginPath(); c.arc(p.x,p.y,p.r,0,6.28); c.fill();
+        // Surface bands
+        c.save(); c.beginPath(); c.arc(p.x,p.y,p.r,0,6.28); c.clip();
+        c.strokeStyle = tint(0.18); c.lineWidth = 1.2;
+        for(let i=-2;i<=2;i++){ c.beginPath(); c.ellipse(p.x, p.y+i*5, p.r*1.1, 1.8, 0, 0, 6.28); c.stroke(); }
+        c.restore();
+        // Ring
+        if(p.ring){
+            c.save(); c.translate(p.x,p.y); c.rotate(p.ringTilt);
+            c.strokeStyle = tint(0.55); c.lineWidth = 1.5;
+            c.beginPath(); c.ellipse(0,0,p.r*1.7,p.r*0.45,0,0,6.28); c.stroke();
+            c.strokeStyle = tint(0.25); c.lineWidth = 0.8;
+            c.beginPath(); c.ellipse(0,0,p.r*1.95,p.r*0.55,0,0,6.28); c.stroke();
+            c.restore();
+        }
+        c.restore();
+    });
+    // Twinkling stars — alpha modulated via time
+    const t = performance.now()/1000;
+    entry.stars.forEach(s=>{
+        const tw = 0.45 + Math.sin(t*s.speed + s.phase)*0.5;
+        const a = Math.max(0.05, Math.min(1, tw));
+        // White-ish core with hero-color halo on bigger stars
+        if(s.r > 0.9){
+            c.fillStyle = tint(a*0.35);
+            c.beginPath(); c.arc(s.x, s.y, s.r*2.4, 0, 6.28); c.fill();
+            // Cross sparkle
+            c.strokeStyle = tint(a*0.7); c.lineWidth = 0.5;
+            c.beginPath(); c.moveTo(s.x - s.r*3, s.y); c.lineTo(s.x + s.r*3, s.y);
+            c.moveTo(s.x, s.y - s.r*3); c.lineTo(s.x, s.y + s.r*3); c.stroke();
+        }
+        c.fillStyle = `rgba(255,255,255,${a})`;
+        c.beginPath(); c.arc(s.x, s.y, s.r, 0, 6.28); c.fill();
+    });
+    // A few drifting "shooting star" streaks for richness
+    for(let i=0;i<3;i++){
+        const sx = ((t*40 + i*97) % 320) - 32;
+        const sy = ((i*73 + Math.floor(t*15)) % 256);
+        const grad = c.createLinearGradient(sx, sy, sx+22, sy+8);
+        grad.addColorStop(0,'rgba(0,0,0,0)');
+        grad.addColorStop(1, tint(0.55));
+        c.strokeStyle = grad; c.lineWidth = 1.1;
+        c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx+22, sy+8); c.stroke();
+    }
+    entry.pattern = ctx.createPattern(entry.can, 'repeat');
+    entry.lastBakeAt = performance.now();
+}
+function getSpacePat(color){
+    color = color || '#a855f7';
+    let entry = _spacePatCache[color];
+    if(!entry){ entry = _spaceInit(color); _spacePatCache[color] = entry; _spaceBake(entry); return entry.pattern; }
+    if(performance.now() - entry.lastBakeAt > 90) _spaceBake(entry);
+    return entry.pattern;
+}
+
 const mapCanvas=document.createElement('canvas'); mapCanvas.width=W; mapCanvas.height=H; const mapCtx=mapCanvas.getContext('2d');
 
 // Halftone dot pattern canvas (baked once)
@@ -453,7 +794,7 @@ function bakeHalftone(){
     const hCtx=halftoneCanvas.getContext('2d');
     hCtx.clearRect(0,0,W,H);
     hCtx.fillStyle='rgba(0,0,0,0.3)';
-    const spacing=6;
+    const spacing=900000;
     for(let y=0;y<H;y+=spacing){
         for(let x=(y/spacing%2===0?0:spacing/2);x<W;x+=spacing){
             hCtx.beginPath();hCtx.arc(x,y,1.8,0,6.28);hCtx.fill();
@@ -487,12 +828,12 @@ function bakeMap() {
                 let isBlackWall = (cLow === '#000000' || cLow === '#000' || cLow === '#09090b' || cLow === '#0f172a');
                 if(isBlackWall){
                     mapCtx.strokeStyle = 'rgba(255,255,255,0.6)';
-                    mapCtx.lineWidth = 1;
+                    mapCtx.lineWidth = 0;
                     mapCtx.stroke();
                 }
                 if(cell.outlineColor){
                     mapCtx.strokeStyle = cell.outlineColor;
-                    mapCtx.lineWidth = cell.outlineWidth || 1;
+                    mapCtx.lineWidth = cell.outlineWidth || 0;
                     mapCtx.stroke();
                 } 
             }
@@ -504,7 +845,7 @@ function bakeMap() {
         mapCtx.fillRect(27*50,0,4*50,H); 
         mapCtx.fillRect(33*50,0,4*50,H); 
         mapCtx.strokeStyle='#0ea5e9'; 
-        mapCtx.lineWidth=6;
+        mapCtx.lineWidth=0;
         [28,30,34,36].forEach(c=>{mapCtx.beginPath();mapCtx.moveTo(c*50,0);mapCtx.lineTo(c*50,H);mapCtx.stroke();});
         
         genProcWalls().forEach(w=>{
@@ -514,7 +855,7 @@ function bakeMap() {
             // Only outline black wall blocks - thin smooth One Piece style
             if(w.type === 'black_gloss') {
                 mapCtx.strokeStyle = 'rgba(255,255,255,0.55)';
-                mapCtx.lineWidth = 100;
+                mapCtx.lineWidth = 0;
                 mapCtx.lineJoin = 'round';
                 mapCtx.stroke();
             }
@@ -553,16 +894,16 @@ let localCombat = {
     glitchShoot:{cd:0,maxCd:0.6}, glitchClone:{cd:0,maxCd:2.0}, glitchSwap:{cd:0,maxCd:2.0},
     jubileePrimary:{cd:0,maxCd:1.2}, jubileeDash:{cd:0,maxCd:5.0,delay:0,dTm:0,ang:0,spd:0,dr:0}, 
     misakiShoot:{cd:0,maxCd:1.8}, misakiGrapple:{cd:0,maxCd:6.0,dTm:0,ang:0,spd:1800}, misakiFlare:{cd:0,maxCd:10.0},
-    blitzPrimary:{cd:0,rTm:0}, blitzTp:{ch:3,maxCh:3,cds:[0,0,0],maxCd:4.0,dTm:0,dx:0,dy:0}, blitzGrab:{cd:0,maxCd:10.0}, 
+    blitzPrimary:{cd:0,rTm:0}, blitzParry:{cd:0,maxCd:5.0}, blitzTp:{ch:3,maxCh:3,cds:[0,0,0],maxCd:4.0,dTm:0,dx:0,dy:0}, blitzGrab:{cd:0,maxCd:10.0}, 
     mQ:false, m1:false,
     traceShoot:{cd:0,maxCd:1.0}, traceDash:{cd:0,maxCd:4.0,active:false,path:[],idx:0},
     aeroPaste:{cd:0,maxCd:0.8}, aeroCopy:{cd:0,maxCd:0},
     corsairPrimary:{cd:0,maxCd:2.0}, corsairParry:{cd:0,maxCd:6.0}, corsairCombo:{cd:0,maxCd:0.4},
     timPrimary:{cd:0,maxCd:0.1}, timVents:{cd:0,maxCd:2.0}, timUlt:{cd:0,maxCd:0.0},
     riftPrimary: { cd: 0, maxCd: 0.66, ammo: 18, rTm: 0, burstCount: 0, burstTimer: 0 },
-    riftOrb: { cd: 0, maxCd: 3.0 },
-    riftJab: { cd: 0, maxCd: 6.0 },
-    riftShift: { charges: 2, maxCharges: 2, cds: [0, 0], maxCd: 5.0 }
+    riftOrb: { cd: 0, maxCd: 2.0 },
+    riftJab: { cd: 0, maxCd: 2.0 },
+    riftShift: { charges: 1, maxCharges: 1, cds: [0, 0], maxCd: 4.0 }
 };
 
 function resetAllCooldowns() {
@@ -583,7 +924,7 @@ function resetAllCooldowns() {
     myPlayer.daggers = 2;
 }
 
-let vfx=[], arrowTrails={}, impactFlashTimer=0;
+let vfx=[], arrowTrails={}, traceArrowTrails={}, impactFlashTimer=0;
 const wrap=getEl('screen-wrapper'), gCon=getEl('game-container'), can=getEl('gameCanvas'), ctx=can.getContext('2d'), abUi=getEl('ability-ui'), hlUi=getEl('health-ui');
 let lTime=performance.now(), sMx=0, sMy=0, mDwn=false;
 const abilitySlotEls=Array.from(document.querySelectorAll('.ability-slot'));
@@ -646,7 +987,8 @@ function drawPrev() {
         pCtx.save();
         pCtx.translate(15, 0);
         let bC = o.customization?.traceColors?.bow || '#3b0764';
-        pCtx.strokeStyle = bC;
+        let _spw = getSpacePat(nC);
+        pCtx.strokeStyle = _spw || bC;
         pCtx.lineWidth = 4;
         pCtx.lineCap = 'round';
         pCtx.beginPath();
@@ -1106,6 +1448,12 @@ function startRouletteSpin() {
     };
     // Visually shapeshift to the first face immediately (no stat change during spin — stats locked at end)
     myPlayer.rouletteSpinVisualHero = seq[0];
+    // Mirror flat fields onto myPlayer so the LOCAL renderer (which reads gameState.players[myId] === myPlayer)
+    // can also display the slot UI. Without this only remote viewers (who get the broadcast packet) saw it.
+    myPlayer.rouletteSpinActive = true;
+    myPlayer.rouletteSpinT = 0;
+    myPlayer.rouletteSpinTotal = DURATION;
+    myPlayer.rouletteLockGlow = 0;
     sdEv({type:'roulette_spin_start', finalHero: finalHero, sequence: seq, stepDur: STEP});
     sdUp();
 }
@@ -1115,15 +1463,24 @@ function tickRoulette(dt) {
     const sp = myPlayer.rouletteSpin;
     if(sp && sp.active) {
         sp.t += dt;
+        // Mirror to flat fields every frame so local + remote renderers stay in sync
+        myPlayer.rouletteSpinActive = true;
+        myPlayer.rouletteSpinT = sp.t;
+        myPlayer.rouletteSpinTotal = sp.total;
         let newIdx = Math.min(sp.sequence.length - 1, Math.floor(sp.t / sp.stepDur));
         if(newIdx !== sp.idx) {
             sp.idx = newIdx;
             myPlayer.rouletteSpinVisualHero = sp.sequence[sp.idx];
+            sdUp();
         }
+        // Force-send minimal state every frame while spinning so all peers see it
+        sdUp();
         if(sp.t >= sp.total) {
             // LOCK IN — actually swap stats/abilities
             sp.active = false;
             sp.lockGlow = 1.0;
+            myPlayer.rouletteSpinActive = false;
+            myPlayer.rouletteLockGlow = 1.0;
             myPlayer.rouletteSpinVisualHero = null;
             _applyHeroState(sp.finalHero, true);
             myPlayer.rouletteTimer = 3.0;
@@ -1132,7 +1489,7 @@ function tickRoulette(dt) {
         }
         return;
     }
-    if(sp && sp.lockGlow > 0) sp.lockGlow = Math.max(0, sp.lockGlow - dt);
+    if(sp && sp.lockGlow > 0) { sp.lockGlow = Math.max(0, sp.lockGlow - dt); myPlayer.rouletteLockGlow = sp.lockGlow; }
     // Tick the 35s timer
     myPlayer.rouletteTimer = (myPlayer.rouletteTimer ?? 20.0) - dt;
     if(myPlayer.rouletteTimer <= 0) {
@@ -1246,7 +1603,7 @@ function selectServer(mode) {
     document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
     getEl('btn-srv-' + mode.toLowerCase()).classList.add('active');
     
-    let modeNames = { 'FFA': 'FFA Mode', 'RVB': 'Red vs Blue', 'KOTH': 'King of the Hill', 'CHAOS': 'Chaos Mode', 'JUGG': 'Juggernaut Mode' };
+    let modeNames = { 'FFA': 'FFA Mode', 'RVB': 'Red vs Blue', 'KOTH': 'King of the Hill', 'CHAOS': 'Chaos Mode'};
     getEl('display-server-name').innerText = modeNames[mode];
     
     if (mode === 'RVB' || mode === 'KOTH') { 
@@ -1533,7 +1890,7 @@ function becomeHost(mode, srvId, opts) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    let last = localStorage.getItem('rivals_lastHero') || 'thorfinn';
+    let last = localStorage.getItem('rivals_lastHero') || 'trace';
     selectHero(last); selectServer('FFA');
 });
 
@@ -1750,7 +2107,7 @@ function sdUp() {
         grabbedLocked:myPlayer.grabbedLocked, daggers:myPlayer.daggers, kills:myPlayer.kills, deaths:myPlayer.deaths, 
         slashAnimTimer:myPlayer.slashAnimTimer, arrowActive:myPlayer.arrowActive, targetX:myPlayer.targetX, targetY:myPlayer.targetY, 
         kisakiDeployed:myPlayer.kisakiDeployed, kisakiMirrorOn:myPlayer.kisakiMirrorOn, kisakiMirrorAngle:myPlayer.kisakiMirrorAngle, 
-        blitzWeapon:myPlayer.blitzWeapon, blitzAmmo:myPlayer.blitzAmmo, aeroDrawing:myPlayer.aeroDrawing, aeroTabType:myPlayer.aeroTabType, aeroContextMenu:myPlayer.aeroContextMenu||false, aeroContextMenuWorldX:myPlayer.aeroContextMenuWorldX||0, aeroContextMenuWorldY:myPlayer.aeroContextMenuWorldY||0, 
+        blitzWeapon:myPlayer.blitzWeapon, blitzAmmo:myPlayer.blitzAmmo, blitzParryActive:myPlayer.blitzParryActive||false, z:myPlayer.z||0, aeroDrawing:myPlayer.aeroDrawing, aeroTabType:myPlayer.aeroTabType, aeroContextMenu:myPlayer.aeroContextMenu||false, aeroContextMenuWorldX:myPlayer.aeroContextMenuWorldX||0, aeroContextMenuWorldY:myPlayer.aeroContextMenuWorldY||0, 
         invulnerable:myPlayer.invulnerable||false, copycatWeapons:myPlayer.copycatWeapons, aeroContextMenu:myPlayer.aeroContextMenu||false,
         corsairStance:myPlayer.corsairStance||'cannon', corsairComboStep:myPlayer.corsairComboStep||0, corsairParryActive:myPlayer.corsairParryActive||false, corsairCannonX:myPlayer.corsairCannonX||0, corsairCannonY:myPlayer.corsairCannonY||0,
         portalImmune:myPlayer.portalImmune, speedBoost:myPlayer.speedBoost,
@@ -1773,6 +2130,7 @@ function sdEv(e) {
 function dmgTk(t, amt, aId) {
     if (t.invulnerable) return 0;
     let fA = amt;
+    if (t.heroClass === 'blitz' && t.blitzParryActive) { fA *= 0.5; }
     if(t.heroClass === 'corsair' && t.corsairStance === 'cannon') fA *= 0.7; // 30% damage reduction in cannon mode
     if (activeServerMode === 'JUGG' && aId === gameState.juggernautId) fA *= 2;
     t.hp -= fA;
@@ -1883,6 +2241,12 @@ window.addEventListener('keydown', e => {
     
     if(k === 'e' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
         if(myPlayer.heroClass === 'corsair' && myPlayer.corsairStance === 'foot' && localCombat.corsairParry.cd <= 0) { myPlayer.corsairParryActive = true; myPlayer.corsairParryTimer = 0.5; localCombat.corsairParry.cd = (activeServerMode==='CHAOS')?0.05:6.0; sdEv({type:'corsair_parry_start'}); sdUp(); }
+        else if(myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'katana' && (localCombat.blitzParry?.cd||0) <= 0) {
+            if(!localCombat.blitzParry) localCombat.blitzParry={cd:0,maxCd:5.0};
+            myPlayer.blitzParryActive = true; myPlayer.blitzParryTimer = 0.35;
+            localCombat.blitzParry.cd = (activeServerMode==='CHAOS')?0.05:5.0;
+            sdEv({type:'blitz_parry_start'}); sdUp();
+        }
         else if(myPlayer.heroClass === 'kendo') trKndS();
         else if(myPlayer.heroClass === 'glitch') trGlS();
         else if(myPlayer.heroClass === 'blitz') trBlG();
@@ -2178,6 +2542,122 @@ function cDm(a, t) {
     return A && T && A.team !== T.team;
 }
 
+function riftSegmentCircleHitT(ax, ay, bx, by, cx, cy, r) {
+    let dx = bx - ax, dy = by - ay;
+    let fx = ax - cx, fy = ay - cy;
+    let a = dx*dx + dy*dy;
+    if(a < 0.0001) return (Math.hypot(ax - cx, ay - cy) <= r) ? 0 : null;
+    let b = 2 * (fx*dx + fy*dy);
+    let c = fx*fx + fy*fy - r*r;
+    if(c <= 0) return 0;
+    if((bx - cx)*(bx - cx) + (by - cy)*(by - cy) <= r*r) return 1;
+    let disc = b*b - 4*a*c;
+    if(disc < 0) return null;
+    disc = Math.sqrt(disc);
+    let t1 = (-b - disc) / (2*a), t2 = (-b + disc) / (2*a);
+    if(t1 >= 0 && t1 <= 1) return t1;
+    if(t2 >= 0 && t2 <= 1) return t2;
+    return null;
+}
+
+function getRiftPortalMate(portal) {
+    if(!portal) return null;
+    let mates = gameState.projectiles
+        .filter(p => p.type === 'rift_portal' && p.ownerId === portal.ownerId && p.id !== portal.id && p.size > 0 && (p.uses || 0) < 5)
+        .sort((a,b) => (b.createTime || 0) - (a.createTime || 0));
+    return mates[0] || null;
+}
+
+function findRiftPortalTraversal(x, y, lastX, lastY, extraRadius = 0) {
+    let portals = gameState.projectiles.filter(p => p.type === 'rift_portal' && p.size > 0 && (p.uses || 0) < 5);
+    let best = null, bestT = Infinity;
+    for(let portal of portals) {
+        let mate = getRiftPortalMate(portal);
+        if(!mate) continue;
+        let t = riftSegmentCircleHitT(lastX, lastY, x, y, portal.x, portal.y, (portal.size || 100) / 2 + extraRadius);
+        if(t !== null && t < bestT) { bestT = t; best = {entered: portal, dest: mate, t}; }
+    }
+    return best;
+}
+
+function getRiftPortalExitPoint(portal, dx = 0, dy = 0, margin = 30) {
+    let mag = Math.hypot(dx, dy);
+    let angles = [];
+    if(mag > 0.01) angles.push(Math.atan2(dy, dx));
+    for(let a = 0; a < Math.PI * 2; a += Math.PI / 4) angles.push(a);
+    let dist = (portal.size || 100) / 2 + margin;
+    for(let a of angles) {
+        let nx = portal.x + Math.cos(a) * dist, ny = portal.y + Math.sin(a) * dist;
+        if(nx > 15 && nx < W - 15 && ny > 15 && ny < H - 15 && !iW(nx, ny)) return {x:nx, y:ny};
+    }
+    if(!iW(portal.x, portal.y)) return {x:portal.x, y:portal.y};
+    return gnV(portal.x, portal.y);
+}
+
+function tryTeleportPlayerRiftPortal(startX, startY, moveX = 0, moveY = 0) {
+    if(myPlayer.portalImmune > 0) return false;
+    let hit = findRiftPortalTraversal(myPlayer.x, myPlayer.y, startX, startY, 18);
+    if(!hit) return false;
+    let exit = getRiftPortalExitPoint(hit.dest, moveX, moveY, 24);
+    myPlayer.x = exit.x; myPlayer.y = exit.y;
+    myPlayer.portalImmune = 0.75;
+    if(!cDm(myId, hit.entered.ownerId)) myPlayer.speedBoost = 1.5;
+    sdEv({type: 'rift_portal_use', p1Id: hit.entered.id, p2Id: hit.dest.id});
+    return true;
+}
+
+function getProjectilePortalRadius(p) {
+    if(!p) return 8;
+    if(p.type === 'rift_orb') return 16;
+    if(p.type === 'dash_bomb' || p.type === 'bomblet') return 14;
+    if(p.type === 'kinetic_arrow') return 12;
+    return 8;
+}
+
+function getProjectileBaseLife(p) {
+    if(p.maxLife !== undefined && p.maxLife > 0) return p.maxLife;
+    if(p._baseLife !== undefined && p._baseLife > 0) return p._baseLife;
+    const defaults = {rift_bullet:1.5, blitz_bullet:0.8, sniper_bullet:2.0, rift_orb:5.0, firework:0.6, kinetic_arrow:3.0, dash_bomb:0.3, bomblet:0.15, matrix_beam:1.1};
+    return defaults[p.type] || (p.life !== undefined && p.life > 0 ? p.life : 2.0);
+}
+
+function getProjectileNextPoint(p, dt, sm = 1) {
+    if(p.vx !== undefined && p.vy !== undefined) return {x: p.x + p.vx * sm * dt, y: p.y + p.vy * sm * dt};
+    if(p.speed !== undefined && p.angle !== undefined) return {x: p.x + Math.cos(p.angle) * p.speed * sm * dt, y: p.y + Math.sin(p.angle) * p.speed * sm * dt};
+    return null;
+}
+
+function queueRiftPortalProjectile(p, entered, dest) {
+    if(!gameState.portalPending) gameState.portalPending = [];
+    let vx = p.vx !== undefined ? p.vx : (p.speed !== undefined && p.angle !== undefined ? Math.cos(p.angle) * p.speed : 0);
+    let vy = p.vy !== undefined ? p.vy : (p.speed !== undefined && p.angle !== undefined ? Math.sin(p.angle) * p.speed : 0);
+    gameState.portalPending.push({
+        proj: p,
+        entryId: entered.id,
+        exitId: dest.id,
+        portalOwnerId: entered.ownerId,
+        timer: 0.66,
+        homingTargetId: null,
+        homingIsClone: false,
+        baseLife: getProjectileBaseLife(p),
+        exitDx: vx,
+        exitDy: vy
+    });
+}
+
+function tryQueueProjectileRiftPortal(p, dt, sm = 1) {
+    if(!p || p.type === 'rift_portal') return false;
+    if(p.type === 'blitz_grab_manager' || p.type === 'aero_tab' || p.type === 'kisaki' || p.type === 'tim_core_beam') return false;
+    if(p._portalCd && p._portalCd > 0) { p._portalCd -= dt; return false; }
+    let next = getProjectileNextPoint(p, dt, sm);
+    if(!next) return false;
+    let hit = findRiftPortalTraversal(next.x, next.y, p.x, p.y, getProjectilePortalRadius(p));
+    if(!hit) return false;
+    queueRiftPortalProjectile(p, hit.entered, hit.dest);
+    return true;
+}
+
+
 function brK(k, v) {
     let K = k ? gameState.players[k] : null;
     let V = gameState.players[v];
@@ -2333,6 +2813,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
         for(let c of gameState.clones)if(cDm(sId,c.ownerId)&&Math.hypot(c.x-hx,c.y-hy)<range&&!c.invulnerable){dmgTk(c,dmg,sId);sendHitmarker(sId,c,dmg);}
     }
     else if(e.type==='corsair_parry_start'){s.corsairParryActive=true;s.corsairParryTimer=0.5;}
+    else if(e.type==='blitz_parry_start'){s.blitzParryActive=true;s.blitzParryTimer=0.35;}
     else if(e.type==='corsair_drop_cannon'){
         // Remove old cannon for this player
         gameState.corsairCannons = (gameState.corsairCannons||[]).filter(c=>c.ownerId!==sId);
@@ -2437,7 +2918,10 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
         let p1 = gameState.projectiles.find(p => p.id === e.p1Id);
         let p2 = gameState.projectiles.find(p => p.id === e.p2Id);
         if(p1 && p2) {
-            p1.uses++; p2.uses++;
+            // Increment shared use counter (one charge per traversal, regardless of which portal entered)
+            let nextUses = Math.max(p1.uses, p2.uses) + 1;
+            p1.uses = nextUses; p2.uses = nextUses;
+            // Visual shrink: 100 -> 84 -> 68 -> 52 -> 36 -> break at 5
             p1.size = Math.max(20, 100 - p1.uses*16);
             p2.size = Math.max(20, 100 - p2.uses*16);
             if(p1.uses >= 5) {
@@ -2602,12 +3086,18 @@ function updateMovement(dt) {
     }
     
     if(myPlayer.heroClass === 'jubilee') {
+        if(myPlayer.jumpTimer > 0) {
+            myPlayer.jumpTimer = Math.max(0, myPlayer.jumpTimer - dt);
+            let prog = 1 - (myPlayer.jumpTimer / (myPlayer.jumpDuration||0.4));
+            myPlayer.z = Math.sin(prog * Math.PI) * 90;
+        } else { myPlayer.z = 0; }
         if(localCombat.jubileeDash.delay > 0) {
             localCombat.jubileeDash.delay -= dt;
             if(localCombat.jubileeDash.delay <= 0) {
                 myPlayer.isFlying = true; localCombat.jubileeDash.dTm = 0.4; localCombat.jubileeDash.spd = 1125;
                 localCombat.jubileeDash.ang = Math.atan2(myPlayer.targetY - myPlayer.y, myPlayer.targetX - myPlayer.x);
                 localCombat.jubileeDash.dr = 3;
+                myPlayer.jumpTimer = 0.4; myPlayer.jumpDuration = 0.4;
             }
         }
         if(localCombat.jubileeDash.dTm > 0) {
@@ -2647,6 +3137,7 @@ function updateMovement(dt) {
             if(myPlayer.slashAnimTimer > 0) myPlayer.slashAnimTimer -= dt;
             if(myPlayer.portalImmune > 0) myPlayer.portalImmune -= dt;
             if(myPlayer.speedBoost > 0) myPlayer.speedBoost -= dt;
+            let portalStartX = myPlayer.x, portalStartY = myPlayer.y;
             
             if(ds > 0.1) {
                 let nx = myPlayer.x + localCombat.dash.v.x, ny = myPlayer.y + localCombat.dash.v.y;
@@ -2654,6 +3145,7 @@ function updateMovement(dt) {
                 if(!iW(myPlayer.x, ny)) myPlayer.y = ny; else localCombat.dash.v.y = 0;
                 localCombat.dash.v.x *= 0.82; localCombat.dash.v.y *= 0.82;
                 md = wM = true;
+                if(tryTeleportPlayerRiftPortal(portalStartX, portalStartY, localCombat.dash.v.x, localCombat.dash.v.y)) md = wM = true;
                 if(ds < 5 && localCombat.dash.rec <= 0) localCombat.dash.rec = 0.3;
             }
             
@@ -2690,22 +3182,8 @@ function updateMovement(dt) {
                 if(!iW(myPlayer.x + mx, myPlayer.y)) { myPlayer.x += mx; if(mx !== 0) md = wM = true; }
                 if(!iW(myPlayer.x, myPlayer.y + my)) { myPlayer.y += my; if(my !== 0) md = wM = true; }
 
-                if (myPlayer.portalImmune <= 0 && (mx !== 0 || my !== 0)) {
-                    let portals = gameState.projectiles.filter(p => p.type === 'rift_portal');
-                    if (portals.length === 2) {
-                        let entered = null, dest = null;
-                        if(Math.hypot(myPlayer.x - portals[0].x, myPlayer.y - portals[0].y) < portals[0].size/2) { entered = portals[0]; dest = portals[1]; }
-                        else if(Math.hypot(myPlayer.x - portals[1].x, myPlayer.y - portals[1].y) < portals[1].size/2) { entered = portals[1]; dest = portals[0]; }
-                        
-                        if(entered && dest) {
-                            myPlayer.x = dest.x; myPlayer.y = dest.y;
-                            myPlayer.portalImmune = 1.5;
-                            if(!cDm(myId, entered.ownerId)) myPlayer.speedBoost = 1.5;
-                            // Player entry consumes ALL 5 uses, breaking both portals
-                            sdEv({type: 'rift_portal_break', p1Id: entered.id, p2Id: dest.id});
-                            md = wM = true;
-                        }
-                    }
+                if ((mx !== 0 || my !== 0) && tryTeleportPlayerRiftPortal(portalStartX, portalStartY, mx, my)) {
+                    md = wM = true;
                 }
 
             }
@@ -2729,13 +3207,17 @@ function updateMovement(dt) {
         myPlayer.corsairParryTimer -= dt;
         if(myPlayer.corsairParryTimer <= 0) { myPlayer.corsairParryActive = false; sdUp(); }
     }
+    if(myPlayer.heroClass === 'blitz' && myPlayer.blitzParryActive) {
+        myPlayer.blitzParryTimer -= dt;
+        if(myPlayer.blitzParryTimer <= 0) { myPlayer.blitzParryActive = false; sdUp(); }
+    }
     updateAeroContextMenu(dt);
-    if(md || isHost || myPlayer.slashAnimTimer > 0 || myPlayer.arrowActive || myPlayer.isFlying || myPlayer.flicker || myPlayer.aeroDrawing || myPlayer.traceShooting || myPlayer.traceDashing || myPlayer.aeroContextMenu) sdUp();
+    if(md || isHost || (myPlayer.rouletteSpin && myPlayer.rouletteSpin.active) || myPlayer.slashAnimTimer > 0 || myPlayer.arrowActive || myPlayer.isFlying || myPlayer.flicker || myPlayer.aeroDrawing || myPlayer.traceShooting || myPlayer.traceDashing || myPlayer.aeroContextMenu) sdUp();
 }
 
 function updateGameState(dt) {
     let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab'].forEach(k => {
+    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','blitzParry','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab'].forEach(k => {
         if(localCombat[k] && localCombat[k].cd > 0) localCombat[k].cd -= dt * cdM;
     });
 
@@ -3115,6 +3597,7 @@ function updateGameState(dt) {
             }
             
             for(let s of gameState.shields) if(cDm(p.ownerId, s.ownerId) && Math.hypot(p.x - s.x, p.y - s.y) < s.radius) { sm = 0.05; break; }
+            if(tryQueueProjectileRiftPortal(p, dt, sm)) { gameState.projectiles.splice(i, 1); continue; }
             
             if(p.type === 'kisaki') {
                 let o = gameState.players[p.ownerId]; if(!o || o.isDead || o.heroClass !== 'misaki') { gameState.projectiles.splice(i, 1); continue; }
@@ -3495,29 +3978,107 @@ function updateGameState(dt) {
                 if(h || p.life <= 0 || p.x < 0 || p.x > W || p.y < 0 || p.y > H) { gameState.pickups.push({id:Math.random().toString(), x:Math.max(10, Math.min(W - 10, p.x)), y:Math.max(10, Math.min(H - 10, p.y)), angle:p.angle}); gameState.projectiles.splice(i, 1); }
             }
         }
-        // ===== Universal portal traversal for all projectiles =====
-        // Any projectile entering a rift_portal teleports to its partner,
-        // preserving angle, vx, vy, life and all other stats. Adds 4 uses (max 4 per non-player traversal).
-        let _portals = gameState.projectiles.filter(_pp => _pp.type === 'rift_portal');
-        if(_portals.length === 2) {
-            let _p1 = _portals[0], _p2 = _portals[1];
-            for(let _pi = 0; _pi < gameState.projectiles.length; _pi++) {
-                let _pj = gameState.projectiles[_pi];
-                if(!_pj || _pj.type === 'rift_portal') continue;
-                if(_pj.type === 'blitz_grab_manager' || _pj.type === 'aero_tab' || _pj.type === 'kisaki' || _pj.type === 'tim_core_beam') continue;
-                if(_pj._portalCd && _pj._portalCd > 0) { _pj._portalCd -= dt; continue; }
-                let _ent = null, _dst = null;
-                if(Math.hypot(_pj.x - _p1.x, _pj.y - _p1.y) < _p1.size/2) { _ent = _p1; _dst = _p2; }
-                else if(Math.hypot(_pj.x - _p2.x, _pj.y - _p2.y) < _p2.size/2) { _ent = _p2; _dst = _p1; }
-                if(_ent && _dst) {
-                    // Teleport, preserving every stat (vx, vy, angle, life, dmg, hitIds, etc.)
-                    let _dx = _pj.x - _ent.x, _dy = _pj.y - _ent.y;
-                    _pj.x = _dst.x + _dx; _pj.y = _dst.y + _dy;
+        // ===== Universal portal traversal fallback for projectiles =====
+        // Projectile portal travel is free: it does NOT spend Rift portal uses/charges.
+        if(!gameState.portalPending) gameState.portalPending = [];
+        for(let _pi = gameState.projectiles.length - 1; _pi >= 0; _pi--) {
+            let _pj = gameState.projectiles[_pi];
+            if(!_pj || _pj.type === 'rift_portal') continue;
+            if(_pj.type === 'blitz_grab_manager' || _pj.type === 'aero_tab' || _pj.type === 'kisaki' || _pj.type === 'tim_core_beam') continue;
+            if(_pj._portalCd && _pj._portalCd > 0) continue;
+            let _lastX = (_pj.lastX !== undefined) ? _pj.lastX : _pj.x;
+            let _lastY = (_pj.lastY !== undefined) ? _pj.lastY : _pj.y;
+            let _hit = findRiftPortalTraversal(_pj.x, _pj.y, _lastX, _lastY, getProjectilePortalRadius(_pj));
+            if(_hit) {
+                queueRiftPortalProjectile(_pj, _hit.entered, _hit.dest);
+                gameState.projectiles.splice(_pi, 1);
+            }
+        }
+        // Process pending (in-portal) projectiles: tick delay, pick homing target, then re-emit.
+        if(gameState.portalPending && gameState.portalPending.length) {
+            for(let _qi = gameState.portalPending.length - 1; _qi >= 0; _qi--) {
+                let _q = gameState.portalPending[_qi];
+                _q.timer -= dt;
+                // Choose nearest valid enemy to the EXIT portal as the homing candidate.
+                // The candidate at the moment the timer expires is the locked target.
+                let _exit = gameState.projectiles.find(pp => pp.id === _q.exitId && pp.type === 'rift_portal');
+                let _entry = gameState.projectiles.find(pp => pp.id === _q.entryId && pp.type === 'rift_portal');
+                let _refX = _exit ? _exit.x : (_entry ? _entry.x : _q.proj.x);
+                let _refY = _exit ? _exit.y : (_entry ? _entry.y : _q.proj.y);
+                let _bestId = null, _bestIsClone = false, _bestD = Infinity;
+                for(let id in gameState.players) {
+                    let t = gameState.players[id];
+                    if(!t || t.isDead || t.invulnerable) continue;
+                    if(!cDm(_q.proj.ownerId, id)) continue;
+                    let d = Math.hypot(t.x - _refX, t.y - _refY);
+                    if(d < _bestD) { _bestD = d; _bestId = id; _bestIsClone = false; }
+                }
+                for(let c of gameState.clones) {
+                    if(!c || c.invulnerable) continue;
+                    if(!cDm(_q.proj.ownerId, c.ownerId)) continue;
+                    let d = Math.hypot(c.x - _refX, c.y - _refY);
+                    if(d < _bestD) { _bestD = d; _bestId = c.id; _bestIsClone = true; }
+                }
+                if(_bestId !== null) { _q.homingTargetId = _bestId; _q.homingIsClone = _bestIsClone; }
+
+                if(_q.timer <= 0) {
+                    gameState.portalPending.splice(_qi, 1);
+                    // If the exit portal was destroyed mid-delay, drop the projectile.
+                    if(!_exit) continue;
+                    let _pj = _q.proj;
+                    let _exitPt = getRiftPortalExitPoint(_exit, _q.exitDx, _q.exitDy, getProjectilePortalRadius(_pj) + 18);
+                    _pj.x = _exitPt.x; _pj.y = _exitPt.y;
                     if(_pj.lastX !== undefined) { _pj.lastX = _pj.x; _pj.lastY = _pj.y; }
-                    _pj._portalCd = 0.25; // brief immunity to prevent ping-pong
-                    // Projectiles can pass through portals INFINITELY — no use accrual, no closing
+                    // Reset lifespan to the original maximum and then double it.
+                    let _newLife = (_q.baseLife || getProjectileBaseLife(_pj)) * 2;
+                    _pj.maxLife = _newLife;
+                    _pj.life = _newLife;
+                    // 1.3x damage multiplier without double-scaling base damage.
+                    if(_pj.dmgMult !== undefined) _pj.dmgMult *= 1.3;
+                    else if(_pj.damage !== undefined || _pj.dmg !== undefined || _pj.dmgSlow !== undefined || _pj.dmgFast !== undefined) {
+                        if(_pj.damage !== undefined) _pj.damage *= 1.3;
+                        if(_pj.dmg !== undefined) _pj.dmg *= 1.3;
+                        if(_pj.dmgSlow !== undefined) _pj.dmgSlow *= 1.3;
+                        if(_pj.dmgFast !== undefined) _pj.dmgFast *= 1.3;
+                    } else _pj.dmgMult = 1.3;
+                    // 1.6x speed (does NOT affect life). Apply to vx/vy and speed-style projectiles.
+                    if(_pj.vx !== undefined && _pj.vy !== undefined) {
+                        _pj.vx *= 1.6; _pj.vy *= 1.6;
+                        _pj.angle = Math.atan2(_pj.vy, _pj.vx);
+                    }
+                    if(_pj.speed !== undefined) _pj.speed *= 1.6;
+                    // Homing flags: the target selected when the timer ends is locked in here.
+                    _pj._portalHoming = true;
+                    _pj._portalHomingTargetId = _q.homingTargetId;
+                    _pj._portalHomingIsClone = _q.homingIsClone;
+                    _pj._portalHomingTurnRate = 6.0; // rad/sec
+                    _pj._portalCd = 0.35; // immunity so it doesn't immediately re-enter the same portal
+                    gameState.projectiles.push(_pj);
                 }
             }
+        }
+        // ===== Apply homing steering to portal-buffed projectiles =====
+        // Rotates velocity/angle toward the target locked at portal exit.
+        for(let _hi = 0; _hi < gameState.projectiles.length; _hi++) {
+            let _hp = gameState.projectiles[_hi];
+            if(!_hp || !_hp._portalHoming || !_hp._portalHomingTargetId) continue;
+            let _tgt = _hp._portalHomingIsClone
+                ? gameState.clones.find(c => c.id === _hp._portalHomingTargetId)
+                : gameState.players[_hp._portalHomingTargetId];
+            if(!_tgt || _tgt.isDead) { _hp._portalHoming = false; continue; }
+            let _hasVec = _hp.vx !== undefined && _hp.vy !== undefined;
+            let _spd = _hasVec ? Math.hypot(_hp.vx, _hp.vy) : (_hp.speed || 0);
+            if(_spd < 0.01) continue;
+            let _curA = _hasVec ? Math.atan2(_hp.vy, _hp.vx) : (_hp.angle || 0);
+            let _wantA = Math.atan2(_tgt.y - _hp.y, _tgt.x - _hp.x);
+            let _diff = _wantA - _curA;
+            while(_diff > Math.PI) _diff -= Math.PI * 2;
+            while(_diff < -Math.PI) _diff += Math.PI * 2;
+            let _maxTurn = _hp._portalHomingTurnRate * dt;
+            let _step = Math.max(-_maxTurn, Math.min(_maxTurn, _diff));
+            let _newA = _curA + _step;
+            if(_hasVec) { _hp.vx = Math.cos(_newA) * _spd; _hp.vy = Math.sin(_newA) * _spd; }
+            _hp.angle = _newA;
         }
         gameState.clones = gameState.clones.filter(c => c.hp > 0);
         bdSt();
@@ -4194,6 +4755,14 @@ function drawEnts() {
         if(!iV(p.x, p.y, 400)) return;
         if(p.type === 'vector_arrow') {
             let tc = gameState.players[p.ownerId]?.customization?.traceColors?.neon || '#a855f7';
+            // Record trail point with timestamp for the lingering 2s space-pattern trail
+            aId.add(p.id);
+            const _now = performance.now();
+            if(!traceArrowTrails[p.id]) traceArrowTrails[p.id] = { color: tc, pts: [] };
+            traceArrowTrails[p.id].color = tc;
+            const _pts = traceArrowTrails[p.id].pts;
+            const _last = _pts[_pts.length - 1];
+            if(!_last || (Math.hypot(p.x - _last.x, p.y - _last.y) > 6)) _pts.push({ x: p.x, y: p.y, t: _now });
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
             ctx.shadowBlur = 15; ctx.shadowColor = tc; ctx.fillStyle = '#fff';
             ctx.beginPath(); ctx.moveTo(15, 0); ctx.lineTo(-15, 5); ctx.lineTo(-10, 0); ctx.lineTo(-15, -5); ctx.fill(); ctx.restore();
@@ -4464,6 +5033,33 @@ function drawEnts() {
             ctx.restore();
         }
     }
+
+    // === TRACE space-pattern arrow trail — points linger 2s, fading out ===
+    {
+        const _now = performance.now();
+        const TRAIL_LIFE = 2000; // ms
+        for(let id in traceArrowTrails) {
+            const tr = traceArrowTrails[id];
+            // Drop expired points
+            while(tr.pts.length && (_now - tr.pts[0].t) > TRAIL_LIFE) tr.pts.shift();
+            if(tr.pts.length === 0) { delete traceArrowTrails[id]; continue; }
+            const pat = getSpacePat(tr.color);
+            // Draw each segment with a width/alpha based on remaining life
+            ctx.save();
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            for(let i = 0; i < tr.pts.length - 1; i++) {
+                const a = tr.pts[i], b = tr.pts[i+1];
+                if(!iV(a.x, a.y, 200) && !iV(b.x, b.y, 200)) continue;
+                const ageA = (_now - a.t) / TRAIL_LIFE; // 0 fresh -> 1 gone
+                const lifeF = Math.max(0, 1 - ageA);
+                ctx.globalAlpha = lifeF;
+                ctx.lineWidth = 2 + 14 * lifeF;
+                ctx.strokeStyle = pat || tr.color;
+                ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
     
     if(gameState.ultOrb && gameState.ultOrb.state !== 'inactive') {
         let o = gameState.ultOrb;
@@ -4618,6 +5214,20 @@ function drawPlayers() {
         let isSmearing = speed > 1 || e.isFlying;
         
         ctx.save(); ctx.translate(e.x, e.y);
+        // Jubilee jump: draw shadow on the ground, then lift sprite up by z
+        let _jubZ = (o.heroClass === 'jubilee' && o.z) ? o.z : 0;
+        if(_jubZ > 0) {
+            ctx.save();
+            let shAlpha = Math.max(0.15, 0.5 - _jubZ/220);
+            let shScale = Math.max(0.35, 1 - _jubZ/180);
+            ctx.globalAlpha = shAlpha;
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.ellipse(0, 6, 18*shScale, 7*shScale, 0, 0, 6.28); ctx.fill();
+            ctx.restore();
+            ctx.translate(0, -_jubZ);
+            let liftScale = 1 + _jubZ/400;
+            ctx.scale(liftScale, liftScale);
+        }
         if(o.isJuggernaut) ctx.scale(1.8, 1.8);
         
         // === CEL-SHADED TOON OUTLINE (drawn first as thick outline behind everything) ===
@@ -4725,8 +5335,9 @@ function drawPlayers() {
             // === HYPER-FUTURISTIC KINETIC ARROW BOW ===
             ctx.save(); ctx.translate(15, 0);
             let pulseT = 0.7 + Math.sin(Date.now() / 180) * 0.3;
-            // Outer riser shell — angular dark frame (uses Bow Base color)
-            ctx.fillStyle = isImpactFlash ? '#000' : bC;
+            // Outer riser shell — angular dark frame, filled with cached SPACE pattern in hero neon color
+            if(isImpactFlash){ ctx.fillStyle = '#000'; }
+            else { ctx.fillStyle = getSpacePat(nC) || bC; }
             ctx.beginPath();
             ctx.moveTo(-2, -28); ctx.lineTo(6, -24); ctx.lineTo(9, -16); ctx.lineTo(7, -7);
             ctx.lineTo(11, 0); ctx.lineTo(7, 7); ctx.lineTo(9, 16); ctx.lineTo(6, 24);
@@ -5213,7 +5824,7 @@ o.timBeamCharge * 9;
                 jabActive = t < 0.35 ? (t / 0.35) : (1 - (t - 0.35) / 0.65);
                 jabActive = Math.max(0, Math.min(1, jabActive));
             }
-            let thrust = jabActive * 22; // max forward push in pixels
+            let thrust = jabActive * 55; // max forward push in pixels
 
             // Hand on grip (sub-detail behind weapon)
             ctx.save();
