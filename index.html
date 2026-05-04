@@ -332,6 +332,9 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
         <div class="ability-slot" id="ui-glitch-clone"><div class="key">SPACE</div><div class="name">Clone</div><div class="status" id="status-glitch-clone">Ready</div><div class="cooldown-overlay" id="cd-glitch-clone"></div></div>
         <div class="ability-slot" id="ui-glitch-swap"><div class="key">E</div><div class="name">Swap</div><div class="status" id="status-glitch-swap">Ready</div><div class="cooldown-overlay" id="cd-glitch-swap"></div></div>
 
+        <div class="ability-slot" id="ui-nitro-charge"><div class="key">HOLD L-CLICK</div><div class="name" id="name-nitro-charge">Ram-Charge</div><div class="status" id="status-nitro-charge">Ready</div><div class="cooldown-overlay" id="cd-nitro-charge"></div></div>
+        <div class="ability-slot" id="ui-nitro-vault"><div class="key">HOLD SPACE</div><div class="name">Stratosphere Vault</div><div class="status" id="status-nitro-vault">Ready</div><div class="cooldown-overlay" id="cd-nitro-vault"></div></div>
+
         <div class="ability-slot" id="ui-jubilee-primary"><div class="key">L-CLICK</div><div class="name">Fireworks</div><div class="status" id="status-jubilee-primary">Ready</div><div class="cooldown-overlay" id="cd-jubilee-primary"></div></div>
 
         <div class="ability-slot" id="ui-corsair-primary"><div class="key">L-CLICK</div><div class="name" id="name-corsair-primary">Broadside</div><div class="status" id="status-corsair-primary">Ready</div><div class="cooldown-overlay" id="cd-corsair-primary"></div></div>
@@ -414,6 +417,7 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
                         <button id="btn-corsair" class="class-list-btn" onclick="selectHero('corsair')" style="--glow-color: #ea580c; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyaTA4bjYwdzRmbWFhOG0wc2JweHVwMTg5czM1b3N4MmxxamM4MGU5OCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/7SrHwak3yoO9a/200.gif') center/100% 180%;">Corsair</button>
                         <button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
                         <button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://gifdb.com/images/thumbnail/dice-roll-jump-scare-angry-birds-meme-bhr66fsxdyaipbt5.gif') center/95%;">Roulette!</button>
+                             <button id="btn-nitro" class="class-list-btn" onclick="selectHero('nitro')" style="--glow-color: #ff5500; background:url('https://external-preview.redd.it/M9O71AtU29lDwtQJUhp7SDRf4YggDRy1cxBlXyDH6VA.gif?auto=webp&s=19994d15dad85c165f540d9ee0ed9219c7e447ab') center/ 100% 160%;color:#fff;">Nitro</button>
                              <button id="bt-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
                            <button id="bt-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>  
                     </div>
@@ -531,7 +535,56 @@ const BALANCE = {
 };
 // =====================================================================
 
-const GRID=50, W=3200, H=2500; 
+const GRID=50, W=3200, H=2500;
+
+// ===== Nitro: GlintCache (anime explosive glints) =====
+const GlintCache = {
+    models: {}, size: 256,
+    palettes: {
+        'Napalm_Orange':   { outer: '#ff4545', mid: '#ffcc00', core: '#ffffff' },
+        'Electric_Yellow': { outer: '#ffaa00', mid: '#fffae6', core: '#ffffff' },
+        'Crimson_Red':     { outer: '#cc0022', mid: '#ff7733', core: '#ffffff' }
+    },
+    init(){ for(const [n,c] of Object.entries(this.palettes)) this.models[n]=this.create(c.outer,c.mid,c.core); },
+    create(co,cm,cc){
+        const cnv=document.createElement('canvas'); cnv.width=cnv.height=this.size;
+        const x=cnv.getContext('2d'); const cx=this.size/2, cy=this.size/2;
+        this._layer(x,cx,cy,90,10,25,co);
+        this._layer(x,cx,cy,70,7,15,cm);
+        this._layer(x,cx,cy,40,2,7,cc);
+        return cnv;
+    },
+    _layer(ctx,cx,cy,r,ctrl,sw,col){
+        ctx.fillStyle=col; ctx.strokeStyle=col; ctx.lineWidth=sw;
+        ctx.lineJoin='round'; ctx.lineCap='round';
+        ctx.beginPath();
+        ctx.moveTo(cx,cy-r);
+        ctx.quadraticCurveTo(cx+ctrl,cy-ctrl,cx+r,cy);
+        ctx.quadraticCurveTo(cx+ctrl,cy+ctrl,cx,cy+r);
+        ctx.quadraticCurveTo(cx-ctrl,cy+ctrl,cx-r,cy);
+        ctx.quadraticCurveTo(cx-ctrl,cy-ctrl,cx,cy-r);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+    },
+    pick(palettes){ const k=palettes[Math.floor(Math.random()*palettes.length)]; return this.models[k]; },
+    getModel(name){ return this.models[name]; }
+};
+GlintCache.init();
+
+function spawnNitroExplosion(x,y,radius,palettes){
+    palettes = palettes || ['Napalm_Orange','Electric_Yellow','Crimson_Red'];
+    const count = 23 + Math.floor(Math.random()*8);
+    for(let i=0;i<count;i++){
+        const ang=Math.random()*6.28, d=Math.random()*radius*0.9;
+        vfx.push({type:'nitroGlint', x:x+Math.cos(ang)*d, y:y+Math.sin(ang)*d,
+            life:0.18+Math.random()*0.18, maxLife:0.32,
+            delay:Math.random()*0.18, scale:0.4+Math.random()*0.7,
+            sx:0.7+Math.random()*0.6, sy:0.7+Math.random()*0.6,
+            rot:[0,0.785,1.57][Math.floor(Math.random()*3)]+(Math.random()-0.5)*0.2,
+            palette:palettes[Math.floor(Math.random()*palettes.length)]});
+    }
+    vfx.push({type:'nitroShockwave', x:x, y:y, radius:radius, life:0.35, maxLife:0.35});
+}
+ 
 let cam = {x:0, y:0, zoom:0.6, targetZoom: 0.6};
 let gameState = {isTeamMode:false, players:{}, projectiles:[], pickups:[], walls:[], shields:[], clones:[], healthPacks:[], train:{phase:'idle',timer:2.0}, corsairCannons:[]};
 
@@ -557,12 +610,13 @@ const HERO_DATA = {
     tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Stance-Shifting Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']},
     rift:{name:'Rift',role:'Portal-Hopping Duelist',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']},
     roulette:{name:'Roulette',role:'Randomized Wildcard',hp:250,speed:'Variable',color:'#fbbf24',desc:'Not a hero — a randomized game mode. Spawns as a random hero. Every 35s OR on kill, the One-Armed Bandit spins and you transform into a different hero (no repeats). Full stats and abilities of whoever you become.',abilities:['Random Hero on Spawn','Auto-Swap Every 35s','Kill = Instant Re-Spin','Gold Outline (You are the Jackpot)']},
-bread:{name:'The Bread-Burner',role:'Toaster',hp:250,speed:'slow',color:'#000',desc:'idk',abilities:[]},
+nitro:{name:'Nitro',role:'Rocket-Ram Vanguard',hp:260,speed:'Medium',color:'#ff5500',desc:'Nimble brawler wielding a colossal rocket ram. Charge, boost, scoop, and carpet-bomb glints across the battlefield.',abilities:['Ram-Charge & Pin (Hold L-Click)','Stratosphere Vault (Hold Space)']},
+    bread:{name:'The Bread-Burner',role:'Toaster',hp:250,speed:'slow',color:'#000',desc:'idk',abilities:[]},
          mystery:{name:'???',role:'idk',hp:250,speed:'fast',color:'#000',desc:'idk',abilities:[]}
 };
 
 // Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
-const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift'];
+const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift','nitro'];
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
 let tCol = JSON.parse(localStorage.getItem('rivals_traceColors'))||{bow:'#3b0764',neon:'#a855f7'}; getEl('tColorBow').value=tCol.bow; getEl('tColorNeon').value=tCol.neon;
@@ -894,7 +948,9 @@ let localCombat = {
     dash:{charges:3,maxCharges:3,cds:[0,0,0],maxCd:4.0,v:{x:0,y:0},rec:0}, 
     slash:{cd:0,maxCd:0.5}, kendoRide:{cd:0,maxCd:9.0}, kendoShield:{cd:0,maxCd:8.0},
     glitchShoot:{cd:0,maxCd:0.6}, glitchClone:{cd:0,maxCd:2.0}, glitchSwap:{cd:0,maxCd:2.0},
-    jubileePrimary:{cd:0,maxCd:1.2}, jubileeDash:{cd:0,maxCd:5.0,delay:0,dTm:0,ang:0,spd:0,dr:0}, 
+    jubileePrimary:{cd:0,maxCd:1.2},
+    nitroCharge:{cd:0,maxCd:0.5,charging:false,chargeT:0,boostTm:0,ang:0,dist:0,grabbedId:null,trailTm:0},
+    nitroVault:{cd:0,maxCd:10.0,charging:false,chargeT:0,flying:false,flightT:0,flightDur:0,sx:0,sy:0,tx:0,ty:0,trailTm:0}, jubileeDash:{cd:0,maxCd:5.0,delay:0,dTm:0,ang:0,spd:0,dr:0}, 
     misakiShoot:{cd:0,maxCd:1.8}, misakiGrapple:{cd:0,maxCd:6.0,dTm:0,ang:0,spd:1800}, misakiFlare:{cd:0,maxCd:10.0},
     blitzPrimary:{cd:0,rTm:0}, blitzParry:{cd:0,maxCd:5.0}, blitzTp:{ch:3,maxCh:3,cds:[0,0,0],maxCd:4.0,dTm:0,dx:0,dy:0}, blitzGrab:{cd:0,maxCd:10.0}, 
     mQ:false, m1:false,
@@ -1254,6 +1310,24 @@ function drawPrev() {
         pCtx.beginPath();
         pCtx.arc(Math.cos(ro) * 20, Math.sin(ro) * 20, 3, 0, 6.28);
         pCtx.fill();
+    } else if(heroClass === 'nitro') {
+        getEl('generic-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        // Pilot body (small, on left)
+        pCtx.fillStyle = '#1f2937';
+        pCtx.beginPath(); pCtx.arc(-10, 0, 7, 0, 6.28); pCtx.fill();
+        pCtx.strokeStyle = '#ff5500'; pCtx.lineWidth = 2; pCtx.stroke();
+        // Massive ram (centered, dominant)
+        pCtx.fillStyle = '#3a3a3a';
+        pCtx.fillRect(-4, -8, 24, 16);
+        pCtx.fillStyle = '#ff5500'; pCtx.fillRect(-4, -8, 4, 16);
+        // Nose cone
+        pCtx.fillStyle = '#9ca3af';
+        pCtx.beginPath(); pCtx.moveTo(20,-8); pCtx.lineTo(28,0); pCtx.lineTo(20,8); pCtx.closePath(); pCtx.fill();
+        // Boosters
+        pCtx.fillStyle = '#ffaa00'; pCtx.shadowBlur = 8; pCtx.shadowColor = '#ff5500';
+        pCtx.beginPath(); pCtx.arc(-6, -5, 3, 0, 6.28); pCtx.arc(-6, 5, 3, 0, 6.28); pCtx.fill();
+        pCtx.shadowBlur = 0;
     }
     
     pCtx.restore();
@@ -1929,6 +2003,7 @@ function genMap() {
 
 function processVFX(d) {
     if(d.type==='slash_vfx') vfx.push({type:'animeSlash', x:d.x, y:d.y, angle:d.angle, life:0.15, maxLife:0.15, daggerCount:d.daggers});
+    else if(d.type==='nitro_explosion_vfx') { let pal = d.palette==='vault'?['Crimson_Red','Napalm_Orange','Electric_Yellow']:(d.palette==='mini'?['Electric_Yellow','Napalm_Orange']:undefined); spawnNitroExplosion(d.x, d.y, d.radius, pal); applyExpKbk(d.x, d.y, d.radius); }
     else if(d.type==='firework_boom') { vfx.push({type:'fireworkBoom', x:d.x, y:d.y, color:d.color, radius:d.radius, life:0.4, maxLife:0.4}); applyExpKbk(d.x, d.y, d.radius); }
     else if(d.type==='sniper_vfx') vfx.push({type:'sniperMuzzle', x:d.x, y:d.y, angle:d.angle, life:0.15, maxLife:0.15});
     else if(d.type==='mirror_flash') vfx.push({type:'mirrorFlash', x:d.x, y:d.y, life:0.3, maxLife:0.3});
@@ -2213,6 +2288,7 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'blitz') trBlTp();
             else if(myPlayer.heroClass === 'tim') trTimVents();
             else if(myPlayer.heroClass === 'rift') trRiftShift();
+            else if(myPlayer.heroClass === 'nitro') { let nv = localCombat.nitroVault; if(nv.cd<=0 && !nv.charging && !nv.flying && localCombat.nitroCharge.boostTm<=0){ nv.charging=true; nv.chargeT=0; } }
             else if(myPlayer.heroClass === 'corsair') {
         setVisibleAbilities(['corsair-primary','corsair-stance','corsair-parry']);
         let cp = localCombat.corsairPrimary.cd; 
@@ -2312,6 +2388,29 @@ window.addEventListener('keyup', e => {
     
     if(e.code === 'Space') {
         keys.space = false;
+        if(myPlayer.heroClass === 'nitro' && localCombat.nitroVault.charging){
+            let nv = localCombat.nitroVault;
+            let chP = Math.min(1, nv.chargeT/2.0);
+            let dist = (4 + chP*11) * GRID;
+            if(nv.chargeT < 0.15){ nv.charging=false; nv.chargeT=0; }
+            else {
+                nv.charging = false;
+                let ang = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
+                let curDist = Math.hypot(myPlayer.targetX-myPlayer.x, myPlayer.targetY-myPlayer.y);
+                let useDist = Math.min(dist, curDist + 30);
+                nv.sx = myPlayer.x; nv.sy = myPlayer.y;
+                nv.tx = myPlayer.x + Math.cos(ang)*useDist;
+                nv.ty = myPlayer.y + Math.sin(ang)*useDist;
+                let s = gnV(nv.tx, nv.ty); nv.tx = s.x; nv.ty = s.y;
+                nv.flightDur = 0.45 + (useDist/800)*0.3;
+                nv.flightT = nv.flightDur;
+                nv.flying = true; nv.trailTm = 0;
+                nv.cd = nv.maxCd;
+                myPlayer.invulnerable = true; myPlayer.isFlying = true;
+                applyShake(6,0.15);
+                sdEv({type:'nitro_vault_start', sx:nv.sx, sy:nv.sy, tx:nv.tx, ty:nv.ty, dur:nv.flightDur});
+            }
+        }
         if(myPlayer.heroClass === 'trace' && myPlayer.traceDashing) {
             myPlayer.traceDashing = false; myPlayer.traceFreeze = false;
             if(myPlayer.traceDashNodes.length > 0) { localCombat.traceDash.active = true; localCombat.traceDash.path = myPlayer.traceDashNodes; localCombat.traceDash.idx = 0; myPlayer.invulnerable = true; localCombat.traceDash.cd = (activeServerMode === 'CHAOS') ? 0.05 : 2.0; }
@@ -2407,6 +2506,7 @@ can.addEventListener('mousedown', e => {
             }
         }
         else if(myPlayer.heroClass === 'jubilee') trJubP();
+        else if(myPlayer.heroClass === 'nitro') { if(localCombat.nitroCharge.cd<=0 && !localCombat.nitroCharge.charging && localCombat.nitroCharge.boostTm<=0){ localCombat.nitroCharge.charging=true; localCombat.nitroCharge.chargeT=0; } }
         else if(myPlayer.heroClass === 'misaki') trMisS();
         else if(myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'katana') trBlKt();
     }
@@ -2440,6 +2540,26 @@ window.addEventListener('mouseup', () => {
         if(myPlayer.traceShooting) {
             myPlayer.traceShooting = false;
             if(myPlayer.traceNodes.length > 0) { sdEv({type: 'trace_shoot', nodes: myPlayer.traceNodes, x: myPlayer.x, y: myPlayer.y}); localCombat.traceShoot.cd = (activeServerMode === 'CHAOS') ? 0.05 : 1.0; applyShake(3, 0.1); }
+        }
+    } else if(myPlayer.heroClass === 'nitro') {
+        if(localCombat.nitroCharge.charging){
+            let nc = localCombat.nitroCharge;
+            let chP = Math.min(1, nc.chargeT/2.0);
+            let dist = (4 + chP*11) * GRID; // px
+            // Min charge gate
+            if(nc.chargeT < 0.15){ nc.charging=false; nc.chargeT=0; }
+            else {
+                nc.charging=false;
+                nc.boostTm = Math.max(0.18, dist/900); // boost duration
+                nc.boostDur = nc.boostTm;
+                nc.dist = dist; nc.distLeft = dist;
+                nc.ang = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
+                nc.cd = nc.maxCd;
+                nc.grabbedId = null; nc.trailTm = 0;
+                myPlayer.isFlying = true;
+                applyShake(4,0.1);
+                sdEv({type:'nitro_boost_start', x:myPlayer.x, y:myPlayer.y, ang:nc.ang});
+            }
         }
     } else if(myPlayer.heroClass === 'aero') {
         if(myPlayer.aeroDrawing) {
@@ -2785,6 +2905,64 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='glitch_swap'){let c=gameState.clones.find(x=>x.id===e.cloneId);if(c){c.x=e.newCloneX;c.y=e.newCloneY;}}
     else if(e.type==='jubilee_shoot'){const C=['#ff0044','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff','#ffffff'];let ba=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(let i=-1;i<=1;i++)gameState.projectiles.push({type:'firework',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,startAngle:ba,angle:ba,speed:550,life:0.6,index:i,state:'straight',color:C[Math.floor(Math.random()*C.length)],dmgMult:e.dmgMult||1.0});}
     else if(e.type==='jubilee_dash_setup'){gameState.projectiles.push({type:'dash_bomb',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:0.3});}
+
+    else if(e.type==='nitro_boost_start'){ /* purely cosmetic for remotes */ s.nitroBoosting = true; }
+    else if(e.type==='nitro_ram_grab'){
+        let t = gameState.players[e.targetId];
+        if(t && !t.isDead && cDm(sId, e.targetId) && !t.invulnerable){
+            t.grabbedLocked = true; t.nitroGrabbedBy = sId;
+            // small dmg on grab
+            dmgTk(t, 8, sId); sendHitmarker(sId, t, 8); t.lastAttacker=sId; t.lastHitTime=Date.now();
+        }
+    }
+    else if(e.type==='nitro_ram_drag'){
+        let t = gameState.players[e.targetId];
+        if(t && t.nitroGrabbedBy===sId){
+            let dx = e.x, dy = e.y;
+            if(typeof iW === 'function' && iW(dx, dy)){
+                let s = (typeof gnV === 'function') ? gnV(dx, dy) : {x:dx,y:dy};
+                dx = s.x; dy = s.y;
+            }
+            t.x = dx; t.y = dy;
+        }
+    }
+    else if(e.type==='nitro_ram_impact'){
+        // Release any grabbed
+        for(let id in gameState.players){ let t=gameState.players[id]; if(t && t.nitroGrabbedBy===sId){ t.grabbedLocked=false; t.nitroGrabbedBy=null; } }
+        // AoE: 54 epicenter -> 30 minimum within radius 110
+        let ex=e.x, ey=e.y, R=110;
+        connections.forEach(c=>{ if(c.open) c.send({type:'nitro_explosion_vfx', x:ex, y:ey, radius:R, palette:'ram'}); });
+        if(sId!==myId) spawnNitroExplosion(ex,ey,R);
+        else spawnNitroExplosion(ex,ey,R);
+        applyExpKbk(ex,ey,R);
+        let dealt = (t,dist)=>{ let p=Math.max(0,1-dist/R); return 30 + (54-30)*p; };
+        for(let id in gameState.players){ if(!gameState.players[id].isDead && cDm(sId,id)){ let t=gameState.players[id]; let d=Math.hypot(t.x-ex,t.y-ey); if(d<=R && !t.invulnerable){ let dmg=dealt(t,d); dmgTk(t,dmg,sId); sendHitmarker(sId,t,dmg); t.lastAttacker=sId; t.lastHitTime=Date.now(); chD(t,id); } } }
+        for(let c of gameState.clones){ if(cDm(sId,c.ownerId) && !c.invulnerable){ let d=Math.hypot(c.x-ex,c.y-ey); if(d<=R){ let dmg=dealt(c,d); dmgTk(c,dmg,sId); sendHitmarker(sId,c,dmg);} } }
+    }
+    else if(e.type==='nitro_vault_start'){ /* host has nothing extra to do — telegraph drawn via projectile */
+        gameState.projectiles.push({type:'nitro_vault_telegraph', id:Math.random().toString(), ownerId:sId, x:e.tx, y:e.ty, life:e.dur});
+    }
+    else if(e.type==='nitro_vault_land'){
+        // Remove telegraph
+        gameState.projectiles = gameState.projectiles.filter(p=>!(p.type==='nitro_vault_telegraph' && p.ownerId===sId));
+        let ex=e.x, ey=e.y, R=220;
+        connections.forEach(c=>{ if(c.open) c.send({type:'nitro_explosion_vfx', x:ex, y:ey, radius:R, palette:'vault'}); });
+        spawnNitroExplosion(ex,ey,R, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
+        // Strong knockback
+        applyExpKbk(ex,ey,R*1.2);
+        let dealt = (dist)=>{ let p=Math.max(0,1-dist/R); return 35 + (70-35)*p; };
+        for(let id in gameState.players){ if(!gameState.players[id].isDead && cDm(sId,id)){ let t=gameState.players[id]; let d=Math.hypot(t.x-ex,t.y-ey); if(d<=R && !t.invulnerable){ let dmg=dealt(d); dmgTk(t,dmg,sId); sendHitmarker(sId,t,dmg); t.lastAttacker=sId; t.lastHitTime=Date.now(); chD(t,id);
+                // Apply heavy knockback to OTHER players via connections
+                let kang = Math.atan2(t.y-ey, t.x-ex);
+                connections.forEach(c=>{if(c.open) c.send({type:'knockback_apply', targetId:id, angle:kang, force:90});});
+                if(myId===id){ localCombat.dash.v.x += Math.cos(kang)*90; localCombat.dash.v.y += Math.sin(kang)*90; localCombat.dash.rec=0.3; }
+            } } }
+        for(let c of gameState.clones){ if(cDm(sId,c.ownerId) && !c.invulnerable){ let d=Math.hypot(c.x-ex,c.y-ey); if(d<=R){ let dmg=dealt(d); dmgTk(c,dmg,sId); sendHitmarker(sId,c,dmg);} } }
+    }
+    else if(e.type==='nitro_glint_drop'){
+        gameState.projectiles.push({type:'nitro_glint', id:Math.random().toString(), ownerId:sId, x:e.x, y:e.y, life:e.fuse, fuse:e.fuse, dmg:e.dmg, kbk:e.kbk, exploded:false});
+    }
+
     else if(e.type==='jubilee_bomblet'){let c=['#ff0044','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff'][Math.floor(Math.random()*6)];gameState.projectiles.push({type:'bomblet',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:0.15,color:c});}
     else if(e.type==='misaki_shoot'){s.slashAnimTimer=0.15;let sx=s.x+Math.cos(e.angle)*45,sy=s.y+Math.sin(e.angle)*45;gameState.projectiles.push({type:'sniper_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*2500,vy:Math.sin(e.angle)*2500,angle:e.angle,life:2.0,bounces:1,damage:85*(e.dmgMult||1),hitIds:{},hitMirrors:{}});connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'sniper_vfx',x:sx,y:sy,angle:e.angle});});if(sId!==myId)vfx.push({type:'sniperMuzzle',x:sx,y:sy,angle:e.angle,life:0.15,maxLife:0.15});}
     else if(e.type==='kisaki_deploy'){let k=gameState.projectiles.find(p=>p.type==='kisaki'&&p.ownerId===sId);if(!k)gameState.projectiles.push({type:'kisaki',id:Math.random().toString(),ownerId:sId,x:s.x,y:s.y,targetX:e.x,targetY:e.y,mode:'flying',hasMirror:false,mirrorAngle:0,speed:600,life:99999,angle:0});else{k.targetX=e.x;k.targetY=e.y;k.mode='flying';}}
@@ -3099,6 +3277,103 @@ function updateMovement(dt) {
         }
     }
     
+
+    if(myPlayer.heroClass === 'nitro') {
+        let nc = localCombat.nitroCharge, nv = localCombat.nitroVault;
+        // ===== Charging primary =====
+        if(nc.charging){
+            nc.chargeT = Math.min(2.0, nc.chargeT + dt);
+        }
+        // ===== Vault charging =====
+        if(nv.charging){
+            nv.chargeT = Math.min(2.0, nv.chargeT + dt);
+        }
+        // ===== Boosting (ram-charge in flight) =====
+        if(nc.boostTm > 0){
+            nc.boostTm -= dt;
+            let speed = nc.dist / Math.max(0.01, nc.boostDur);
+            // Limited steering toward cursor
+            let desired = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
+            let da = Math.atan2(Math.sin(desired-nc.ang), Math.cos(desired-nc.ang));
+            nc.ang += Math.max(-1.5*dt, Math.min(1.5*dt, da));
+            myPlayer.angle = nc.ang;
+            let stepX = Math.cos(nc.ang)*speed*dt, stepY = Math.sin(nc.ang)*speed*dt;
+            let nx = myPlayer.x + stepX, ny = myPlayer.y + stepY;
+            let hitWall = iW(nx, ny);
+            if(hitWall){
+                // Wall impact -> glint explosion
+                myPlayer.isFlying = false;
+                let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
+                spawnNitroExplosion(myPlayer.x + Math.cos(nc.ang)*40, myPlayer.y + Math.sin(nc.ang)*40, 110);
+                applyShake(10,0.3);
+                sdEv({type:'nitro_ram_impact', x:myPlayer.x+Math.cos(nc.ang)*40, y:myPlayer.y+Math.sin(nc.ang)*40, ang:nc.ang, grabbedId:nc.grabbedId});
+                nc.boostTm = 0; nc.grabbedId = null; nc.distLeft = 0;
+            } else {
+                myPlayer.x = nx; myPlayer.y = ny;
+                myPlayer.isFlying = true;
+                // Try to grab enemy if not already grabbed
+                if(!nc.grabbedId){
+                    for(let id in gameState.players){
+                        if(id===myId) continue;
+                        let t=gameState.players[id]; if(!t||t.isDead||t.invulnerable) continue;
+                        if(!cDm(myId,id)) continue;
+                        if(Math.hypot(t.x-(myPlayer.x+Math.cos(nc.ang)*40),t.y-(myPlayer.y+Math.sin(nc.ang)*40))<32){
+                            nc.grabbedId = id;
+                            sdEv({type:'nitro_ram_grab', targetId:id});
+                            break;
+                        }
+                    }
+                }
+                // Drag grabbed enemy along (clamp out of walls)
+                if(nc.grabbedId){
+                    let dgx = myPlayer.x+Math.cos(nc.ang)*55, dgy = myPlayer.y+Math.sin(nc.ang)*55;
+                    if(iW(dgx, dgy)){ let sV = gnV(dgx, dgy); dgx = sV.x; dgy = sV.y; }
+                    sdEv({type:'nitro_ram_drag', targetId:nc.grabbedId, x:dgx, y:dgy});
+                }
+                // Glint trail spawn
+                nc.trailTm -= dt;
+                if(nc.trailTm <= 0){
+                    nc.trailTm = 0.05;
+                    sdEv({type:'nitro_glint_drop', x:myPlayer.x-Math.cos(nc.ang)*18, y:myPlayer.y-Math.sin(nc.ang)*18, fuse:0.6, dmg:7, kbk:18});
+                }
+                if(nc.boostTm <= 0){
+                    // Ran out of boost — release without explosion
+                    myPlayer.isFlying = false;
+                    nc.grabbedId = null;
+                }
+            }
+        }
+        // ===== Vault flight =====
+        if(nv.flying){
+            nv.flightT -= dt;
+            let p = 1 - (nv.flightT / nv.flightDur);
+            p = Math.max(0, Math.min(1, p));
+            myPlayer.x = nv.sx + (nv.tx-nv.sx)*p;
+            myPlayer.y = nv.sy + (nv.ty-nv.sy)*p;
+            myPlayer.z = Math.sin(p*Math.PI)*180;
+            myPlayer.isFlying = true;
+            myPlayer.invulnerable = true;
+            // Carpet bombing
+            nv.trailTm -= dt;
+            if(nv.trailTm <= 0){
+                nv.trailTm = 0.07;
+                let jitterX = (Math.random()-0.5)*40, jitterY = (Math.random()-0.5)*40;
+                sdEv({type:'nitro_glint_drop', x:myPlayer.x+jitterX, y:myPlayer.y+jitterY, fuse:0.9, dmg:18, kbk:22});
+            }
+            if(nv.flightT <= 0){
+                nv.flying = false; myPlayer.z = 0; myPlayer.isFlying = false; myPlayer.invulnerable = false;
+                let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
+                spawnNitroExplosion(myPlayer.x, myPlayer.y, 220, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
+                applyShake(16,0.4);
+                sdEv({type:'nitro_vault_land', x:myPlayer.x, y:myPlayer.y});
+            }
+        }
+        // Sync state for charging visuals
+        myPlayer.nitroCharging = nc.charging;
+        myPlayer.nitroChargeT = nc.chargeT;
+        myPlayer.nitroBoosting = nc.boostTm > 0;
+    }
+
     if(myPlayer.heroClass === 'jubilee') {
         if(myPlayer.jumpTimer > 0) {
             myPlayer.jumpTimer = Math.max(0, myPlayer.jumpTimer - dt);
@@ -3166,6 +3441,7 @@ function updateMovement(dt) {
             if(ds <= 5) {
                 let bs = 4.5;
                 if(myPlayer.heroClass === 'jubilee') bs = 4.0;
+                if(myPlayer.heroClass === 'nitro') { bs = 4.5; if(localCombat.nitroCharge.charging || localCombat.nitroVault.charging) bs *= 0.5; }
                 if(myPlayer.heroClass === 'corsair' && myPlayer.corsairStance === 'cannon') bs = 2.88;
                 if(myPlayer.heroClass === 'tim') {
                     if(myPlayer.timTransitioning) {
@@ -3231,7 +3507,7 @@ function updateMovement(dt) {
 
 function updateGameState(dt) {
     let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','blitzParry','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab'].forEach(k => {
+    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','nitroCharge','nitroVault','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','blitzParry','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab'].forEach(k => {
         if(localCombat[k] && localCombat[k].cd > 0) localCombat[k].cd -= dt * cdM;
     });
 
@@ -3672,6 +3948,24 @@ function updateGameState(dt) {
                 if(p.life <= 0 || hs) { emEx(p.x, p.y, (p.index === 0 ? 50 : 25)*(p.dmgMult||1), 80, p.ownerId, p.color, false); gameState.projectiles.splice(i, 1); }
             } else if(p.type === 'dash_bomb') {
                 p.life -= dt; if(p.life <= 0) { emEx(p.x, p.y, 0, 95, p.ownerId, '#fff', true); gameState.projectiles.splice(i, 1); }
+            } else if(p.type === 'nitro_glint') {
+                p.life -= dt;
+                if(p.life <= 0 && !p.exploded){
+                    p.exploded = true;
+                    // Spawn small visual + damage
+                    let R = 55;
+                    connections.forEach(c=>{if(c.open) c.send({type:'nitro_explosion_vfx', x:p.x, y:p.y, radius:R, palette:'mini'});});
+                    spawnNitroExplosion(p.x, p.y, R, ['Electric_Yellow','Napalm_Orange']);
+                    for(let id in gameState.players){ if(!gameState.players[id].isDead && cDm(p.ownerId,id)){ let t=gameState.players[id]; let d=Math.hypot(t.x-p.x,t.y-p.y); if(d<=R && !t.invulnerable){ dmgTk(t,p.dmg,p.ownerId); sendHitmarker(p.ownerId,t,p.dmg); t.lastAttacker=p.ownerId; t.lastHitTime=Date.now(); chD(t,id);
+                        let kang=Math.atan2(t.y-p.y,t.x-p.x);
+                        connections.forEach(c=>{if(c.open) c.send({type:'knockback_apply', targetId:id, angle:kang, force:p.kbk});});
+                        if(myId===id){ localCombat.dash.v.x += Math.cos(kang)*p.kbk; localCombat.dash.v.y += Math.sin(kang)*p.kbk; localCombat.dash.rec=0.2; }
+                    } } }
+                    for(let c of gameState.clones){ if(cDm(p.ownerId,c.ownerId) && !c.invulnerable){ let d=Math.hypot(c.x-p.x,c.y-p.y); if(d<=R){ dmgTk(c,p.dmg,p.ownerId); sendHitmarker(p.ownerId,c,p.dmg);} } }
+                    gameState.projectiles.splice(i,1);
+                }
+            } else if(p.type === 'nitro_vault_telegraph') {
+                p.life -= dt; if(p.life<=0) gameState.projectiles.splice(i,1);
             } else if(p.type === 'bomblet') {
                 p.life -= dt; let he = false;
                 for(let id in gameState.players) if(!gameState.players[id].isDead && cDm(p.ownerId, id) && Math.hypot(gameState.players[id].x - p.x, gameState.players[id].y - p.y) < 20) { he = true; break; }
@@ -4146,6 +4440,34 @@ function updateUI(now = performance.now()) {
         let wc = localCombat.glitchSwap.cd; getEl('cd-glitch-swap').style.height = `${wc > 0 ? (wc / 1.5) * 100 : 0}%`;
         getEl('status-glitch-swap').innerText = wc > 0 ? wc.toFixed(1) + 's' : (ac > 0 ? 'Ready' : 'Req. Clone');
         getEl('ui-glitch-swap').style.opacity = (wc <= 0 && ac > 0) ? "1" : "0.5";
+    }
+    else if(myPlayer.heroClass === 'nitro') {
+        setVisibleAbilities(['nitro-charge','nitro-vault']);
+        let nc = localCombat.nitroCharge;
+        if(nc.charging){
+            let chP = Math.min(1, nc.chargeT/2.0);
+            let grids = (4 + chP*11).toFixed(1);
+            getEl('name-nitro-charge').innerText = 'Charging…';
+            getEl('status-nitro-charge').innerText = grids+' grid';
+            getEl('cd-nitro-charge').style.height = (chP*100)+'%';
+            getEl('ui-nitro-charge').style.borderColor = '#ff5500';
+        } else {
+            getEl('name-nitro-charge').innerText = 'Ram-Charge';
+            getEl('status-nitro-charge').innerText = nc.cd>0 ? nc.cd.toFixed(1)+'s' : 'Ready';
+            getEl('cd-nitro-charge').style.height = (nc.cd>0?(nc.cd/Math.max(0.01,nc.maxCd))*100:0)+'%';
+            getEl('ui-nitro-charge').style.borderColor = '#52525b';
+        }
+        let nv = localCombat.nitroVault;
+        if(nv.charging){
+            let chP = Math.min(1, nv.chargeT/2.0);
+            getEl('status-nitro-vault').innerText = 'Aim '+(4+chP*11).toFixed(1)+'g';
+            getEl('cd-nitro-vault').style.height = (chP*100)+'%';
+            getEl('ui-nitro-vault').style.borderColor = '#ffaa00';
+        } else {
+            getEl('status-nitro-vault').innerText = nv.cd>0 ? nv.cd.toFixed(1)+'s' : 'Ready';
+            getEl('cd-nitro-vault').style.height = (nv.cd>0?(nv.cd/nv.maxCd)*100:0)+'%';
+            getEl('ui-nitro-vault').style.borderColor = '#52525b';
+        }
     }
     else if(myPlayer.heroClass === 'jubilee') {
         setVisibleAbilities(['jubilee-primary','jubilee-dash']);
@@ -5029,6 +5351,25 @@ function drawEnts() {
                 }
             }
             ctx.restore();
+
+        } else if(p.type === 'nitro_glint') {
+            ctx.save(); ctx.translate(p.x, p.y);
+            let pulse = 0.5 + 0.5*Math.sin(Date.now()/60);
+            let img = GlintCache.getModel('Electric_Yellow');
+            let s = (10 + pulse*4) / GlintCache.size;
+            ctx.globalAlpha = 0.85;
+            ctx.scale(s, s); ctx.drawImage(img, -GlintCache.size/2, -GlintCache.size/2);
+            ctx.restore();
+        } else if(p.type === 'nitro_vault_telegraph') {
+            ctx.save(); ctx.translate(p.x, p.y);
+            let t = (Date.now()/200)%1;
+            ctx.strokeStyle = '#ff5500'; ctx.lineWidth = 4;
+            ctx.setLineDash([12,8]); ctx.lineDashOffset = -Date.now()/30;
+            ctx.beginPath(); ctx.arc(0, 0, 50 + t*8, 0, 6.28); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.strokeStyle = 'rgba(255,170,0,0.5)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(-30,0); ctx.lineTo(30,0); ctx.moveTo(0,-30); ctx.lineTo(0,30); ctx.stroke();
+            ctx.restore();
         } else if(p.type !== 'blitz_grab_manager') {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx)); drawDag(ctx); ctx.restore();
         }
@@ -5229,7 +5570,7 @@ function drawPlayers() {
         
         ctx.save(); ctx.translate(e.x, e.y);
         // Jubilee jump: draw shadow on the ground, then lift sprite up by z
-        let _jubZ = (o.heroClass === 'jubilee' && o.z) ? o.z : 0;
+        let _jubZ = ((o.heroClass === 'jubilee' || o.heroClass === 'nitro') && o.z) ? o.z : 0;
         if(_jubZ > 0) {
             ctx.save();
             let shAlpha = Math.max(0.15, 0.5 - _jubZ/220);
@@ -5249,7 +5590,7 @@ function drawPlayers() {
             let heroR = o.heroClass === 'corsair' && o.corsairStance === 'cannon' ? 22 : 18;
             ctx.lineJoin = 'round'; ctx.lineCap = 'round';
             ctx.strokeStyle = '#1A1A2A';
-            ctx.lineWidth = 7;
+            ctx.lineWidth = 0;
             ctx.beginPath(); ctx.arc(0, 0, heroR, 0, 6.28); ctx.stroke();
         }
         
@@ -5783,6 +6124,222 @@ o.timBeamCharge * 9;
             }
             
             ctx.scale(1/timScale, 1/timScale);
+
+        } else if(!iC && o.heroClass === 'nitro') {
+            // ===== NITRO: pilot on side, MASSIVE rocket ram dominating center =====
+            let isCharging = (o.id === myId) ? (localCombat.nitroCharge.charging) : !!o.nitroCharging;
+            let chargeT = (o.id === myId) ? localCombat.nitroCharge.chargeT : (o.nitroChargeT||0);
+            let chP = Math.min(1, chargeT/2.0);
+            let isFlying = (o.id === myId) ? (localCombat.nitroCharge.boostTm>0) : !!o.nitroBoosting;
+
+            // ====== PUFFY ANIME EXHAUST TRAIL (rendered BEFORE the ram so trail is behind) ======
+            // Long trailing smoke when boosting; subtle puff when charging.
+            let trailIntensity = isFlying ? 1 : (isCharging ? chP*0.35 : 0);
+            if(trailIntensity > 0.05){
+                ctx.save();
+                ctx.globalCompositeOperation = 'source-over';
+                // Greys (puffy anime smoke) with warm hints
+                const greys = ['#9ca3af','#6b7280','#4b5563','#374151','#1f2937'];
+                const warms = ['rgba(255,170,0,0.55)','rgba(255,85,0,0.5)','rgba(220,38,38,0.45)','rgba(250,204,21,0.5)'];
+                // Trail extends backwards (–X relative to ram) — much longer when boosting
+                const puffCount = isFlying ? 14 : 5;
+                const trailLen = isFlying ? 220 : 60; // visual length of trail behind nozzles
+                const t = Date.now()/1000;
+                // Emit from BOTH nozzle mouths simultaneously (mouths sit at x=-20, y=±6)
+                const nozzleMouthX = -20;
+                const nozzleYs = [-6, 6];
+                const totalPuffs = puffCount * nozzleYs.length;
+                for(let pi=0; pi<totalPuffs; pi++){
+                    let nozIdx = pi % nozzleYs.length;
+                    let step = Math.floor(pi / nozzleYs.length);
+                    let prog = step / puffCount;               // 0 (at nozzle mouth) -> 1 (far back)
+                    let baseX = nozzleMouthX - prog * trailLen;
+                    // small wave so it feels alive (grows with distance)
+                    let waveY = Math.sin(t*4 + pi*0.9) * (2 + prog*8);
+                    // anchor at the nozzle's actual y, drift outward as it travels
+                    let nozY = nozzleYs[nozIdx] + waveY * 0.6;
+                    // puff grows as it travels back (anime billowing)
+                    let puffR = (5 + prog * 18) * (isFlying ? 1 : 0.7);
+                    let alpha = (1 - prog) * (isFlying ? 0.85 : 0.55);
+                    // Outer dark grey puff
+                    ctx.globalAlpha = alpha * 0.55;
+                    ctx.fillStyle = greys[Math.min(greys.length-1, Math.floor(prog*greys.length))];
+                    ctx.beginPath(); ctx.arc(baseX, nozY, puffR*1.15, 0, 6.28); ctx.fill();
+                    // Mid grey puff
+                    ctx.globalAlpha = alpha * 0.7;
+                    ctx.fillStyle = greys[Math.max(0, Math.floor((1-prog)*greys.length)-1)];
+                    ctx.beginPath(); ctx.arc(baseX + 2, nozY - 1, puffR*0.85, 0, 6.28); ctx.fill();
+                    // Warm hint (red/orange/yellow) — only on the front 60% of trail
+                    if(prog < 0.6){
+                        ctx.globalAlpha = alpha * (0.6 - prog*0.7);
+                        ctx.fillStyle = warms[(pi + Math.floor(t*8)) % warms.length];
+                        ctx.beginPath(); ctx.arc(baseX + 3, nozY + waveY*0.2, puffR*0.55, 0, 6.28); ctx.fill();
+                    }
+                    // Hot core close to nozzle (white-yellow)
+                    if(prog < 0.25 && isFlying){
+                        ctx.globalAlpha = alpha;
+                        ctx.fillStyle = 'rgba(255,245,200,0.9)';
+                        ctx.beginPath(); ctx.arc(baseX + 4, nozY, puffR*0.35, 0, 6.28); ctx.fill();
+                    }
+                }
+                // Long faint smoke streak underneath for added length cue
+                if(isFlying){
+                    ctx.globalAlpha = 0.35;
+                    let grad = ctx.createLinearGradient(-22, 0, -22 - trailLen*1.1, 0);
+                    grad.addColorStop(0, 'rgba(156,163,175,0.7)');
+                    grad.addColorStop(0.5, 'rgba(75,85,99,0.4)');
+                    grad.addColorStop(1, 'rgba(31,41,55,0)');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.moveTo(-22, -10);
+                    ctx.lineTo(-22 - trailLen*1.1, -3);
+                    ctx.lineTo(-22 - trailLen*1.1, 3);
+                    ctx.lineTo(-22, 10);
+                    ctx.closePath(); ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            // Pilot body — to the LEFT of center (perpendicular to facing dir)
+            ctx.save();
+            ctx.translate(-9, 14); // pushed further to the side so the ram dominates
+            ctx.fillStyle = isImpactFlash ? '#000' : '#ff7a1a';
+            ctx.shadowBlur = 12; ctx.shadowColor = '#ff5500';
+            ctx.beginPath(); ctx.arc(0, 0, 8, 0, 6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#ffd27a'; ctx.lineWidth = 2; ctx.stroke();
+            // Goggles
+            ctx.fillStyle = isImpactFlash ? '#000' : '#fff5cc';
+            ctx.beginPath(); ctx.arc(2, -2, 2, 0, 6.28); ctx.fill();
+            ctx.restore();
+
+            // ===== THE ROCKET RAM (matches reference: grimy industrial cannon-gauntlet) =====
+            ctx.save();
+            // Charge wobble
+            if(isCharging){ ctx.translate((Math.random()-0.5)*chP*2,(Math.random()-0.5)*chP*2); }
+
+            // ---- Rear knuckle / housing block (chunky dark grey grip end) ----
+            ctx.fillStyle = isImpactFlash ? '#000' : '#1f1f23';
+            ctx.fillRect(-22, -16, 16, 32);
+            // Highlight on top of housing
+            ctx.fillStyle = isImpactFlash ? '#000' : '#3f3f46';
+            ctx.fillRect(-22, -16, 16, 5);
+            // Bottom heavy shadow
+            ctx.fillStyle = isImpactFlash ? '#000' : '#0a0a0c';
+            ctx.fillRect(-22, 11, 16, 5);
+            // Knuckle plates / finger ridges (3 bumps on top)
+            ctx.fillStyle = isImpactFlash ? '#000' : '#2a2a2f';
+            for(let kx=-20; kx<-8; kx+=4){
+                ctx.beginPath(); ctx.arc(kx, -16, 2, Math.PI, 2*Math.PI); ctx.fill();
+            }
+
+            // ---- Main barrel body (long grimy rectangle, dark grey with lighter top) ----
+            let rL = 56, rH = 22;
+            // Base body
+            ctx.fillStyle = isImpactFlash ? '#000' : '#2d2d31';
+            ctx.fillRect(-8, -rH/2, rL, rH);
+            // Top-light panel (lighter grey)
+            ctx.fillStyle = isImpactFlash ? '#000' : '#52525b';
+            ctx.fillRect(-8, -rH/2, rL, 6);
+            // Bottom shadow
+            ctx.fillStyle = isImpactFlash ? '#000' : '#0e0e10';
+            ctx.fillRect(-8, rH/2-5, rL, 5);
+            // Center red core stripe (the "ROCKET RAM" red guts visible through the body)
+            ctx.fillStyle = isImpactFlash ? '#000' : '#7f1d1d';
+            ctx.fillRect(-8, -3, rL, 6);
+            // Bright red inner glow line
+            ctx.fillStyle = isImpactFlash ? '#000' : '#dc2626';
+            ctx.fillRect(-8, -1, rL, 2);
+            if(isCharging || isFlying){
+                ctx.fillStyle = isImpactFlash ? '#000' : '#fca5a5';
+                ctx.fillRect(-8, -0.5, rL, 1);
+            }
+
+            // ---- Side rivets/bolts ----
+            ctx.fillStyle = isImpactFlash ? '#000' : '#71717a';
+            for(let bx=-4; bx<46; bx+=10){
+                ctx.beginPath(); ctx.arc(bx, -rH/2+3, 1.6, 0, 6.28); ctx.fill();
+                ctx.beginPath(); ctx.arc(bx, rH/2-3, 1.6, 0, 6.28); ctx.fill();
+            }
+
+            // ---- Grimy wear / scratch streaks (a few white scuffs on top) ----
+            ctx.strokeStyle = isImpactFlash ? '#000' : 'rgba(229,231,235,0.35)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(2, -rH/2+8); ctx.lineTo(14, -rH/2+8); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(22, -rH/2+10); ctx.lineTo(30, -rH/2+10); ctx.stroke();
+            // Stencil red mark on side
+            ctx.fillStyle = isImpactFlash ? '#000' : 'rgba(220,38,38,0.55)';
+            ctx.fillRect(8, -rH/2+8, 10, 2);
+            ctx.fillRect(8, -rH/2+12, 6, 2);
+
+            // ---- Muzzle / ram head (chunky stepped industrial nose) ----
+            // Outer flange ring
+            ctx.fillStyle = isImpactFlash ? '#000' : '#3f3f46';
+            ctx.fillRect(rL-8, -rH/2-3, 8, rH+6);
+            // Inner mouth — dark
+            ctx.fillStyle = isImpactFlash ? '#000' : '#0a0a0c';
+            ctx.fillRect(rL-4, -rH/2+2, 6, rH-4);
+            // Glowing red core inside the muzzle (always visible — this is the "rocket")
+            let coreGlow = isFlying ? 1 : (isCharging ? 0.5 + chP*0.5 : 0.6);
+            ctx.fillStyle = isImpactFlash ? '#000' : `rgba(220,38,38,${coreGlow})`;
+            ctx.shadowBlur = 14*coreGlow; ctx.shadowColor = '#ff3300';
+            ctx.beginPath(); ctx.arc(rL-1, 0, 4, 0, 6.28); ctx.fill();
+            ctx.fillStyle = isImpactFlash ? '#000' : `rgba(255,200,100,${coreGlow})`;
+            ctx.beginPath(); ctx.arc(rL-1, 0, 2, 0, 6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // ---- FORWARD MUZZLE FLAME (out of the front when charging or flying) ----
+            if(isCharging || isFlying){
+                let fI = isFlying ? 1 : chP;
+                ctx.save();
+                ctx.translate(rL+2, 0);
+                // Outer red flame
+                ctx.fillStyle = `rgba(220,38,38,${0.85*fI})`;
+                ctx.shadowBlur = 18*fI; ctx.shadowColor = '#ff3300';
+                ctx.beginPath();
+                ctx.moveTo(0, -7);
+                ctx.quadraticCurveTo(10*fI, -3, 22*fI + Math.random()*4, 0);
+                ctx.quadraticCurveTo(10*fI, 3, 0, 7);
+                ctx.closePath(); ctx.fill();
+                // Mid orange
+                ctx.fillStyle = `rgba(255,140,0,${0.9*fI})`;
+                ctx.beginPath();
+                ctx.moveTo(0, -5);
+                ctx.quadraticCurveTo(7*fI, -2, 16*fI, 0);
+                ctx.quadraticCurveTo(7*fI, 2, 0, 5);
+                ctx.closePath(); ctx.fill();
+                // Hot yellow-white core
+                ctx.fillStyle = `rgba(255,240,180,${fI})`;
+                ctx.beginPath();
+                ctx.moveTo(0, -3);
+                ctx.quadraticCurveTo(4*fI, -1, 10*fI, 0);
+                ctx.quadraticCurveTo(4*fI, 1, 0, 3);
+                ctx.closePath(); ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+
+            // ---- Rear thrust nozzles (small twin nozzles on the back of the housing) ----
+            ctx.fillStyle = isImpactFlash ? '#000' : '#18181b';
+            ctx.fillRect(-26, -10, 6, 8); ctx.fillRect(-26, 2, 6, 8);
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#3f3f46'; ctx.lineWidth = 1;
+            ctx.strokeRect(-26, -10, 6, 8); ctx.strokeRect(-26, 2, 6, 8);
+            // Subtle nozzle inner glow when active
+            if(isFlying || isCharging){
+                let nG = isFlying ? 1 : chP*0.6;
+                ctx.fillStyle = `rgba(255,170,0,${nG})`;
+                ctx.shadowBlur = 10*nG; ctx.shadowColor = '#ff5500';
+                ctx.beginPath(); ctx.arc(-23, -6, 2.2, 0, 6.28); ctx.fill();
+                ctx.beginPath(); ctx.arc(-23,  6, 2.2, 0, 6.28); ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Charge ring indicator (only on self)
+            if(o.id === myId && isCharging){
+                ctx.strokeStyle = '#ffea8c'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(0, 0, 30, -1.57, -1.57 + chP*6.28); ctx.stroke();
+            }
+            ctx.restore();
         } else if(!iC && o.heroClass === 'kendo') {
             // Kendo body — bright red sniper
             let kc = o.customization?.kendoColors || {primary:'#ef4444', glow:'#ef4444'};
@@ -6199,6 +6756,33 @@ function drawVFX() {
             ctx.strokeStyle = e.color || `rgba(255,255,255,${(e.life / e.maxLife) * 0.7})`; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(e.x + Math.cos(e.angle) * e.length, e.y + Math.sin(e.angle) * e.length); ctx.stroke();
             e.x += Math.cos(e.angle) * 15; e.y += Math.sin(e.angle) * 15;
+
+        } else if(e.type === 'nitroGlint') {
+            // Staggered spawn delay
+            if(e.delay > 0){ e.delay -= 1/20; ctx.restore(); return; }
+            let lifeP = e.life / e.maxLife; // 1..0
+            let model = GlintCache.getModel(e.palette);
+            if(!model){ ctx.restore(); return; }
+            // Pop in (linear scale up first 40%), hold, shrink (quadratic out)
+            let appear = 1 - lifeP; // 0..1
+            let scale;
+            if(appear < 0.4){ scale = (appear/0.4); }
+            else if(appear < 0.55){ scale = 1; }
+            else { let t=(appear-0.55)/0.45; scale = 1 - t*t; }
+            scale *= e.scale;
+            ctx.translate(e.x, e.y);
+            ctx.rotate(e.rot);
+            ctx.scale(scale * e.sx * (60/GlintCache.size), scale * e.sy * (60/GlintCache.size));
+            ctx.globalCompositeOperation = 'screen';
+            ctx.drawImage(model, -GlintCache.size/2, -GlintCache.size/2);
+        } else if(e.type === 'nitroShockwave') {
+            let p = 1 - (e.life / e.maxLife);
+            ctx.translate(e.x, e.y);
+            ctx.strokeStyle = `rgba(255,170,0,${(1-p)*0.7})`;
+            ctx.lineWidth = 16 * (1-p);
+            ctx.beginPath(); ctx.arc(0, 0, e.radius * (0.4 + p*0.9), 0, 6.28); ctx.stroke();
+            ctx.fillStyle = `rgba(0,0,0,${(1-p)*0.5})`;
+            ctx.beginPath(); ctx.arc(0, 0, e.radius * p * 0.9, 0, 6.28); ctx.fill();
         } else if(e.type === 'fireworkBoom') {
             ctx.translate(e.x, e.y); let p = 1 - (e.life / e.maxLife);
             ctx.fillStyle = `rgba(24,24,27,${0.8 - p * 0.8})`; ctx.beginPath(); ctx.arc(0, 0, e.radius * p * 1.5, 0, 6.28); ctx.fill();
