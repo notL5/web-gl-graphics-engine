@@ -351,6 +351,10 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
         <div class="ability-slot" id="ui-rift-jab"><div class="key">E</div><div class="name">Rift Jab</div><div class="status" id="status-rift-jab">Ready</div><div class="cooldown-overlay" id="cd-rift-jab"></div></div>
         <div class="ability-slot" id="ui-rift-shift"><div class="key">SPACE</div><div class="name">Vector Shift</div><div class="status" id="status-rift-shift">Ch: 2</div><div class="cooldown-overlay" id="cd-rift-shift"></div></div>
 
+        <div class="ability-slot" id="ui-bread-shoot"><div class="key">HOLD L-CLICK</div><div class="name" id="name-bread-shoot">Burnt Bread</div><div class="status" id="status-bread-shoot">32/32</div><div class="cooldown-overlay" id="cd-bread-shoot"></div></div>
+        <div class="ability-slot" id="ui-bread-shield"><div class="key">E</div><div class="name">Tank Mode</div><div class="status" id="status-bread-shield">Ready</div><div class="cooldown-overlay" id="cd-bread-shield"></div></div>
+        <div class="ability-slot" id="ui-bread-grapple"><div class="key">SPACE</div><div class="name">Cord Grapple</div><div class="status" id="status-bread-grapple">Ready</div><div class="cooldown-overlay" id="cd-bread-grapple"></div></div>
+
     </div>
     <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="health-text">150 / 150</div></div>
 </div>
@@ -418,7 +422,7 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
                         <button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
                         <button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://gifdb.com/images/thumbnail/dice-roll-jump-scare-angry-birds-meme-bhr66fsxdyaipbt5.gif') center/95%;">Roulette!</button>
                              <button id="btn-nitro" class="class-list-btn" onclick="selectHero('nitro')" style="--glow-color: #ff5500; background:url('https://external-preview.redd.it/M9O71AtU29lDwtQJUhp7SDRf4YggDRy1cxBlXyDH6VA.gif?auto=webp&s=19994d15dad85c165f540d9ee0ed9219c7e447ab') center/ 100% 160%;color:#fff;">Nitro</button>
-                             <button id="bt-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
+                             <button id="btn-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
                            <button id="bt-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>  
                     </div>
 
@@ -611,12 +615,12 @@ const HERO_DATA = {
     rift:{name:'Rift',role:'Portal-Hopping Duelist',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']},
     roulette:{name:'Roulette',role:'Randomized Wildcard',hp:250,speed:'Variable',color:'#fbbf24',desc:'Not a hero — a randomized game mode. Spawns as a random hero. Every 35s OR on kill, the One-Armed Bandit spins and you transform into a different hero (no repeats). Full stats and abilities of whoever you become.',abilities:['Random Hero on Spawn','Auto-Swap Every 35s','Kill = Instant Re-Spin','Gold Outline (You are the Jackpot)']},
 nitro:{name:'Nitro',role:'Rocket-Ram Vanguard',hp:260,speed:'Medium',color:'#ff5500',desc:'Nimble brawler wielding a colossal rocket ram. Charge, boost, scoop, and carpet-bomb glints across the battlefield.',abilities:['Ram-Charge & Pin (Hold L-Click)','Stratosphere Vault (Hold Space)']},
-    bread:{name:'The Bread-Burner',role:'Toaster',hp:250,speed:'slow',color:'#000',desc:'idk',abilities:[]},
+    bread:{name:'The Bread-Burner',role:'Heated Tank',hp:280,speed:'Slow',color:'#d97706',desc:'A walking hyper-detailed toaster. Burns bread, deploys a bubble shield, and grapples around with his power cord.',abilities:['Burnt Bread Spitter (L-Click, ramps up)','Tank Mode Bubble Shield (E)','Cord Grapple (SPACE)']},
          mystery:{name:'???',role:'idk',hp:250,speed:'fast',color:'#000',desc:'idk',abilities:[]}
 };
 
 // Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
-const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift','nitro'];
+const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift','nitro','bread'];
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
 let tCol = JSON.parse(localStorage.getItem('rivals_traceColors'))||{bow:'#3b0764',neon:'#a855f7'}; getEl('tColorBow').value=tCol.bow; getEl('tColorNeon').value=tCol.neon;
@@ -961,7 +965,10 @@ let localCombat = {
     riftPrimary: { cd: 0, maxCd: 0.66, ammo: 18, rTm: 0, burstCount: 0, burstTimer: 0 },
     riftOrb: { cd: 0, maxCd: 2.0 },
     riftJab: { cd: 0, maxCd: 2.0 },
-    riftShift: { charges: 1, maxCharges: 1, cds: [0, 0], maxCd: 4.0 }
+    riftShift: { charges: 1, maxCharges: 1, cds: [0, 0], maxCd: 4.0 },
+    breadShoot:{cd:0,maxCd:0.25,ammo:80,reload:0,reloadDur:1.5,heat:0,firingTm:0},
+    breadShield:{cd:0,maxCd:22.0,active:false,activeTm:0,maxActive:8.0,shieldHp:200,maxShieldHp:200},
+    breadGrapple:{cd:0,maxCd:9.0,phase:'idle',anchor:null,fireTm:0,pullTm:0,curX:0,curY:0,vx:0,vy:0}
 };
 
 function resetAllCooldowns() {
@@ -980,6 +987,9 @@ function resetAllCooldowns() {
     myPlayer.blitzAmmo = 8;
     myPlayer.riftAmmo = 18;
     myPlayer.daggers = 2;
+    if(localCombat.breadShoot){localCombat.breadShoot.ammo=32;localCombat.breadShoot.reload=0;localCombat.breadShoot.heat=0;localCombat.breadShoot.firingTm=0;}
+    if(localCombat.breadShield){localCombat.breadShield.active=false;localCombat.breadShield.activeTm=0;localCombat.breadShield.shieldHp=200;}
+    if(localCombat.breadGrapple){localCombat.breadGrapple.phase='idle';localCombat.breadGrapple.anchor=null;}
 }
 
 let vfx=[], arrowTrails={}, traceArrowTrails={}, impactFlashTimer=0;
@@ -1328,6 +1338,25 @@ function drawPrev() {
         pCtx.fillStyle = '#ffaa00'; pCtx.shadowBlur = 8; pCtx.shadowColor = '#ff5500';
         pCtx.beginPath(); pCtx.arc(-6, -5, 3, 0, 6.28); pCtx.arc(-6, 5, 3, 0, 6.28); pCtx.fill();
         pCtx.shadowBlur = 0;
+    } else if(heroClass === 'bread') {
+        getEl('generic-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        // Toaster body
+        pCtx.fillStyle = '#f59e0b';
+        pCtx.fillRect(-22,-22,44,44);
+        pCtx.strokeStyle = '#451a03'; pCtx.lineWidth=2; pCtx.strokeRect(-22,-22,44,44);
+        // Slots
+        pCtx.fillStyle='#1c1917'; pCtx.fillRect(-15,-22,12,8); pCtx.fillRect(3,-22,12,8);
+        // Coils glow
+        pCtx.fillStyle='#dc2626'; pCtx.shadowBlur=8; pCtx.shadowColor='#ff4500';
+        pCtx.fillRect(-13,-19,8,1); pCtx.fillRect(5,-19,8,1);
+        pCtx.shadowBlur=0;
+        // Eyes
+        pCtx.fillStyle='#fff'; pCtx.beginPath(); pCtx.arc(-7,-3,3,0,6.28); pCtx.arc(7,-3,3,0,6.28); pCtx.fill();
+        pCtx.fillStyle='#000'; pCtx.beginPath(); pCtx.arc(-7,-3,1.4,0,6.28); pCtx.arc(7,-3,1.4,0,6.28); pCtx.fill();
+        // Lever
+        pCtx.fillStyle='#27272a'; pCtx.fillRect(-26,-4,4,14);
+        pCtx.fillStyle='#dc2626'; pCtx.beginPath(); pCtx.arc(-24,3,3,0,6.28); pCtx.fill();
     }
     
     pCtx.restore();
@@ -2210,6 +2239,17 @@ function dmgTk(t, amt, aId) {
     if (t.heroClass === 'blitz' && t.blitzParryActive) { fA *= 0.5; }
     if(t.heroClass === 'corsair' && t.corsairStance === 'cannon') fA *= 0.7; // 30% damage reduction in cannon mode
     if (activeServerMode === 'JUGG' && aId === gameState.juggernautId) fA *= 2;
+    // Bread bubble shield: absorb damage onto shield hp first
+    if(t.id && gameState.shields){
+        let sh = gameState.shields.find(s => s.kind==='bread' && s.ownerId===t.id && (s.hp||0) > 0);
+        if(sh){
+            let absorbed = Math.min(sh.hp, fA);
+            sh.hp -= absorbed;
+            fA -= absorbed;
+            if(sh.hp <= 0) sh.life = 0;
+        }
+    }
+    if(fA <= 0) return 0;
     t.hp -= fA;
     if (t.id === myId) myPlayer.ultCharge = Math.min(100, (myPlayer.ultCharge || 0) + fA * 0.05);
     return fA;
@@ -2289,6 +2329,7 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'tim') trTimVents();
             else if(myPlayer.heroClass === 'rift') trRiftShift();
             else if(myPlayer.heroClass === 'nitro') { let nv = localCombat.nitroVault; if(nv.cd<=0 && !nv.charging && !nv.flying && localCombat.nitroCharge.boostTm<=0){ nv.charging=true; nv.chargeT=0; } }
+            else if(myPlayer.heroClass === 'bread') trBreadGrapple();
             else if(myPlayer.heroClass === 'corsair') {
         setVisibleAbilities(['corsair-primary','corsair-stance','corsair-parry']);
         let cp = localCombat.corsairPrimary.cd; 
@@ -2329,6 +2370,7 @@ window.addEventListener('keydown', e => {
         else if(myPlayer.heroClass === 'glitch') trGlS();
         else if(myPlayer.heroClass === 'blitz') trBlG();
         else if(myPlayer.heroClass === 'rift') trRiftJab();
+        else if(myPlayer.heroClass === 'bread') trBreadShield();
     }
     
     if(k === 'p' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
@@ -2507,6 +2549,7 @@ can.addEventListener('mousedown', e => {
         }
         else if(myPlayer.heroClass === 'jubilee') trJubP();
         else if(myPlayer.heroClass === 'nitro') { if(localCombat.nitroCharge.cd<=0 && !localCombat.nitroCharge.charging && localCombat.nitroCharge.boostTm<=0){ localCombat.nitroCharge.charging=true; localCombat.nitroCharge.chargeT=0; } }
+        else if(myPlayer.heroClass === 'bread') { localCombat.breadShoot.firingTm = 0; trBreadShoot(); }
         else if(myPlayer.heroClass === 'misaki') trMisS();
         else if(myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'katana') trBlKt();
     }
@@ -2609,6 +2652,43 @@ function trDsh(){if(localCombat.dash.charges>0){localCombat.dash.charges--;let s
 function trSl(){if(localCombat.slash.cd<=0&&myPlayer.daggers>0){localCombat.slash.cd=(activeServerMode==='CHAOS')?0.05:localCombat.slash.maxCd;myPlayer.slashAnimTimer=0.15;applyShake(3,0.1);vfx.push({type:'animeSlash',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle,life:0.15,maxLife:0.15,daggerCount:myPlayer.daggers});sdEv({type:'slash',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle,daggerCount:myPlayer.daggers});}}
 function trThr(){if(myPlayer.daggers>0&&myPlayer.heroClass==='thorfinn'){myPlayer.daggers--;sdEv({type:'throw',x:myPlayer.x,y:myPlayer.y,angle:myPlayer.angle});sdUp();}}
 function trTimVents(){if(myPlayer.heroClass==='tim'&&localCombat.timVents.cd<=0){localCombat.timVents.cd=(activeServerMode==='CHAOS')?0.05:2.0;let ventAngle=myPlayer.angle+1.57;if(keys.a)ventAngle=myPlayer.angle+3.14;else if(keys.d)ventAngle=myPlayer.angle;localCombat.dash.v.x=Math.cos(ventAngle)*40;localCombat.dash.v.y=Math.sin(ventAngle)*40;localCombat.dash.rec=0.3;applyShake(5,0.15);sdEv({type:'tim_vents',angle:ventAngle,x:myPlayer.x,y:myPlayer.y});sdUp();}}
+
+function trBreadShield(){
+    let bs=localCombat.breadShield;
+    if(bs.cd<=0 && !bs.active){
+        bs.active=true; bs.activeTm=bs.maxActive; bs.shieldHp=bs.maxShieldHp;
+        bs.cd=(activeServerMode==='CHAOS')?0.5:bs.maxCd;
+        applyShake(3,0.1);
+        sdEv({type:'bread_shield_deploy', x:myPlayer.x, y:myPlayer.y, hp:bs.maxShieldHp, dur:bs.maxActive});
+        sdUp();
+    }
+}
+function trBreadGrapple(){
+    let bg=localCombat.breadGrapple;
+    if(bg.cd<=0 && bg.phase==='idle'){
+        bg.cd=(activeServerMode==='CHAOS')?0.5:bg.maxCd;
+        let ang=Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
+        bg.phase='firing'; bg.curX=myPlayer.x; bg.curY=myPlayer.y;
+        bg.vx=Math.cos(ang)*1800; bg.vy=Math.sin(ang)*1800;
+        bg.fireTm=0.6;
+        sdEv({type:'bread_grapple_fire', x:myPlayer.x, y:myPlayer.y, angle:ang});
+    }
+}
+function trBreadShoot(){
+    let bs=localCombat.breadShoot;
+    if(bs.reload>0 || bs.ammo<=0) return;
+    // Ramping fire rate: based on firingTm (held duration). Starts at 4/s -> ramps to ~10/s.
+    let rate = 4 + Math.min(6, bs.firingTm*2.0); // shots per second
+    let interval = 1/rate;
+    if(bs.cd>0) return;
+    bs.cd = (activeServerMode==='CHAOS')?0.02:interval;
+    bs.ammo -= 2; if(bs.ammo<0) bs.ammo=0;
+    myPlayer.slashAnimTimer = 0.1;
+    applyShake(2, 0.06);
+    let ang=myPlayer.angle;
+    sdEv({type:'bread_shoot', x:myPlayer.x, y:myPlayer.y, angle:ang});
+    if(bs.ammo<=0){ bs.reload = bs.reloadDur; }
+}
 
 function trRiftShift() {
     let b = localCombat.riftShift;
@@ -2962,6 +3042,29 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='nitro_glint_drop'){
         gameState.projectiles.push({type:'nitro_glint', id:Math.random().toString(), ownerId:sId, x:e.x, y:e.y, life:e.fuse, fuse:e.fuse, dmg:e.dmg, kbk:e.kbk, exploded:false});
     }
+    else if(e.type==='bread_shoot'){
+        s.slashAnimTimer = 0.1;
+        // Two pieces of bread out of the toaster's two slots — slight horizontal offsets
+        let perp = e.angle + 1.5708;
+        for(let side of [-1, 1]){
+            let ox = e.x + Math.cos(e.angle)*22 + Math.cos(perp)*side*7;
+            let oy = e.y + Math.sin(e.angle)*22 + Math.sin(perp)*side*7;
+            // small angular spread
+            let ang = e.angle + side*0.04;
+            gameState.projectiles.push({type:'burnt_bread', id:Math.random().toString(), ownerId:sId, x:ox, y:oy, vx:Math.cos(ang)*1100, vy:Math.sin(ang)*1100, angle:ang, rot:Math.random()*6.28, rotSpd:(Math.random()-0.5)*16, life:0.85, dmg:10*(e.dmgMult||1)});
+        }
+    }
+    else if(e.type==='bread_shield_deploy'){
+        // Remove existing bread shield for this owner
+        gameState.shields = gameState.shields.filter(sh => !(sh.ownerId===sId && sh.kind==='bread'));
+        gameState.shields.push({id:Math.random().toString(), ownerId:sId, x:e.x, y:e.y, radius:80, life:e.dur, maxLife:e.dur, kind:'bread', followOwner:true, hp:e.hp, maxHp:e.hp});
+    }
+    else if(e.type==='bread_shield_end'){
+        gameState.shields = gameState.shields.filter(sh => !(sh.ownerId===sId && sh.kind==='bread'));
+    }
+    else if(e.type==='bread_grapple_fire'){ /* purely visual on owner; sync via state */ }
+    else if(e.type==='bread_grapple_anchor'){ /* visual */ }
+    else if(e.type==='bread_grapple_end'){ /* visual */ }
 
     else if(e.type==='jubilee_bomblet'){let c=['#ff0044','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff'][Math.floor(Math.random()*6)];gameState.projectiles.push({type:'bomblet',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:0.15,color:c});}
     else if(e.type==='misaki_shoot'){s.slashAnimTimer=0.15;let sx=s.x+Math.cos(e.angle)*45,sy=s.y+Math.sin(e.angle)*45;gameState.projectiles.push({type:'sniper_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*2500,vy:Math.sin(e.angle)*2500,angle:e.angle,life:2.0,bounces:1,damage:85*(e.dmgMult||1),hitIds:{},hitMirrors:{}});connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'sniper_vfx',x:sx,y:sy,angle:e.angle});});if(sId!==myId)vfx.push({type:'sniperMuzzle',x:sx,y:sy,angle:e.angle,life:0.15,maxLife:0.15});}
@@ -3238,6 +3341,53 @@ function updateMovement(dt) {
     }
     
     if(mDwn && myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'handgun' && myPlayer.stunTimer <= 0 && !myPlayer.grabbedLocked) trBlSh();
+    if(myPlayer.heroClass === 'bread' && myPlayer.stunTimer<=0){
+        let bs = localCombat.breadShoot;
+        if(mDwn && bs.reload<=0){
+            bs.firingTm = (bs.firingTm||0) + dt;
+            trBreadShoot();
+        } else if(!mDwn){
+            bs.firingTm = Math.max(0, (bs.firingTm||0) - dt*1.5);
+        }
+        if(bs.reload>0){ bs.reload -= dt; if(bs.reload<=0){ bs.ammo = 32; bs.firingTm=0; } }
+        // shield tick
+        let bsh = localCombat.breadShield;
+        if(bsh.active){ bsh.activeTm -= dt; if(bsh.activeTm<=0 || bsh.shieldHp<=0){ bsh.active=false; sdEv({type:'bread_shield_end'}); } }
+        // grapple update
+        let bg = localCombat.breadGrapple;
+        if(bg.phase==='firing'){
+            bg.fireTm -= dt;
+            let nx = bg.curX + bg.vx*dt, ny = bg.curY + bg.vy*dt;
+            if(iW(nx,ny) || bg.fireTm<=0){
+                if(iW(nx,ny)){
+                    // anchor!
+                    let s = gnV(nx, ny);
+                    bg.anchor = {x:s.x, y:s.y};
+                    bg.phase='pulling';
+                    bg.pullTm = Math.min(0.7, Math.hypot(s.x-myPlayer.x, s.y-myPlayer.y)/1500);
+                    sdEv({type:'bread_grapple_anchor', x:s.x, y:s.y});
+                } else {
+                    bg.phase='idle'; bg.anchor=null;
+                    sdEv({type:'bread_grapple_end'});
+                }
+            } else { bg.curX = nx; bg.curY = ny; }
+        } else if(bg.phase==='pulling' && bg.anchor){
+            bg.pullTm -= dt;
+            let dx = bg.anchor.x - myPlayer.x, dy = bg.anchor.y - myPlayer.y;
+            let d = Math.hypot(dx,dy);
+            let spd = 1500*dt;
+            if(d <= spd || bg.pullTm<=0){
+                let s = gnV(bg.anchor.x, bg.anchor.y);
+                myPlayer.x = s.x; myPlayer.y = s.y;
+                bg.phase='idle'; bg.anchor=null; myPlayer.isFlying=false;
+                sdEv({type:'bread_grapple_end'});
+            } else {
+                myPlayer.x += dx/d * spd; myPlayer.y += dy/d * spd;
+                myPlayer.isFlying = true;
+            }
+        }
+    }
+
     
     if(myPlayer.heroClass === 'blitz' && localCombat.blitzTp.dTm > 0 && !myPlayer.grabbedLocked) {
         localCombat.blitzTp.dTm -= dt; myPlayer.flicker = true;
@@ -3443,6 +3593,7 @@ function updateMovement(dt) {
                 if(myPlayer.heroClass === 'jubilee') bs = 4.0;
                 if(myPlayer.heroClass === 'nitro') { bs = 4.5; if(localCombat.nitroCharge.charging || localCombat.nitroVault.charging) bs *= 0.5; }
                 if(myPlayer.heroClass === 'corsair' && myPlayer.corsairStance === 'cannon') bs = 2.88;
+                if(myPlayer.heroClass === 'bread') bs = 2.6;
                 if(myPlayer.heroClass === 'tim') {
                     if(myPlayer.timTransitioning) {
                         // During transition: speed adjusts based on cannon weight (scale)
@@ -3507,7 +3658,7 @@ function updateMovement(dt) {
 
 function updateGameState(dt) {
     let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','nitroCharge','nitroVault','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','blitzParry','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab'].forEach(k => {
+    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','nitroCharge','nitroVault','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','blitzParry','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab','breadShoot','breadShield','breadGrapple'].forEach(k => {
         if(localCombat[k] && localCombat[k].cd > 0) localCombat[k].cd -= dt * cdM;
     });
 
@@ -3719,7 +3870,15 @@ function updateGameState(dt) {
             }
         }
         
-        for(let i=gameState.shields.length-1; i>=0; i--) { gameState.shields[i].life -= dt; if(gameState.shields[i].life <= 0) gameState.shields.splice(i,1); }
+        for(let i=gameState.shields.length-1; i>=0; i--) {
+            let sh = gameState.shields[i];
+            sh.life -= dt;
+            if(sh.followOwner){
+                let ow = gameState.players[sh.ownerId];
+                if(ow && !ow.isDead){ sh.x = ow.x; sh.y = ow.y; }
+            }
+            if(sh.life <= 0 || (sh.hp !== undefined && sh.hp <= 0)) gameState.shields.splice(i,1);
+        }
         
         gameState.healthPacks.forEach(h => {
             if(!h.active) { h.timer -= dt; if(h.timer <= 0) h.active = true; }
@@ -3940,6 +4099,16 @@ function updateGameState(dt) {
                     }
                 }
                 if(hw || p.life <= 0) gameState.projectiles.splice(i, 1);
+            } else if(p.type === 'burnt_bread') {
+                p.lastX = p.x; p.lastY = p.y;
+                p.x += p.vx * sm * dt; p.y += p.vy * sm * dt; p.life -= dt;
+                p.rot += p.rotSpd * dt;
+                let hw = iW(p.x, p.y), hit = false;
+                if(!hw){
+                    for(let c of gameState.clones) if(cDm(p.ownerId,c.ownerId) && !c.invulnerable && Math.hypot(c.x-p.x,c.y-p.y)<22){ dmgTk(c,p.dmg,p.ownerId); sendHitmarker(p.ownerId,c,p.dmg); hit=true; break; }
+                    if(!hit) for(let id in gameState.players){ let t=gameState.players[id]; if(!t.isDead && cDm(p.ownerId,id) && !t.invulnerable && Math.hypot(t.x-p.x,t.y-p.y)<22){ dmgTk(t,p.dmg,p.ownerId); sendHitmarker(p.ownerId,t,p.dmg); t.lastAttacker=p.ownerId; t.lastHitTime=Date.now(); chD(t,id); hit=true; break; } }
+                }
+                if(hw || hit || p.life<=0) gameState.projectiles.splice(i,1);
             } else if(p.type === 'firework') {
                 p.lastX = p.x; p.lastY = p.y; if(p.life <= 0.3 && p.index !== 0) p.angle += p.index * 2.8 * dt;
                 p.x += Math.cos(p.angle) * p.speed * sm * dt; p.y += Math.sin(p.angle) * p.speed * sm * dt; p.life -= dt;
@@ -4394,8 +4563,7 @@ function updateGameState(dt) {
     
     for(let i=vfx.length-1; i>=0; i--) { vfx[i].life -= dt; if(vfx[i].life <= 0) vfx.splice(i, 1); }
     clampVfxPool();
-}
-
+    }
 function updateUI(now = performance.now()) {
     if(now - lastUiRefresh < 66) return;
     lastUiRefresh = now;
@@ -4583,8 +4751,19 @@ function updateUI(now = performance.now()) {
         getEl('cd-rift-shift').style.height = `${sc > 0 ? (sc / localCombat.riftShift.maxCd) * 100 : 0}%`;
         getEl('status-rift-shift').innerText = `Ch: ${localCombat.riftShift.charges}`;
     }
+    else if(myPlayer.heroClass === 'bread') {
+        setVisibleAbilities(['bread-shoot','bread-shield','bread-grapple']);
+        let bsh = localCombat.breadShoot;
+        if(bsh.reload>0){ getEl('status-bread-shoot').innerText = 'Reloading...'; getEl('cd-bread-shoot').style.height = (bsh.reload/bsh.reloadDur*100)+'%'; }
+        else { getEl('status-bread-shoot').innerText = bsh.ammo+'/32'; getEl('cd-bread-shoot').style.height = '0%'; }
+        let bs2 = localCombat.breadShield;
+        if(bs2.active){ getEl('status-bread-shield').innerText = 'Active '+bs2.activeTm.toFixed(1)+'s ('+Math.ceil(bs2.shieldHp)+'hp)'; getEl('ui-bread-shield').style.borderColor='#fbbf24'; getEl('cd-bread-shield').style.height='0%'; }
+        else { getEl('status-bread-shield').innerText = bs2.cd>0 ? bs2.cd.toFixed(1)+'s' : 'Ready'; getEl('cd-bread-shield').style.height = (bs2.cd>0?(bs2.cd/bs2.maxCd)*100:0)+'%'; getEl('ui-bread-shield').style.borderColor='#52525b'; }
+        let bg = localCombat.breadGrapple;
+        getEl('status-bread-grapple').innerText = bg.cd>0 ? bg.cd.toFixed(1)+'s' : (bg.phase!=='idle'?'Active':'Ready');
+        getEl('cd-bread-grapple').style.height = (bg.cd>0?(bg.cd/bg.maxCd)*100:0)+'%';
+    }
 
-    
     if(activeServerMode === 'KOTH' && gameState.koth && gCon.classList.contains('active')) {
         getEl('koth-ui').style.display = 'block'; getEl('koth-score-red').innerText = Math.floor(gameState.koth.points.red); getEl('koth-score-blue').innerText = Math.floor(gameState.koth.points.blue);
         let stat = getEl('koth-status');
@@ -5263,6 +5442,23 @@ function drawEnts() {
         } else if(['sniper_bullet','blitz_bullet'].includes(p.type)) {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.fillStyle = '#fef08a'; ctx.shadowBlur = 15; ctx.shadowColor = '#f59e0b';
             ctx.fillRect(0, -1.5, p.type === 'sniper_bullet' ? 45 : 30, 3); ctx.restore();
+        } else if(p.type === 'burnt_bread') {
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot||0);
+            // Smoke trail
+            ctx.globalAlpha = 0.4; ctx.fillStyle = '#1f2937';
+            ctx.beginPath(); ctx.arc(-6,-2,3,0,6.28); ctx.arc(-10,2,2.5,0,6.28); ctx.fill();
+            ctx.globalAlpha = 1;
+            // Bread slice (burnt = dark brown/black with crust edge)
+            ctx.fillStyle = '#1c0a02';
+            ctx.beginPath();
+            ctx.moveTo(-7,-7); ctx.quadraticCurveTo(-9,0,-7,7); ctx.lineTo(7,7);
+            ctx.quadraticCurveTo(9,0,7,-7); ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = '#451a03'; ctx.lineWidth = 1.5; ctx.stroke();
+            // Glowing ember spots
+            ctx.fillStyle = '#f97316'; ctx.shadowBlur=6; ctx.shadowColor='#dc2626';
+            ctx.beginPath(); ctx.arc(-2,1,1.2,0,6.28); ctx.arc(3,-2,1,0,6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.restore();
         } else if(p.type === 'tim_pea_bullet') {
             // Small bright laser bullet from micro mode - uses beam color from customization
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
@@ -5560,6 +5756,17 @@ function drawPlayers() {
         if(o.id === myId && o.heroClass === 'misaki' && localCombat.misakiGrapple.dTm > 0) {
             let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === myId);
             if(k) { ctx.save(); ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2; ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(k.x, k.y); ctx.stroke(); ctx.restore(); }
+        }
+        if(o.id === myId && o.heroClass === 'bread' && localCombat.breadGrapple.phase !== 'idle'){
+            let bg = localCombat.breadGrapple;
+            let tx = bg.phase==='firing' ? bg.curX : (bg.anchor?bg.anchor.x:e.x);
+            let ty = bg.phase==='firing' ? bg.curY : (bg.anchor?bg.anchor.y:e.y);
+            ctx.save();
+            ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 3; ctx.lineCap='round';
+            ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(tx, ty); ctx.stroke();
+            // plug head
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(tx-3, ty-3, 6, 6);
+            ctx.restore();
         }
         
         // Calculate velocity for smear frame
@@ -6353,6 +6560,86 @@ o.timBeamCharge * 9;
             ctx.beginPath();
             ctx.moveTo(12, 0); ctx.lineTo(-2, 5); ctx.lineTo(0, 0); ctx.lineTo(-2, -5); ctx.closePath();
             ctx.fill();
+        } else if(!iC && o.heroClass === 'bread') {
+            // ===== THE BREAD-BURNER: hyper-detailed toaster =====
+            ctx.save();
+            ctx.rotate(o.angle || 0);
+            // Body shadow
+            ctx.fillStyle = isImpactFlash ? '#000' : '#000';
+            ctx.globalAlpha = 0.25;
+            ctx.fillRect(-22, 18, 44, 5);
+            ctx.globalAlpha = 1;
+            // Main chrome body (rounded top toaster)
+            let bodyGrad = ctx.createLinearGradient(0,-22,0,22);
+            bodyGrad.addColorStop(0,'#fef3c7'); bodyGrad.addColorStop(0.4,'#f59e0b'); bodyGrad.addColorStop(1,'#92400e');
+            ctx.fillStyle = isImpactFlash ? '#000' : bodyGrad;
+            ctx.beginPath();
+            ctx.moveTo(-24,-12); ctx.quadraticCurveTo(-26,-22,-18,-24);
+            ctx.lineTo(18,-24); ctx.quadraticCurveTo(26,-22,24,-12);
+            ctx.lineTo(24,18); ctx.quadraticCurveTo(24,22,20,22);
+            ctx.lineTo(-20,22); ctx.quadraticCurveTo(-24,22,-24,18);
+            ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#451a03'; ctx.lineWidth = 2; ctx.stroke();
+            // Chrome highlight
+            ctx.fillStyle = isImpactFlash ? '#000' : 'rgba(255,255,255,0.45)';
+            ctx.beginPath(); ctx.moveTo(-20,-20); ctx.quadraticCurveTo(-22,-15,-21,-5); ctx.lineTo(-17,-5); ctx.quadraticCurveTo(-18,-15,-16,-20); ctx.closePath(); ctx.fill();
+            // Two bread slots (top, dark)
+            ctx.fillStyle = isImpactFlash ? '#000' : '#1c1917';
+            ctx.fillRect(-15,-23, 12, 8);
+            ctx.fillRect(3,-23, 12, 8);
+            // Glowing red interior coils
+            ctx.fillStyle = isImpactFlash ? '#000' : '#dc2626';
+            ctx.shadowBlur = 8; ctx.shadowColor='#ff4500';
+            for(let sx of [-15,3]) for(let cy=0;cy<3;cy++){ ctx.fillRect(sx+2, -22+cy*3, 8, 1); }
+            ctx.shadowBlur = 0;
+            // Lever on side
+            ctx.fillStyle = isImpactFlash ? '#000' : '#27272a';
+            ctx.fillRect(-26,-4, 4, 14);
+            ctx.fillStyle = isImpactFlash ? '#000' : '#dc2626';
+            ctx.beginPath(); ctx.arc(-24,3,3,0,6.28); ctx.fill();
+            // Dial
+            ctx.fillStyle = isImpactFlash ? '#000' : '#1f2937';
+            ctx.beginPath(); ctx.arc(0, 8, 5, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#fbbf24'; ctx.lineWidth=1.5;
+            ctx.beginPath(); ctx.moveTo(0,8); ctx.lineTo(0,4); ctx.stroke();
+            // Tick marks
+            for(let a=0;a<8;a++){ let aa=a*0.785; ctx.beginPath(); ctx.moveTo(Math.cos(aa)*6, 8+Math.sin(aa)*6); ctx.lineTo(Math.cos(aa)*7, 8+Math.sin(aa)*7); ctx.stroke(); }
+            // Brand badge
+            ctx.fillStyle = isImpactFlash ? '#000' : '#fbbf24';
+            ctx.fillRect(-8, 14, 16, 4);
+            ctx.fillStyle = isImpactFlash ? '#000' : '#451a03';
+            ctx.font = 'bold 4px sans-serif'; ctx.textAlign='center';
+            ctx.fillText('B-BURNER', 0, 17.5);
+            // Power cord coming out the back
+            let cordTm = Date.now()/600;
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#0a0a0a';
+            ctx.lineWidth = 3; ctx.lineCap='round';
+            ctx.beginPath();
+            ctx.moveTo(-24, 16);
+            ctx.bezierCurveTo(-36, 22+Math.sin(cordTm)*2, -42, 28, -48, 30+Math.cos(cordTm)*2);
+            ctx.stroke();
+            // Plug end
+            ctx.fillStyle = isImpactFlash ? '#000' : '#fbbf24';
+            ctx.fillRect(-52, 28, 6, 4);
+            ctx.fillStyle = isImpactFlash ? '#000' : '#52525b';
+            ctx.fillRect(-50, 26, 1.5, 2); ctx.fillRect(-47, 26, 1.5, 2);
+            // Rivets
+            ctx.fillStyle = isImpactFlash ? '#000' : '#78716c';
+            for(let rx of [-20,20]) for(let ry of [-18,16]){ ctx.beginPath(); ctx.arc(rx,ry,1.3,0,6.28); ctx.fill(); }
+            // Eyes (toaster's face below the slots)
+            ctx.fillStyle = isImpactFlash ? '#000' : '#fff';
+            ctx.beginPath(); ctx.arc(-8, -5, 2.5, 0, 6.28); ctx.arc(8, -5, 2.5, 0, 6.28); ctx.fill();
+            ctx.fillStyle = isImpactFlash ? '#000' : '#000';
+            ctx.beginPath(); ctx.arc(-8, -5, 1.2, 0, 6.28); ctx.arc(8, -5, 1.2, 0, 6.28); ctx.fill();
+            ctx.restore();
+            // Muzzle flash when shooting
+            if(o.slashAnimTimer > 0){
+                ctx.save();
+                ctx.rotate(o.angle || 0);
+                ctx.fillStyle = '#fde047'; ctx.shadowBlur=12; ctx.shadowColor='#f97316'; ctx.globalAlpha=Math.min(1,o.slashAnimTimer*8);
+                for(let sx of [-9, 9]){ ctx.beginPath(); ctx.arc(sx, -28-Math.random()*4, 4+Math.random()*3, 0, 6.28); ctx.fill(); }
+                ctx.restore();
+            }
         } else if(!iC && o.heroClass === 'jubilee') {
             // Jubilee body — vibrant pink damage dealer
             ctx.fillStyle = isImpactFlash ? '#000' : '#ec4899';
