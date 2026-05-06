@@ -355,6 +355,11 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
         <div class="ability-slot" id="ui-bread-shield"><div class="key">E</div><div class="name">Tank Mode</div><div class="status" id="status-bread-shield">Ready</div><div class="cooldown-overlay" id="cd-bread-shield"></div></div>
         <div class="ability-slot" id="ui-bread-grapple"><div class="key">SPACE</div><div class="name">Cord Grapple</div><div class="status" id="status-bread-grapple">Ready</div><div class="cooldown-overlay" id="cd-bread-grapple"></div></div>
 
+        <div class="ability-slot" id="ui-esper-grab"><div class="key">HOLD R-CLICK</div><div class="name">Spectral Sweep</div><div class="status" id="status-esper-grab">Ready</div></div>
+        <div class="ability-slot" id="ui-esper-comets"><div class="key">L-CLICK</div><div class="name">Aura Comets</div><div class="status" id="status-esper-comets">3/3</div><div class="cooldown-overlay" id="cd-esper-comets"></div></div>
+        <div class="ability-slot" id="ui-esper-detonate"><div class="key">E</div><div class="name">Detonation</div><div class="status" id="status-esper-detonate">0 active</div></div>
+        <div class="ability-slot" id="ui-esper-cradle"><div class="key">SPACE</div><div class="name">Kinetic Cradle</div><div class="status" id="status-esper-cradle">Ready</div><div class="cooldown-overlay" id="cd-esper-cradle"></div></div>
+
     </div>
     <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="health-text">150 / 150</div></div>
 </div>
@@ -423,7 +428,8 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
                         <button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://gifdb.com/images/thumbnail/dice-roll-jump-scare-angry-birds-meme-bhr66fsxdyaipbt5.gif') center/95%;">Roulette!</button>
                              <button id="btn-nitro" class="class-list-btn" onclick="selectHero('nitro')" style="--glow-color: #ff5500; background:url('https://external-preview.redd.it/M9O71AtU29lDwtQJUhp7SDRf4YggDRy1cxBlXyDH6VA.gif?auto=webp&s=19994d15dad85c165f540d9ee0ed9219c7e447ab') center/ 100% 160%;color:#fff;">Nitro</button>
                              <button id="btn-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
-                           <button id="bt-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>  
+                             <button id="btn-esper" class="class-list-btn" onclick="selectHero('esper')" style="--glow-color: #ff00ff; background: linear-gradient(135deg, #ff0055, #ffaa00, #55ff00, #00ffaa, #0055ff, #aa00ff); color:#fff;">The Esper</button>
+                           <button id="btn-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>  
                     </div>
 
                 </div>
@@ -614,13 +620,14 @@ const HERO_DATA = {
     tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Stance-Shifting Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']},
     rift:{name:'Rift',role:'Portal-Hopping Duelist',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']},
     roulette:{name:'Roulette',role:'Randomized Wildcard',hp:250,speed:'Variable',color:'#fbbf24',desc:'Not a hero — a randomized game mode. Spawns as a random hero. Every 35s OR on kill, the One-Armed Bandit spins and you transform into a different hero (no repeats). Full stats and abilities of whoever you become.',abilities:['Random Hero on Spawn','Auto-Swap Every 35s','Kill = Instant Re-Spin','Gold Outline (You are the Jackpot)']},
-nitro:{name:'Nitro',role:'Rocket-Ram Vanguard',hp:260,speed:'Medium',color:'#ff5500',desc:'Nimble brawler wielding a colossal rocket ram. Charge, boost, scoop, and carpet-bomb glints across the battlefield.',abilities:['Ram-Charge & Pin (Hold L-Click)','Stratosphere Vault (Hold Space)']},
+nitro:{name:'Nitro',role:'Explosive Rocket Rider',hp:200,speed:'slow',color:'#ff5500',desc:'Nimble brawler wielding a colossal rocket ram. Charge, boost, scoop, and carpet-bomb glints across the battlefield.',abilities:['Ram-Charge & Pin (Hold L-Click)','Stratosphere Vault (Hold Space)']},
     bread:{name:'The Bread-Burner',role:'Heated Tank',hp:280,speed:'Slow',color:'#d97706',desc:'A walking hyper-detailed toaster. Burns bread, deploys a bubble shield, and grapples around with his power cord.',abilities:['Burnt Bread Spitter (L-Click, ramps up)','Tank Mode Bubble Shield (E)','Cord Grapple (SPACE)']},
+    esper:{name:'The Esper',role:'Anti-Projectile Brawler',hp:250,speed:'Medium',color:'#ff66ff',desc:'Psychokinetic brawler. Catch enemy projectiles with a gravity well, flick them back, fire homing aura comets, and warp battlefields with the Kinetic Cradle.',abilities:['Spectral Sweep & Flick (Hold R-Click)','Aura Comets (L-Click)','Sequential Detonation (E)','Kinetic Cradle (SPACE)']},
          mystery:{name:'???',role:'idk',hp:250,speed:'fast',color:'#000',desc:'idk',abilities:[]}
 };
 
 // Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
-const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift','nitro','bread'];
+const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift','nitro','bread','esper'];
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
 let tCol = JSON.parse(localStorage.getItem('rivals_traceColors'))||{bow:'#3b0764',neon:'#a855f7'}; getEl('tColorBow').value=tCol.bow; getEl('tColorNeon').value=tCol.neon;
@@ -968,7 +975,10 @@ let localCombat = {
     riftShift: { charges: 1, maxCharges: 1, cds: [0, 0], maxCd: 4.0 },
     breadShoot:{cd:0,maxCd:0.25,ammo:80,reload:0,reloadDur:1.5,heat:0,firingTm:0},
     breadShield:{cd:0,maxCd:22.0,active:false,activeTm:0,maxActive:8.0,shieldHp:200,maxShieldHp:200},
-    breadGrapple:{cd:0,maxCd:9.0,phase:'idle',anchor:null,fireTm:0,pullTm:0,curX:0,curY:0,vx:0,vy:0}
+    breadGrapple:{cd:0,maxCd:9.0,phase:'idle',anchor:null,fireTm:0,pullTm:0,curX:0,curY:0,vx:0,vy:0},
+    esperGrab:{active:false,heldProjectiles:[],lastMouseX:0,lastMouseY:0,flickVx:0,flickVy:0,flickSpeed:0},
+    esperComets:{cd:0,maxCd:6.0,charges:3,maxCharges:3,cds:[0,0,0],fired:[]},
+    esperCradle:{cd:0,maxCd:12.0,active:false,activeTm:0,maxActive:2.0,trapped:[]}
 };
 
 function resetAllCooldowns() {
@@ -990,6 +1000,9 @@ function resetAllCooldowns() {
     if(localCombat.breadShoot){localCombat.breadShoot.ammo=32;localCombat.breadShoot.reload=0;localCombat.breadShoot.heat=0;localCombat.breadShoot.firingTm=0;}
     if(localCombat.breadShield){localCombat.breadShield.active=false;localCombat.breadShield.activeTm=0;localCombat.breadShield.shieldHp=200;}
     if(localCombat.breadGrapple){localCombat.breadGrapple.phase='idle';localCombat.breadGrapple.anchor=null;}
+    if(localCombat.esperGrab){localCombat.esperGrab.active=false;localCombat.esperGrab.heldProjectiles=[];}
+    if(localCombat.esperComets){localCombat.esperComets.charges=3;localCombat.esperComets.cds=[0,0,0];localCombat.esperComets.fired=[];}
+    if(localCombat.esperCradle){localCombat.esperCradle.active=false;localCombat.esperCradle.activeTm=0;localCombat.esperCradle.trapped=[];}
 }
 
 let vfx=[], arrowTrails={}, traceArrowTrails={}, impactFlashTimer=0;
@@ -1357,6 +1370,24 @@ function drawPrev() {
         // Lever
         pCtx.fillStyle='#27272a'; pCtx.fillRect(-26,-4,4,14);
         pCtx.fillStyle='#dc2626'; pCtx.beginPath(); pCtx.arc(-24,3,3,0,6.28); pCtx.fill();
+    } else if(heroClass === 'esper') {
+        getEl('generic-custom-panel').style.display = 'block';
+        pCtx.translate(0, bob);
+        // Rainbow body
+        let t = Date.now()/400;
+        let hue = (t*60) % 360;
+        pCtx.fillStyle = `hsl(${hue},100%,55%)`;
+        pCtx.shadowBlur = 20; pCtx.shadowColor = `hsl(${hue},100%,55%)`;
+        pCtx.beginPath(); pCtx.arc(0,0,16,0,6.28); pCtx.fill();
+        pCtx.shadowBlur = 0;
+        // Aura ring
+        pCtx.strokeStyle = `hsl(${(hue+120)%360},100%,60%)`; pCtx.lineWidth=2;
+        pCtx.beginPath(); pCtx.arc(0,0,22,0,6.28); pCtx.stroke();
+        // Spectral hands
+        for(let s of [-1,1]){
+            pCtx.fillStyle = `hsla(${(hue+60)%360},100%,70%,0.7)`;
+            pCtx.beginPath(); pCtx.arc(s*18, 4, 6, 0, 6.28); pCtx.fill();
+        }
     }
     
     pCtx.restore();
@@ -1824,36 +1855,72 @@ function handleHostGone() {
 
 function connectToServer(mode, explicitHostId) {
     if(peer) { try{peer.destroy();}catch(e){} peer = null; }
-    connections = []; lobbyPlayers = {};
+    connections = []; lobbyPlayers = {}; hostConnection = null;
     if(!explicitHostId) { migrationOrder = []; currentHostPeerId = null; }
     updateLobbyUI();
     getEl('btn-start-game').disabled = true; getEl('btn-start-game').innerText = explicitHostId ? "Reconnecting..." : "Connecting...";
     let srvId = explicitHostId || SERVER_IDS[mode];
 
-    peer = new Peer();
-    peer.on('open', id => {
-        myId = id; myPlayer.id = id;
-        hostConnection = peer.connect(srvId, { reliable: true });
-        connectingTimeout = setTimeout(() => {
-            if(!hostConnection || !hostConnection.open) {
-                if(explicitHostId) {
-                    // Migration target unreachable — fall back to public server-id flow
-                    try{peer.destroy();}catch(e){}
-                    connectToServer(mode);
-                } else {
-                    peer.destroy(); becomeHost(mode, srvId);
-                }
-            }
-        }, 1500);
+    // Track whether THIS attempt has finished, so stale callbacks from a torn-down
+    // peer don't trigger migration / fallbacks for the next attempt.
+    let attemptDone = false;
+    let joinedHost = false;
+    let myPeer = new Peer();
+    peer = myPeer;
 
-        
+    const finishAttempt = () => { attemptDone = true; clearTimeout(connectingTimeout); };
+
+    // CRITICAL: PeerJS routes "peer-unavailable" (target host doesn't exist yet)
+    // to the parent peer's error event, NOT to the connection. Without this handler
+    // the connection silently never opens and the user is stuck on "Connecting...".
+    myPeer.on('error', err => {
+        if(attemptDone || peer !== myPeer) return;
+        let t = err && err.type;
+        if(t === 'peer-unavailable' || t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed') {
+            finishAttempt();
+            try { myPeer.destroy(); } catch(e){}
+            if(explicitHostId) {
+                // Migration target unreachable — fall back to normal flow for this mode
+                connectToServer(mode);
+            } else {
+                // No host exists — become the host for this mode
+                becomeHost(mode, srvId);
+            }
+        }
+        // Other errors (browser-incompatible, ssl-unavailable, etc.) are fatal —
+        // surface a message but do nothing destructive.
+        else if(t === 'browser-incompatible' || t === 'ssl-unavailable' || t === 'invalid-id' || t === 'invalid-key') {
+            finishAttempt();
+            getEl('btn-start-game').innerText = "Connection error";
+        }
+    });
+
+    myPeer.on('open', id => {
+        if(attemptDone || peer !== myPeer) return;
+        myId = id; myPlayer.id = id;
+        hostConnection = myPeer.connect(srvId, { reliable: true });
+
+        // Safety net: if neither 'open' nor an error has fired in time, fall back.
+        connectingTimeout = setTimeout(() => {
+            if(attemptDone || peer !== myPeer) return;
+            if(!hostConnection || !hostConnection.open) {
+                finishAttempt();
+                try { myPeer.destroy(); } catch(e){}
+                if(explicitHostId) connectToServer(mode);
+                else becomeHost(mode, srvId);
+            }
+        }, 4000);
+
         hostConnection.on('open', () => {
-            clearTimeout(connectingTimeout); isHost = false; hostInGame = true;
+            if(peer !== myPeer) return;
+            finishAttempt();
+            joinedHost = true;
+            isHost = false; hostInGame = true;
             hostConnection.send({ type: 'lobby_update_player', player: myPlayer });
-            getEl('btn-start-game').disabled = false; getEl('btn-start-game').innerText = "ENTER ARENA"; 
+            getEl('btn-start-game').disabled = false; getEl('btn-start-game').innerText = "ENTER ARENA";
             updateLobbyState();
         });
-        
+
         hostConnection.on('data', d => {
             if (d.type === 'host_leaving') { handleHostGone(); return; }
             if (d.type === 'lobby_state') {
@@ -1881,9 +1948,10 @@ function connectToServer(mode, explicitHostId) {
             else if (d.type === 'orb_claimed') { myPlayer.ultCharge = 100; resetAllCooldowns(); applyShake(15, 0.4); }
             else processVFX(d);
         });
-        hostConnection.on('close', () => { handleHostGone(); });
-        hostConnection.on('error', () => { handleHostGone(); });
-
+        // Only treat connection close/error as "host gone" if we were actually
+        // joined. Before that, the parent peer.on('error') above handles it.
+        hostConnection.on('close', () => { if(joinedHost && peer === myPeer) handleHostGone(); });
+        hostConnection.on('error', () => { if(joinedHost && peer === myPeer) handleHostGone(); });
     });
 }
 
@@ -1931,7 +1999,22 @@ function becomeHost(mode, srvId, opts) {
         isMigrating = false;
     });
 
-    peer.on('error', err => { if(err.type === 'unavailable-id') setTimeout(() => connectToServer(mode), 500); });
+    peer.on('error', err => {
+        let t = err && err.type;
+        // Someone else claimed the well-known host id first — join them as a client.
+        if(t === 'unavailable-id') {
+            try { peer.destroy(); } catch(e){}
+            peer = null;
+            setTimeout(() => connectToServer(mode), 600 + Math.random()*400);
+        } else if(t === 'network' || t === 'server-error' || t === 'socket-error' || t === 'socket-closed') {
+            // Transient signalling problem — retry the whole flow shortly.
+            try { peer.destroy(); } catch(e){}
+            peer = null;
+            setTimeout(() => connectToServer(mode), 1000);
+        }
+        // peer-unavailable cannot happen for the host (it's not connecting outward).
+        // Other fatal errors: leave the lobby in its current state.
+    });
     peer.on('connection', c => {
         connections.push(c);
         c.on('open', () => { if(c.open) c.send({type:'state', state:getCompactState(true), migrationOrder:migrationOrder, hostPeerId: myId}); });
@@ -2330,6 +2413,7 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'rift') trRiftShift();
             else if(myPlayer.heroClass === 'nitro') { let nv = localCombat.nitroVault; if(nv.cd<=0 && !nv.charging && !nv.flying && localCombat.nitroCharge.boostTm<=0){ nv.charging=true; nv.chargeT=0; } }
             else if(myPlayer.heroClass === 'bread') trBreadGrapple();
+            else if(myPlayer.heroClass === 'esper') trEsperCradle();
             else if(myPlayer.heroClass === 'corsair') {
         setVisibleAbilities(['corsair-primary','corsair-stance','corsair-parry']);
         let cp = localCombat.corsairPrimary.cd; 
@@ -2371,6 +2455,7 @@ window.addEventListener('keydown', e => {
         else if(myPlayer.heroClass === 'blitz') trBlG();
         else if(myPlayer.heroClass === 'rift') trRiftJab();
         else if(myPlayer.heroClass === 'bread') trBreadShield();
+        else if(myPlayer.heroClass === 'esper') trEsperDetonate();
     }
     
     if(k === 'p' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
@@ -2550,6 +2635,7 @@ can.addEventListener('mousedown', e => {
         else if(myPlayer.heroClass === 'jubilee') trJubP();
         else if(myPlayer.heroClass === 'nitro') { if(localCombat.nitroCharge.cd<=0 && !localCombat.nitroCharge.charging && localCombat.nitroCharge.boostTm<=0){ localCombat.nitroCharge.charging=true; localCombat.nitroCharge.chargeT=0; } }
         else if(myPlayer.heroClass === 'bread') { localCombat.breadShoot.firingTm = 0; trBreadShoot(); }
+        else if(myPlayer.heroClass === 'esper') trEsperComet();
         else if(myPlayer.heroClass === 'misaki') trMisS();
         else if(myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'katana') trBlKt();
     }
@@ -2614,10 +2700,51 @@ window.addEventListener('mouseup', () => {
     }
 });
 
+// Esper: right-click release = flick caught projectiles
+window.addEventListener('mouseup', e => {
+    if(e.button === 2 && myPlayer.heroClass === 'esper' && localCombat.esperGrab.active) {
+        let g = localCombat.esperGrab;
+        g.active = false;
+        let speed = Math.hypot(g.flickVx, g.flickVy); // px/sec from mouse
+        // Compute direction vector (toward cursor world)
+        let wx = (sMx/cam.zoom) + cam.x, wy = (sMy/cam.zoom) + cam.y;
+        let ang = Math.atan2(wy - myPlayer.y, wx - myPlayer.x);
+        // Flick speed scaled
+        let flickMul = Math.min(3.0, 0.6 + speed/600);
+        let outSpeed = 1400 * flickMul;
+        let dmgMul = flickMul;
+        if(g.heldProjectiles.length > 0){
+            sdEv({type:'esper_flick', ids:g.heldProjectiles, angle:ang, speed:outSpeed, dmgMul:dmgMul, ownerId:myId});
+        }
+        g.heldProjectiles = [];
+    }
+});
+
 // ===== Cursor stealth: fade a circular hole in any UI overlay near the cursor =====
 // Each .cursor-stealth element gets --cx/--cy CSS vars set to the cursor's local
 // position, which a radial-gradient mask uses to make that area transparent.
 window.addEventListener('mousemove', (e) => {
+    // Esper grab: track mouse velocity for flick + capture nearby projectiles
+    if(myPlayer.heroClass === 'esper' && localCombat.esperGrab.active){
+        let g = localCombat.esperGrab;
+        g.flickVx = (e.clientX - g.lastMouseX) * 60;
+        g.flickVy = (e.clientY - g.lastMouseY) * 60;
+        g.lastMouseX = e.clientX; g.lastMouseY = e.clientY;
+        let wx = (sMx/cam.zoom) + cam.x, wy = (sMy/cam.zoom) + cam.y;
+        for(let p of gameState.projectiles){
+            if(p._esperHeld || p.ownerId === myId) continue;
+            if(p.type === 'esper_cradle' || p.type === 'esper_comet') continue;
+            if(Math.hypot(p.x-wx, p.y-wy) < 90 && !g.heldProjectiles.includes(p.id)){
+                g.heldProjectiles.push(p.id);
+                sdEv({type:'esper_grab', id:p.id});
+            }
+        }
+        // Make held projectiles follow cursor
+        for(let id of g.heldProjectiles){
+            let p = gameState.projectiles.find(pp=>pp.id===id);
+            if(p){ p.x = wx + (Math.random()-0.5)*20; p.y = wy + (Math.random()-0.5)*20; }
+        }
+    }
     document.querySelectorAll('.cursor-stealth').forEach(el => {
         if(el.style.display === 'none') return;
         const r = el.getBoundingClientRect();
@@ -2859,6 +2986,45 @@ function tryQueueProjectileRiftPortal(p, dt, sm = 1) {
     return true;
 }
 
+// ===== ESPER ABILITIES =====
+function trEsperComet(){
+    let ec = localCombat.esperComets;
+    let avail = ec.cds.findIndex(c=>c<=0);
+    if(avail === -1) return;
+    ec.cds[avail] = ec.maxCd;
+    let ang = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
+    let id = 'esper_'+myId+'_'+Math.random().toString().slice(2,9);
+    ec.fired.push(id);
+    if(ec.fired.length > 6) ec.fired.shift();
+    applyShake(2, 0.05);
+    sdEv({type:'esper_comet_fire', id:id, x:myPlayer.x, y:myPlayer.y, angle:ang});
+}
+function trEsperDetonate(){
+    let ec = localCombat.esperComets;
+    if(ec.fired.length === 0) return;
+    let id = ec.fired.shift();
+    sdEv({type:'esper_comet_detonate', id:id});
+    applyShake(5, 0.15);
+}
+function trEsperCradle(){
+    let cr = localCombat.esperCradle;
+    if(cr.active){
+        // Re-trigger early collapse
+        let ang = 0, has=false;
+        let mx=0, my=0;
+        if(keys.w) my-=1; if(keys.s) my+=1; if(keys.a) mx-=1; if(keys.d) mx+=1;
+        if(mx||my){ ang = Math.atan2(my,mx); has=true; }
+        else { ang = myPlayer.angle; has=true; }
+        sdEv({type:'esper_cradle_release', x:myPlayer.x, y:myPlayer.y, angle:ang});
+        cr.active = false; cr.activeTm = 0;
+        return;
+    }
+    if(cr.cd > 0) return;
+    cr.cd = cr.maxCd;
+    cr.active = true; cr.activeTm = cr.maxActive;
+    sdEv({type:'esper_cradle_start', x:myPlayer.x, y:myPlayer.y, dur:cr.maxActive});
+}
+
 
 function brK(k, v) {
     let K = k ? gameState.players[k] : null;
@@ -2983,7 +3149,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='glitch_shoot'){let c=gameState.clones.filter(x=>x.ownerId===sId);let nClones=c.length,bs,bf;if(nClones<=0){bs=BALANCE.glitch.beamDmgSlow;bf=BALANCE.glitch.beamDmgFast;}else if(nClones===1){bs=BALANCE.glitch.beamDmgSlow1Clone;bf=BALANCE.glitch.beamDmgFast1Clone;}else{bs=BALANCE.glitch.beamDmgSlow2Clone;bf=BALANCE.glitch.beamDmgFast2Clone;}bs*=(e.dmgMult||1);bf*=(e.dmgMult||1);let pa=Math.atan2(e.targetY-s.y,e.targetX-s.x);gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:false,id:Math.random().toString(),x:s.x,y:s.y,angle:pa,life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});c.forEach(C=>{gameState.projectiles.push({type:'matrix_beam',ownerId:sId,isClone:true,id:Math.random().toString(),x:C.x,y:C.y,angle:Math.atan2(e.targetY-C.y,e.targetX-C.x),life:1.1,slowTimer:0.7,phase:'slow',dmgSlow:bs,dmgFast:bf,hitCooldowns:{}});});}
     else if(e.type==='glitch_clone'){let c=gameState.clones.filter(x=>x.ownerId===sId);while(c.length>=BALANCE.glitch.maxClones){let oldest=c.shift();gameState.clones=gameState.clones.filter(x=>x.id!==oldest.id);}gameState.clones.push({id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,hp:s.maxHp,maxHp:s.maxHp});}
     else if(e.type==='glitch_swap'){let c=gameState.clones.find(x=>x.id===e.cloneId);if(c){c.x=e.newCloneX;c.y=e.newCloneY;}}
-    else if(e.type==='jubilee_shoot'){const C=['#ff0044','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff','#ffffff'];let ba=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(let i=-1;i<=1;i++)gameState.projectiles.push({type:'firework',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,startAngle:ba,angle:ba,speed:550,life:0.6,index:i,state:'straight',color:C[Math.floor(Math.random()*C.length)],dmgMult:e.dmgMult||1.0});}
+    else if(e.type==='jubilee_shoot'){const C=['#ff0044','#ff7643','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff','#ff87d3','#87ffd3','#ffffff','#00c018'];let ba=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(let i=-1;i<=1;i++)gameState.projectiles.push({type:'firework',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,startAngle:ba,angle:ba,speed:550,life:0.6,index:i,state:'straight',color:C[Math.floor(Math.random()*C.length)],dmgMult:e.dmgMult||1.0});}
     else if(e.type==='jubilee_dash_setup'){gameState.projectiles.push({type:'dash_bomb',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:0.3});}
 
     else if(e.type==='nitro_boost_start'){ /* purely cosmetic for remotes */ s.nitroBoosting = true; }
@@ -3015,7 +3181,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
         if(sId!==myId) spawnNitroExplosion(ex,ey,R);
         else spawnNitroExplosion(ex,ey,R);
         applyExpKbk(ex,ey,R);
-        let dealt = (t,dist)=>{ let p=Math.max(0,1-dist/R); return 30 + (54-30)*p; };
+        let dealt = (t,dist)=>{ let p=Math.max(0,1-dist/R); return 1 + (42-25)*p; };
         for(let id in gameState.players){ if(!gameState.players[id].isDead && cDm(sId,id)){ let t=gameState.players[id]; let d=Math.hypot(t.x-ex,t.y-ey); if(d<=R && !t.invulnerable){ let dmg=dealt(t,d); dmgTk(t,dmg,sId); sendHitmarker(sId,t,dmg); t.lastAttacker=sId; t.lastHitTime=Date.now(); chD(t,id); } } }
         for(let c of gameState.clones){ if(cDm(sId,c.ownerId) && !c.invulnerable){ let d=Math.hypot(c.x-ex,c.y-ey); if(d<=R){ let dmg=dealt(c,d); dmgTk(c,dmg,sId); sendHitmarker(sId,c,dmg);} } }
     }
@@ -3065,6 +3231,65 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='bread_grapple_fire'){ /* purely visual on owner; sync via state */ }
     else if(e.type==='bread_grapple_anchor'){ /* visual */ }
     else if(e.type==='bread_grapple_end'){ /* visual */ }
+    // ===== ESPER =====
+    else if(e.type==='esper_comet_fire'){
+        gameState.projectiles.push({type:'esper_comet', id:e.id, ownerId:sId, x:e.x, y:e.y, angle:e.angle, speed:520, life:6.0, bounced:false, dmg:30, hitIds:{}});
+    }
+    else if(e.type==='esper_comet_detonate'){
+        let c = gameState.projectiles.find(p=>p.type==='esper_comet' && p.id===e.id);
+        if(c){
+            let R=130;
+            connections.forEach(cn=>{if(cn.open) cn.send({type:'esper_explosion_vfx', x:c.x, y:c.y, radius:R});});
+            vfx.push({type:'esperBoom', x:c.x, y:c.y, life:0.5, maxLife:0.5, radius:R});
+            for(let id in gameState.players){ if(!gameState.players[id].isDead && cDm(sId,id)){ let t=gameState.players[id]; let d=Math.hypot(t.x-c.x,t.y-c.y); if(d<=R && !t.invulnerable){ dmgTk(t,40,sId); sendHitmarker(sId,t,40); t.lastAttacker=sId; t.lastHitTime=Date.now(); chD(t,id); let ka=Math.atan2(t.y-c.y,t.x-c.x); if(myId===id){ localCombat.dash.v.x += Math.cos(ka)*45; localCombat.dash.v.y += Math.sin(ka)*45; localCombat.dash.rec=0.3; } else { connections.forEach(cn=>{if(cn.open) cn.send({type:'knockback_apply', targetId:id, angle:ka, force:45});}); } } } }
+            gameState.projectiles = gameState.projectiles.filter(p=>p.id!==c.id);
+        }
+    }
+    else if(e.type==='esper_explosion_vfx'){ vfx.push({type:'esperBoom', x:e.x, y:e.y, life:0.5, maxLife:0.5, radius:e.radius}); }
+    else if(e.type==='esper_cradle_start'){
+        gameState.projectiles.push({type:'esper_cradle', id:'cradle_'+sId, ownerId:sId, x:e.x, y:e.y, life:e.dur, maxLife:e.dur, radius:200});
+    }
+    else if(e.type==='esper_cradle_release'){
+        let c = gameState.projectiles.find(p=>p.type==='esper_cradle' && p.ownerId===sId);
+        if(c){
+            // Launch trapped projectiles
+            for(let p of gameState.projectiles){
+                if(p._cradleTrapped === sId){
+                    let spd = (p._origSpeed || 600) * 2.0;
+                    if(p.vx !== undefined){ p.vx = Math.cos(e.angle)*spd; p.vy = Math.sin(e.angle)*spd; p.angle = e.angle; }
+                    else if(p.speed !== undefined){ p.angle = e.angle; p.speed = spd; }
+                    p._cradleTrapped = null;
+                }
+            }
+            gameState.projectiles = gameState.projectiles.filter(p=>p.id!==c.id);
+            connections.forEach(cn=>{if(cn.open) cn.send({type:'esper_cradle_burst_vfx', x:c.x, y:c.y});});
+            vfx.push({type:'esperCradleBurst', x:c.x, y:c.y, life:0.4, maxLife:0.4});
+        }
+    }
+    else if(e.type==='esper_cradle_burst_vfx'){ vfx.push({type:'esperCradleBurst', x:e.x, y:e.y, life:0.4, maxLife:0.4}); }
+    else if(e.type==='esper_flick'){
+        // Esper releasing held projectiles
+        for(let id of (e.ids||[])){
+            let p = gameState.projectiles.find(pp=>pp.id===id);
+            if(p && p._esperHeld){
+                if(p.vx !== undefined){ p.vx = Math.cos(e.angle)*e.speed; p.vy = Math.sin(e.angle)*e.speed; p.angle = e.angle; }
+                else if(p.speed !== undefined){ p.angle = e.angle; p.speed = e.speed; }
+                p.ownerId = e.ownerId; // change ownership
+                if(p.dmg) p.dmg *= e.dmgMul;
+                if(p.damage) p.damage *= e.dmgMul;
+                p._esperHeld = false;
+                p.hitIds = {};
+            }
+        }
+    }
+    else if(e.type==='esper_grab'){
+        let p = gameState.projectiles.find(pp=>pp.id===e.id);
+        if(p && !p._esperHeld){
+            p._esperHeld = true; p._esperOwner = sId;
+            if(p.vx !== undefined){ p._origSpeed = Math.hypot(p.vx,p.vy); p.vx=0; p.vy=0; }
+            else if(p.speed !== undefined){ p._origSpeed = p.speed; p.speed = 0; }
+        }
+    }
 
     else if(e.type==='jubilee_bomblet'){let c=['#ff0044','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff'][Math.floor(Math.random()*6)];gameState.projectiles.push({type:'bomblet',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:0.15,color:c});}
     else if(e.type==='misaki_shoot'){s.slashAnimTimer=0.15;let sx=s.x+Math.cos(e.angle)*45,sy=s.y+Math.sin(e.angle)*45;gameState.projectiles.push({type:'sniper_bullet',id:Math.random().toString(),ownerId:sId,x:sx,y:sy,vx:Math.cos(e.angle)*2500,vy:Math.sin(e.angle)*2500,angle:e.angle,life:2.0,bounces:1,damage:85*(e.dmgMult||1),hitIds:{},hitMirrors:{}});connections.forEach(c=>{if(c.peer!==sId&&c.open)c.send({type:'sniper_vfx',x:sx,y:sy,angle:e.angle});});if(sId!==myId)vfx.push({type:'sniperMuzzle',x:sx,y:sy,angle:e.angle,life:0.15,maxLife:0.15});}
@@ -3341,6 +3566,15 @@ function updateMovement(dt) {
     }
     
     if(mDwn && myPlayer.heroClass === 'blitz' && myPlayer.blitzWeapon === 'handgun' && myPlayer.stunTimer <= 0 && !myPlayer.grabbedLocked) trBlSh();
+    if(myPlayer.heroClass === 'esper' && localCombat.esperCradle.active){
+        localCombat.esperCradle.activeTm -= dt;
+        if(localCombat.esperCradle.activeTm <= 0){
+            let mx=0,my=0; if(keys.w)my-=1;if(keys.s)my+=1;if(keys.a)mx-=1;if(keys.d)mx+=1;
+            let ang = (mx||my) ? Math.atan2(my,mx) : myPlayer.angle;
+            sdEv({type:'esper_cradle_release', x:myPlayer.x, y:myPlayer.y, angle:ang});
+            localCombat.esperCradle.active = false;
+        }
+    }
     if(myPlayer.heroClass === 'bread' && myPlayer.stunTimer<=0){
         let bs = localCombat.breadShoot;
         if(mDwn && bs.reload<=0){
@@ -3658,7 +3892,11 @@ function updateMovement(dt) {
 
 function updateGameState(dt) {
     let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','nitroCharge','nitroVault','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','blitzParry','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab','breadShoot','breadShield','breadGrapple'].forEach(k => {
+    ['slash','kendoRide','kendoShield','glitchShoot','glitchClone','glitchSwap','jubileePrimary','jubileeDash','nitroCharge','nitroVault','misakiShoot','misakiGrapple','misakiFlare','blitzPrimary','blitzGrab','blitzParry','traceShoot','traceDash','aeroPaste','aeroCopy','corsairPrimary','corsairParry','corsairCombo','timPrimary','timVents','timUlt','riftPrimary','riftOrb','riftJab','breadShoot','breadShield','breadGrapple','esperCradle'].forEach(k => {
+        if(localCombat[k] && localCombat[k].cd > 0) localCombat[k].cd -= dt * cdM;
+    });
+    if(localCombat.esperComets) for(let i=0;i<3;i++) if(localCombat.esperComets.cds[i]>0) localCombat.esperComets.cds[i] -= dt*cdM;
+    [].forEach(k => {
         if(localCombat[k] && localCombat[k].cd > 0) localCombat[k].cd -= dt * cdM;
     });
 
@@ -4099,6 +4337,57 @@ function updateGameState(dt) {
                     }
                 }
                 if(hw || p.life <= 0) gameState.projectiles.splice(i, 1);
+            } else if(p.type === 'esper_comet') {
+                if(p._esperHeld){ p.life -= dt; if(p.life<=0) gameState.projectiles.splice(i,1); continue; }
+                if(p._cradleTrapped){ p.life -= dt*0.05; continue; }
+                // Bank toward owner's cursor
+                let owner = gameState.players[p.ownerId];
+                if(owner){
+                    let tx = owner.targetX !== undefined ? owner.targetX : owner.x;
+                    let ty = owner.targetY !== undefined ? owner.targetY : owner.y;
+                    let da = Math.atan2(ty-p.y, tx-p.x);
+                    let df = Math.atan2(Math.sin(da-p.angle), Math.cos(da-p.angle));
+                    let tr = 4.0*dt;
+                    p.angle += Math.max(-tr, Math.min(tr, df));
+                }
+                let nx = p.x + Math.cos(p.angle)*p.speed*sm*dt;
+                let ny = p.y + Math.sin(p.angle)*p.speed*sm*dt;
+                if(iW(nx,ny)){
+                    if(!p.bounced){ p.bounced=true; p.angle += Math.PI; }
+                    else { gameState.projectiles.splice(i,1); continue; }
+                } else { p.x = nx; p.y = ny; }
+                p.life -= dt;
+                let hit=false;
+                for(let id in gameState.players){ let t=gameState.players[id]; if(!t.isDead && cDm(p.ownerId,id) && !t.invulnerable && Math.hypot(t.x-p.x,t.y-p.y)<22){ dmgTk(t,p.dmg,p.ownerId); sendHitmarker(p.ownerId,t,p.dmg); t.lastAttacker=p.ownerId; t.lastHitTime=Date.now(); chD(t,id); hit=true; break; } }
+                if(hit || p.life<=0) gameState.projectiles.splice(i,1);
+            } else if(p.type === 'esper_cradle') {
+                p.life -= dt;
+                // Trap projectiles inside
+                for(let pp of gameState.projectiles){
+                    if(pp === p || pp.type==='esper_cradle' || pp._esperHeld) continue;
+                    if(pp.ownerId === p.ownerId) continue;
+                    let d = Math.hypot(pp.x-p.x, pp.y-p.y);
+                    if(d < p.radius && !pp._cradleTrapped){
+                        pp._cradleTrapped = p.ownerId;
+                        if(pp.vx !== undefined){ pp._origSpeed = Math.hypot(pp.vx,pp.vy); pp.vx *= 0.1; pp.vy *= 0.1; }
+                        else if(pp.speed !== undefined){ pp._origSpeed = pp.speed; pp.speed *= 0.1; }
+                        pp.life = Math.max(pp.life, 99);
+                    }
+                }
+                if(p.life<=0){
+                    // Auto-launch in owner's facing direction
+                    let owner = gameState.players[p.ownerId];
+                    let ang = owner ? owner.angle : 0;
+                    for(let pp of gameState.projectiles){
+                        if(pp._cradleTrapped === p.ownerId){
+                            let spd = (pp._origSpeed || 600) * 2.0;
+                            if(pp.vx !== undefined){ pp.vx = Math.cos(ang)*spd; pp.vy = Math.sin(ang)*spd; pp.angle = ang; }
+                            else if(pp.speed !== undefined){ pp.angle = ang; pp.speed = spd; }
+                            pp._cradleTrapped = null;
+                        }
+                    }
+                    gameState.projectiles.splice(i,1);
+                }
             } else if(p.type === 'burnt_bread') {
                 p.lastX = p.x; p.lastY = p.y;
                 p.x += p.vx * sm * dt; p.y += p.vy * sm * dt; p.life -= dt;
@@ -4762,6 +5051,19 @@ function updateUI(now = performance.now()) {
         let bg = localCombat.breadGrapple;
         getEl('status-bread-grapple').innerText = bg.cd>0 ? bg.cd.toFixed(1)+'s' : (bg.phase!=='idle'?'Active':'Ready');
         getEl('cd-bread-grapple').style.height = (bg.cd>0?(bg.cd/bg.maxCd)*100:0)+'%';
+    }
+    else if(myPlayer.heroClass === 'esper') {
+        setVisibleAbilities(['esper-grab','esper-comets','esper-detonate','esper-cradle']);
+        let ec = localCombat.esperComets;
+        let avail = ec.cds.filter(c=>c<=0).length;
+        getEl('status-esper-comets').innerText = avail+'/3';
+        let maxCd = Math.max(...ec.cds);
+        getEl('cd-esper-comets').style.height = (maxCd>0?(maxCd/ec.maxCd)*100:0)+'%';
+        getEl('status-esper-grab').innerText = localCombat.esperGrab.active ? 'GRABBING ('+localCombat.esperGrab.heldProjectiles.length+')' : 'Ready';
+        getEl('status-esper-detonate').innerText = ec.fired.length+' active';
+        let cr = localCombat.esperCradle;
+        if(cr.active){ getEl('status-esper-cradle').innerText = 'Active '+cr.activeTm.toFixed(1)+'s'; getEl('cd-esper-cradle').style.height='0%'; }
+        else { getEl('status-esper-cradle').innerText = cr.cd>0?cr.cd.toFixed(1)+'s':'Ready'; getEl('cd-esper-cradle').style.height = (cr.cd>0?(cr.cd/cr.maxCd)*100:0)+'%'; }
     }
 
     if(activeServerMode === 'KOTH' && gameState.koth && gCon.classList.contains('active')) {
@@ -5442,6 +5744,28 @@ function drawEnts() {
         } else if(['sniper_bullet','blitz_bullet'].includes(p.type)) {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.fillStyle = '#fef08a'; ctx.shadowBlur = 15; ctx.shadowColor = '#f59e0b';
             ctx.fillRect(0, -1.5, p.type === 'sniper_bullet' ? 45 : 30, 3); ctx.restore();
+        } else if(p.type === 'esper_comet') {
+            let t = Date.now()/200;
+            let hue = (t*80 + (p.id.charCodeAt(p.id.length-1)||0)*20) % 360;
+            ctx.save(); ctx.translate(p.x, p.y);
+            // Trail
+            for(let k=0;k<6;k++){
+                ctx.fillStyle = `hsla(${(hue+k*40)%360},100%,60%,${0.5-k*0.07})`;
+                ctx.beginPath(); ctx.arc(-Math.cos(p.angle)*k*6, -Math.sin(p.angle)*k*6, 8-k*0.8, 0, 6.28); ctx.fill();
+            }
+            ctx.shadowBlur=18; ctx.shadowColor=`hsl(${hue},100%,60%)`;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(0,0, 9+Math.sin(t*4)*1.5, 0, 6.28); ctx.fill();
+            ctx.restore();
+        } else if(p.type === 'esper_cradle') {
+            let lifeRatio = p.life / (p.maxLife||2);
+            ctx.save(); ctx.translate(p.x, p.y);
+            ctx.strokeStyle = `rgba(6,182,212,${0.5+0.4*lifeRatio})`;
+            ctx.lineWidth = 4; ctx.shadowBlur = 20; ctx.shadowColor = '#06b6d4';
+            ctx.beginPath(); ctx.arc(0,0,p.radius*(1+(1-lifeRatio)*0.05),0,6.28); ctx.stroke();
+            ctx.fillStyle = `rgba(6,182,212,${0.08*lifeRatio})`;
+            ctx.beginPath(); ctx.arc(0,0,p.radius,0,6.28); ctx.fill();
+            ctx.restore();
         } else if(p.type === 'burnt_bread') {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot||0);
             // Smoke trail
@@ -6409,10 +6733,10 @@ o.timBeamCharge * 9;
 
             // Pilot body — to the LEFT of center (perpendicular to facing dir)
             ctx.save();
-            ctx.translate(-9, 14); // pushed further to the side so the ram dominates
+            ctx.translate(-5,18); // pushed further to the side so the ram dominates
             ctx.fillStyle = isImpactFlash ? '#000' : '#ff7a1a';
             ctx.shadowBlur = 12; ctx.shadowColor = '#ff5500';
-            ctx.beginPath(); ctx.arc(0, 0, 8, 0, 6.28); ctx.fill();
+            ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
             ctx.shadowBlur = 0;
             ctx.strokeStyle = isImpactFlash ? '#000' : '#ffd27a'; ctx.lineWidth = 2; ctx.stroke();
             // Goggles
@@ -6640,6 +6964,34 @@ o.timBeamCharge * 9;
                 for(let sx of [-9, 9]){ ctx.beginPath(); ctx.arc(sx, -28-Math.random()*4, 4+Math.random()*3, 0, 6.28); ctx.fill(); }
                 ctx.restore();
             }
+        } else if(!iC && o.heroClass === 'esper') {
+            // Rainbow body with chromatic shift based on action
+            let t = Date.now()/300;
+            let baseHue = (t*60) % 360;
+            let actionColor = null;
+            if(o.id === myId){
+                if(localCombat.esperGrab.active) actionColor = '#10b981'; // green grab
+                else if(localCombat.esperCradle.active) actionColor = '#06b6d4'; // cyan stasis
+            }
+            let bodyColor = actionColor || `hsl(${baseHue},100%,55%)`;
+            let glowColor = actionColor || `hsl(${(baseHue+60)%360},100%,60%)`;
+            ctx.fillStyle = isImpactFlash ? '#000' : bodyColor;
+            ctx.shadowBlur = 22; ctx.shadowColor = glowColor;
+            ctx.beginPath(); ctx.arc(0,0,16,0,6.28); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = isImpactFlash ? '#000' : '#fff'; ctx.lineWidth=1.5; ctx.stroke();
+            // Aura ring
+            ctx.strokeStyle = isImpactFlash ? '#000' : `hsla(${(baseHue+180)%360},100%,65%,0.7)`;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(0,0,22+Math.sin(t*2)*2, 0, 6.28); ctx.stroke();
+            // Spectral hands
+            ctx.save();
+            ctx.rotate(o.angle || 0);
+            for(let s of [-1,1]){
+                ctx.fillStyle = isImpactFlash ? '#000' : `hsla(${(baseHue+120)%360},100%,70%,0.75)`;
+                ctx.beginPath(); ctx.arc(14, s*10, 5, 0, 6.28); ctx.fill();
+            }
+            ctx.restore();
         } else if(!iC && o.heroClass === 'jubilee') {
             // Jubilee body — vibrant pink damage dealer
             ctx.fillStyle = isImpactFlash ? '#000' : '#ec4899';
@@ -7418,8 +7770,19 @@ let aeroCtxEl = document.getElementById('aero-context-menu');
 let aeroCtxCopyBtn = document.getElementById('ctx-copy-btn');
 
 can.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
+window.addEventListener('contextmenu', e => { e.preventDefault(); return false; }, { capture: true });
+document.addEventListener('contextmenu', e => { e.preventDefault(); return false; }, { capture: true });
 
 can.addEventListener('mousedown', e => {
+    // Esper Spectral Sweep — hold right click to grab projectiles
+    if(e.button === 2 && myPlayer.heroClass === 'esper' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && gCon.classList.contains('active')) {
+        e.preventDefault();
+        localCombat.esperGrab.active = true;
+        localCombat.esperGrab.heldProjectiles = [];
+        localCombat.esperGrab.lastMouseX = sMx; localCombat.esperGrab.lastMouseY = sMy;
+        localCombat.esperGrab.flickVx = 0; localCombat.esperGrab.flickVy = 0;
+        return;
+    }
     if(e.button === 2 && myPlayer.heroClass === 'aero' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && gCon.classList.contains('active')) {
         e.preventDefault();
         if(myPlayer.aeroContextMenu) return; // only one at a time
