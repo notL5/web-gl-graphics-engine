@@ -351,7 +351,7 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
         <div class="ability-slot" id="ui-rift-jab"><div class="key">E</div><div class="name">Rift Jab</div><div class="status" id="status-rift-jab">Ready</div><div class="cooldown-overlay" id="cd-rift-jab"></div></div>
         <div class="ability-slot" id="ui-rift-shift"><div class="key">SPACE</div><div class="name">Vector Shift</div><div class="status" id="status-rift-shift">Ch: 2</div><div class="cooldown-overlay" id="cd-rift-shift"></div></div>
 
-        <div class="ability-slot" id="ui-bread-shoot"><div class="key">HOLD L-CLICK</div><div class="name" id="name-bread-shoot">Burnt Bread</div><div class="status" id="status-bread-shoot">32/32</div><div class="cooldown-overlay" id="cd-bread-shoot"></div></div>
+        <div class="ability-slot" id="ui-bread-shoot"><div class="key">HOLD L-CLICK</div><div class="name" id="name-bread-shoot">Burnt Bread</div><div class="status" id="status-bread-shoot">∞</div><div class="cooldown-overlay" id="cd-bread-shoot"></div></div>
         <div class="ability-slot" id="ui-bread-shield"><div class="key">E</div><div class="name">Tank Mode</div><div class="status" id="status-bread-shield">Ready</div><div class="cooldown-overlay" id="cd-bread-shield"></div></div>
         <div class="ability-slot" id="ui-bread-grapple"><div class="key">SPACE</div><div class="name">Cord Grapple</div><div class="status" id="status-bread-grapple">Ready</div><div class="cooldown-overlay" id="cd-bread-grapple"></div></div>
 
@@ -547,9 +547,9 @@ const BALANCE = {
 
 const GRID=50, W=3200, H=2500;
 
-// ===== Nitro: GlintCache (anime explosive glints) =====
+// ===== Nitro: GlintCache (anime explosive glints, with arm variants) =====
 const GlintCache = {
-    models: {}, size: 256,
+    models: {}, variants: {}, size: 256, variantCount: 10,
     palettes: {
         'Napalm_Orange':   { outer: '#ff4545', mid: '#ffcc00', core: '#ffffff' },
         'Electric_Yellow': { outer: '#ffaa00', mid: '#fffae6', core: '#ffffff' },
@@ -565,44 +565,81 @@ const GlintCache = {
     },
     rainbowPalettes: ['Rainbow_Red','Rainbow_Orange','Rainbow_Yellow','Rainbow_Green','Rainbow_Cyan','Rainbow_Blue','Rainbow_Indigo','Rainbow_Violet'],
     pickRainbow(){ return this.rainbowPalettes[Math.floor(Math.random()*8)]; },
-    init(){ for(const [n,c] of Object.entries(this.palettes)) this.models[n]=this.create(c.outer,c.mid,c.core); },
-    create(co,cm,cc){
+    init(){
+        for(const [n,c] of Object.entries(this.palettes)){
+            this.models[n] = this._build(c, [
+                {a:-Math.PI/2,L:1},{a:0,L:1},{a:Math.PI/2,L:1},{a:Math.PI,L:1}
+            ]);
+            this.variants[n] = [];
+            for(let i=0;i<this.variantCount;i++){
+                this.variants[n].push(this._build(c, this._randArms()));
+            }
+        }
+    },
+    _randArms(){
+        // Always 4 arms, never missing any. Some variants get 1-2 extra-long arms.
+        const dirs = [-Math.PI/2, 0, Math.PI/2, Math.PI];
+        const longCount = Math.random() < 0.55 ? 1 : 2;
+        const idxs = [0,1,2,3].sort(()=>Math.random()-0.5).slice(0, longCount);
+        return dirs.map((a, i) => {
+            let L = 1;
+            if(idxs.includes(i)) L = 1.55 + Math.random()*0.6;
+            return {a, L};
+        });
+    },
+    _build(pal, arms){
         const cnv=document.createElement('canvas'); cnv.width=cnv.height=this.size;
         const x=cnv.getContext('2d'); const cx=this.size/2, cy=this.size/2;
-        this._layer(x,cx,cy,90,10,25,co);
-        this._layer(x,cx,cy,70,7,15,cm);
-        this._layer(x,cx,cy,40,2,7,cc);
+        const layers = [
+            {r:90, ctrl:25, sw:25, col:pal.outer},
+            {r:70, ctrl:18, sw:15, col:pal.mid},
+            {r:40, ctrl:10, sw:7, col:pal.core}
+        ];
+        for(const Ly of layers){
+            x.fillStyle=Ly.col; x.strokeStyle=Ly.col; x.lineWidth=Ly.sw;
+            x.lineJoin='round'; x.lineCap='round';
+            for(const arm of arms){
+                this._petal(x, cx, cy, arm.a, Ly.r * arm.L, Ly.ctrl);
+            }
+        }
         return cnv;
     },
-    _layer(ctx,cx,cy,r,ctrl,sw,col){
-        ctx.fillStyle=col; ctx.strokeStyle=col; ctx.lineWidth=sw;
-        ctx.lineJoin='round'; ctx.lineCap='round';
+    _petal(ctx, cx, cy, angle, len, ctrl){
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(angle);
         ctx.beginPath();
-        ctx.moveTo(cx,cy-r);
-        ctx.quadraticCurveTo(cx+ctrl,cy-ctrl,cx+r,cy);
-        ctx.quadraticCurveTo(cx+ctrl,cy+ctrl,cx,cy+r);
-        ctx.quadraticCurveTo(cx-ctrl,cy+ctrl,cx-r,cy);
-        ctx.quadraticCurveTo(cx-ctrl,cy-ctrl,cx,cy-r);
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(ctrl, -ctrl, len, 0);
+        ctx.quadraticCurveTo(ctrl, ctrl, 0, 0);
         ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.restore();
     },
-    pick(palettes){ const k=palettes[Math.floor(Math.random()*palettes.length)]; return this.models[k]; },
+    pickModel(name){
+        // ~55% default, ~45% arm-variant
+        if(!name || !this.models[name]) return null;
+        if(Math.random() < 0.55) return this.models[name];
+        const v = this.variants[name];
+        return v[Math.floor(Math.random()*v.length)];
+    },
+    pick(palettes){ const k=palettes[Math.floor(Math.random()*palettes.length)]; return this.pickModel(k); },
     getModel(name){ return this.models[name]; }
 };
 GlintCache.init();
 
 function spawnNitroExplosion(x,y,radius,palettes){
     palettes = palettes || ['Napalm_Orange','Electric_Yellow','Crimson_Red'];
+    const isRainbow = palettes === GlintCache.rainbowPalettes || (Array.isArray(palettes) && palettes[0] && palettes[0].indexOf('Rainbow_')===0);
     const count = 23 + Math.floor(Math.random()*8);
     for(let i=0;i<count;i++){
         const ang=Math.random()*6.28, d=Math.random()*radius*0.9;
+        const __pal = palettes[Math.floor(Math.random()*palettes.length)];
         vfx.push({type:'nitroGlint', x:x+Math.cos(ang)*d, y:y+Math.sin(ang)*d,
             life:0.18+Math.random()*0.18, maxLife:0.32,
             delay:Math.random()*0.18, scale:0.4+Math.random()*0.7,
             sx:0.7+Math.random()*0.6, sy:0.7+Math.random()*0.6,
             rot:[0,0.785,1.57][Math.floor(Math.random()*3)]+(Math.random()-0.5)*0.2,
-            palette:palettes[Math.floor(Math.random()*palettes.length)]});
+            palette:__pal, _model:GlintCache.pickModel(__pal)});
     }
-    vfx.push({type:'nitroShockwave', x:x, y:y, radius:radius, life:0.35, maxLife:0.35});
+    vfx.push({type:'nitroShockwave', x:x, y:y, radius:radius, life:0.35, maxLife:0.35, rainbow:isRainbow, hueOffset:Math.random()*360});
 }
  
 let cam = {x:0, y:0, zoom:0.6, targetZoom: 0.6};
@@ -2824,18 +2861,19 @@ function trBreadGrapple(){
 }
 function trBreadShoot(){
     let bs=localCombat.breadShoot;
-    if(bs.reload>0 || bs.ammo<=0) return;
+    // infinite ammo, no reloads
     // Ramping fire rate: based on firingTm (held duration). Starts at 4/s -> ramps to ~10/s.
     let rate = 4 + Math.min(6, bs.firingTm*2.0); // shots per second
+    // Tank Mode: 2x faster fire rate
+    if(localCombat.breadShield && localCombat.breadShield.active) rate *= 2;
     let interval = 1/rate;
     if(bs.cd>0) return;
     bs.cd = (activeServerMode==='CHAOS')?0.02:interval;
-    bs.ammo -= 2; if(bs.ammo<0) bs.ammo=0;
+    // infinite ammo: do not decrement or trigger reload
     myPlayer.slashAnimTimer = 0.1;
     applyShake(2, 0.06);
     let ang=myPlayer.angle;
     sdEv({type:'bread_shoot', x:myPlayer.x, y:myPlayer.y, angle:ang});
-    if(bs.ammo<=0){ bs.reload = bs.reloadDur; }
 }
 
 function trRiftShift() {
@@ -3270,9 +3308,9 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
         // Two pieces of bread out of the toaster's two slots — slight horizontal offsets
         let perp = e.angle + 1.5708;
         for(let side of [-1, 1]){
-            let ox = e.x + Math.cos(e.angle)*22 + Math.cos(perp)*side*7;
-            let oy = e.y + Math.sin(e.angle)*22 + Math.sin(perp)*side*7;
-            // small angular spread
+            // Spawn from the toaster's two slot centers (local (-9,-19) and (9,-19) under rotation angle+π/2)
+            let ox = e.x + Math.cos(e.angle)*19 + Math.cos(perp)*side*9;
+            let oy = e.y + Math.sin(e.angle)*19 + Math.sin(perp)*side*9;
             let ang = e.angle + side*0.04;
             gameState.projectiles.push({type:'burnt_bread', id:Math.random().toString(), ownerId:sId, x:ox, y:oy, vx:Math.cos(ang)*1100, vy:Math.sin(ang)*1100, angle:ang, rot:Math.random()*6.28, rotSpd:(Math.random()-0.5)*16, life:0.85, dmg:10*(e.dmgMult||1)});
         }
@@ -3584,10 +3622,29 @@ function updateMovement(dt) {
     
     // Bread Tank Mode: stationary for 10s (can rotate + shoot, can't move)
     if(myPlayer.heroClass === 'bread' && localCombat.breadShield && localCombat.breadShield.active){
+        let bsh = localCombat.breadShield;
+        // tick the active timer so the 10s actually counts down
+        bsh.activeTm -= dt;
         // allow facing/aim updates but block movement
         let wxL = (sMx/cam.zoom) + cam.x, wyL = (sMy/cam.zoom) + cam.y;
         myPlayer.targetX = wxL; myPlayer.targetY = wyL;
         myPlayer.angle = Math.atan2(wyL - myPlayer.y, wxL - myPlayer.x);
+        // auto-fire while holding L-click during tank mode
+        let bs = localCombat.breadShoot;
+        if(myPlayer.stunTimer<=0 && bs.reload<=0){
+            if(mDwn){
+                bs.firingTm = (bs.firingTm||0) + dt;
+                trBreadShoot();
+            } else {
+                bs.firingTm = Math.max(0, (bs.firingTm||0) - dt*1.5);
+            }
+        }
+        if(bs.reload>0){ bs.reload -= dt; if(bs.reload<=0){ bs.ammo = 32; bs.firingTm=0; } }
+        // end tank mode when timer expires or shield is broken
+        if(bsh.activeTm<=0 || bsh.shieldHp<=0){
+            bsh.active=false; bsh.activeTm=0;
+            sdEv({type:'bread_shield_end'});
+        }
         sdUp(); return;
     }
     if(myPlayer.grabbedLocked || myPlayer.isDead) return;
@@ -3652,9 +3709,9 @@ function updateMovement(dt) {
             bs.firingTm = Math.max(0, (bs.firingTm||0) - dt*1.5);
         }
         if(bs.reload>0){ bs.reload -= dt; if(bs.reload<=0){ bs.ammo = 32; bs.firingTm=0; } }
-        // shield tick
+        // shield tick (fallback; main tick happens in tank-mode early-return block above)
         let bsh = localCombat.breadShield;
-        if(bsh.active){ bsh.activeTm -= dt; if(bsh.activeTm<=0 || bsh.shieldHp<=0){ bsh.active=false; sdEv({type:'bread_shield_end'}); } }
+        if(bsh.active){ bsh.activeTm -= dt; if(bsh.activeTm<=0 || bsh.shieldHp<=0){ bsh.active=false; bsh.activeTm=0; sdEv({type:'bread_shield_end'}); } }
         // grapple update
         let bg = localCombat.breadGrapple;
         if(bg.phase==='firing'){
@@ -3839,7 +3896,9 @@ function updateMovement(dt) {
         // Big firework charge-up
         if(localCombat.jubileeCharge.active){
             localCombat.jubileeCharge.t += dt;
-            if(localCombat.jubileeCharge.t >= 0.8){
+            { let __ang = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
+              vfx.push({type:'jubileeChargeGlint', x:myPlayer.x+Math.cos(__ang)*34, y:myPlayer.y+Math.sin(__ang)*34, life:0.06, maxLife:0.06, _born:Date.now()}); }
+            if(localCombat.jubileeCharge.t >= 0.32){
                 localCombat.jubileeCharge.active = false;
                 localCombat.jubileeCharge.t = 0;
                 localCombat.jubileePrimary.cd = (activeServerMode==='CHAOS')?0.05:1.5;
@@ -3854,8 +3913,8 @@ function updateMovement(dt) {
             if((localCombat.jubileePrimary.cd||0) <= 0){
                 localCombat.jubileePrimary.cd = (activeServerMode==='CHAOS')?0.02:0.06;
                 let baseAng = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
-                for(let k=0;k<3;k++){
-                    let a = baseAng + localCombat.jubileeStreamSpin + k*2.094;
+                for(let k=0;k<2;k++){
+                    let a = baseAng + localCombat.jubileeStreamSpin + k*3.14159;
                     sdEv({type:'jubilee_stream_glint', x:myPlayer.x+Math.cos(a)*22, y:myPlayer.y+Math.sin(a)*22, angle:a});
                 }
             }
@@ -5171,8 +5230,8 @@ function updateUI(now = performance.now()) {
     else if(myPlayer.heroClass === 'bread') {
         setVisibleAbilities(['bread-shoot','bread-shield','bread-grapple']);
         let bsh = localCombat.breadShoot;
-        if(bsh.reload>0){ getEl('status-bread-shoot').innerText = 'Reloading...'; getEl('cd-bread-shoot').style.height = (bsh.reload/bsh.reloadDur*100)+'%'; }
-        else { getEl('status-bread-shoot').innerText = bsh.ammo+'/32'; getEl('cd-bread-shoot').style.height = '0%'; }
+        getEl('status-bread-shoot').innerText = '∞';
+        getEl('cd-bread-shoot').style.height = '0%';
         let bs2 = localCombat.breadShield;
         if(bs2.active){ getEl('status-bread-shield').innerText = 'Active '+bs2.activeTm.toFixed(1)+'s ('+Math.ceil(bs2.shieldHp)+'hp)'; getEl('ui-bread-shield').style.borderColor='#fbbf24'; getEl('cd-bread-shield').style.height='0%'; }
         else { getEl('status-bread-shield').innerText = bs2.cd>0 ? bs2.cd.toFixed(1)+'s' : 'Ready'; getEl('cd-bread-shield').style.height = (bs2.cd>0?(bs2.cd/bs2.maxCd)*100:0)+'%'; getEl('ui-bread-shield').style.borderColor='#52525b'; }
@@ -5809,14 +5868,40 @@ function drawEnts() {
         } else if(['firework','dash_bomb','bomblet','jubilee_bigfire','jubilee_stream'].includes(p.type)) {
             // Jubilee projectiles render as nitro glints with random rainbow color
             ctx.save(); ctx.translate(p.x, p.y);
-            if(!p._rbPal) p._rbPal = GlintCache.pickRainbow();
-            let model = GlintCache.getModel(p._rbPal);
-            let s = (p.type === 'jubilee_bigfire' ? 2.6 : (p.type === 'jubilee_stream' ? 0.7 : (p.type === 'dash_bomb' ? 1.6 : (p.type === 'bomblet' ? 0.9 : 1.3))));
-            let pulse = (Date.now() % 200)/200; s *= (0.9 + 0.2*Math.sin(pulse*6.28));
-            ctx.rotate((p.angle||0) + Date.now()/300);
-            ctx.scale(s * (60/GlintCache.size), s * (60/GlintCache.size));
-            ctx.globalCompositeOperation = 'screen';
-            if(model) ctx.drawImage(model, -GlintCache.size/2, -GlintCache.size/2);
+            if(p.type === 'dash_bomb'){
+                // Always flickering white big glint under Jubilee
+                let model = GlintCache.getModel('Electric_Yellow');
+                let flick = 0.6 + 0.4*Math.abs(Math.sin(Date.now()/35));
+                let s = 1.9 * (0.95 + 0.1*Math.sin(Date.now()/60));
+                ctx.rotate(Date.now()/45);
+                ctx.scale(s * (60/GlintCache.size), s * (60/GlintCache.size));
+                ctx.globalCompositeOperation = 'screen';
+                ctx.globalAlpha = flick;
+                ctx.shadowBlur = 50; ctx.shadowColor = '#ffffff';
+                // Draw white-tinted via filter fallback: stamp model then white overlay
+                if(model){
+                    ctx.drawImage(model, -GlintCache.size/2, -GlintCache.size/2);
+                }
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                let R=70, C=20;
+                ctx.moveTo(0,-R); ctx.quadraticCurveTo(C,-C,R,0);
+                ctx.quadraticCurveTo(C,C,0,R); ctx.quadraticCurveTo(-C,C,-R,0);
+                ctx.quadraticCurveTo(-C,-C,0,-R);
+                ctx.fill();
+                ctx.fillStyle = '#fffbe6'; ctx.shadowBlur=0;
+                ctx.beginPath(); ctx.arc(0,0,22,0,6.28); ctx.fill();
+            } else {
+                if(!p._rbPal) p._rbPal = GlintCache.pickRainbow();
+                if(!p._model) p._model = GlintCache.getModel(p._rbPal);
+                let model = p._model;
+                let s = (p.type === 'jubilee_bigfire' ? 1.733 : (p.type === 'jubilee_stream' ? 0.5 : (p.type === 'bomblet' ? 0.9 : 1.3)));
+                let pulse = (Date.now() % 200)/200; s *= (0.9 + 0.2*Math.sin(pulse*6.28));
+                ctx.rotate((p.angle||0) + Date.now()/(p.type==='jubilee_bigfire'?40:300));
+                ctx.scale(s * (60/GlintCache.size), s * (60/GlintCache.size));
+                ctx.globalCompositeOperation = 'screen';
+                if(model) ctx.drawImage(model, -GlintCache.size/2, -GlintCache.size/2);
+            }
             ctx.restore();
         } else if(p.type === 'corsair_cannonball') {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
@@ -6176,6 +6261,8 @@ function drawShields() {
         if(!iV(s.x, s.y, s.radius)) return;
         let a = Math.min(1, s.life / 1.0), o = gameState.players[s.ownerId], kc = o?.customization?.kendoColors || {primary:'#ef4444', glow:'#ef4444'}, rgb = hexToRgb(kc.primary);
         if(gameState.isTeamMode && o) rgb = o.team === 'blue' ? '59,130,246' : '239,68,68';
+        // Bread-Burner Tank Mode shield: orange
+        if(s.kind === 'bread') rgb = '249,115,22';
         
         ctx.save(); ctx.translate(s.x, s.y);
         ctx.fillStyle = `rgba(${rgb},${a * 0.15})`; ctx.beginPath(); ctx.arc(0, 0, s.radius, 0, 6.28); ctx.fill();
@@ -7022,7 +7109,8 @@ o.timBeamCharge * 9;
         } else if(!iC && o.heroClass === 'bread') {
             // ===== THE BREAD-BURNER: hyper-detailed toaster =====
             ctx.save();
-            ctx.rotate(o.angle || 0);
+            // Rotate so the toaster's slot-side faces the aim direction (slots = muzzle)
+            ctx.rotate((o.angle || 0) + Math.PI/2);
             // Body shadow
             ctx.fillStyle = isImpactFlash ? '#000' : '#000';
             ctx.globalAlpha = 0.25;
@@ -7094,7 +7182,7 @@ o.timBeamCharge * 9;
             // Muzzle flash when shooting
             if(o.slashAnimTimer > 0){
                 ctx.save();
-                ctx.rotate(o.angle || 0);
+                ctx.rotate((o.angle || 0) + Math.PI/2);
                 ctx.fillStyle = '#fde047'; ctx.shadowBlur=12; ctx.shadowColor='#f97316'; ctx.globalAlpha=Math.min(1,o.slashAnimTimer*8);
                 for(let sx of [-9, 9]){ ctx.beginPath(); ctx.arc(sx, -28-Math.random()*4, 4+Math.random()*3, 0, 6.28); ctx.fill(); }
                 ctx.restore();
@@ -7535,7 +7623,7 @@ function drawVFX() {
             // Staggered spawn delay
             if(e.delay > 0){ e.delay -= 1/20; ctx.restore(); return; }
             let lifeP = e.life / e.maxLife; // 1..0
-            let model = GlintCache.getModel(e.palette);
+            let model = e._model || GlintCache.getModel(e.palette);
             if(!model){ ctx.restore(); return; }
             // Pop in (linear scale up first 40%), hold, shrink (quadratic out)
             let appear = 1 - lifeP; // 0..1
@@ -7552,11 +7640,37 @@ function drawVFX() {
         } else if(e.type === 'nitroShockwave') {
             let p = 1 - (e.life / e.maxLife);
             ctx.translate(e.x, e.y);
-            ctx.strokeStyle = `rgba(255,170,0,${(1-p)*0.7})`;
+            if(e.rainbow){
+                let hue = ((e.hueOffset||0) + Date.now()/4) % 360;
+                ctx.strokeStyle = `hsla(${hue}, 100%, 60%, ${(1-p)*0.85})`;
+            } else {
+                ctx.strokeStyle = `rgba(255,170,0,${(1-p)*0.7})`;
+            }
             ctx.lineWidth = 16 * (1-p);
             ctx.beginPath(); ctx.arc(0, 0, e.radius * (0.4 + p*0.9), 0, 6.28); ctx.stroke();
             ctx.fillStyle = `rgba(0,0,0,${(1-p)*0.5})`;
             ctx.beginPath(); ctx.arc(0, 0, e.radius * p * 0.9, 0, 6.28); ctx.fill();
+        } else if(e.type === 'jubileeChargeGlint') {
+            let img = GlintCache.getModel('Electric_Yellow');
+            // Use white-tinted glint: draw model then overlay white at higher alpha
+            let t = (Date.now()%240)/240;
+            let flick = 0.55 + 0.45*Math.abs(Math.sin(Date.now()/30));
+            ctx.translate(e.x, e.y);
+            ctx.rotate(Date.now()/35);
+            let scl = 0.8 / GlintCache.size * 60 * (0.9 + 0.15*Math.sin(Date.now()/45));
+            ctx.scale(scl, scl);
+            ctx.globalCompositeOperation = 'screen';
+            ctx.globalAlpha = flick;
+            // White by drawing a filled white petal-ish quick shape
+            ctx.fillStyle = '#ffffff'; ctx.shadowBlur = 40; ctx.shadowColor = '#ffffff';
+            ctx.beginPath();
+            let R=70, C=20;
+            ctx.moveTo(0,-R); ctx.quadraticCurveTo(C,-C,R,0);
+            ctx.quadraticCurveTo(C,C,0,R); ctx.quadraticCurveTo(-C,C,-R,0);
+            ctx.quadraticCurveTo(-C,-C,0,-R);
+            ctx.fill();
+            ctx.fillStyle = '#fffbe6'; ctx.shadowBlur=0;
+            ctx.beginPath(); ctx.arc(0,0,18,0,6.28); ctx.fill();
         } else if(e.type === 'fireworkBoom') {
             ctx.translate(e.x, e.y); let p = 1 - (e.life / e.maxLife);
             ctx.fillStyle = `rgba(24,24,27,${0.8 - p * 0.8})`; ctx.beginPath(); ctx.arc(0, 0, e.radius * p * 1.5, 0, 6.28); ctx.fill();
@@ -7875,6 +7989,18 @@ function gLoop(t) {
         ctx.fillStyle = '#ef4444'; ctx.font = '900 6vw sans-serif'; ctx.textAlign = 'center';
         ctx.fillText("WASTED", can.width / 2, can.height / 2);
     }
+    
+    // FPS counter (top-left)
+    if(!window._fpsData) window._fpsData = {frames:0, last:performance.now(), fps:0};
+    let _f = window._fpsData; _f.frames++;
+    let _now = performance.now();
+    if(_now - _f.last >= 500){ _f.fps = Math.round(_f.frames * 1000 / (_now - _f.last)); _f.frames = 0; _f.last = _now; }
+    ctx.save(); ctx.font = 'bold 14px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    let _txt = 'FPS '+_f.fps;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(8, 8, ctx.measureText(_txt).width + 12, 22);
+    ctx.fillStyle = _f.fps>=55?'#22c55e':_f.fps>=30?'#fbbf24':'#ef4444';
+    ctx.fillText(_txt, 14, 12);
+    ctx.restore();
     
     requestAnimationFrame(gLoop);
 }
