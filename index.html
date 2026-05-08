@@ -5892,9 +5892,9 @@ function drawEnts() {
                 ctx.fillStyle = '#fffbe6'; ctx.shadowBlur=0;
                 ctx.beginPath(); ctx.arc(0,0,22,0,6.28); ctx.fill();
             } else {
-                if(!p._rbPal) p._rbPal = GlintCache.pickRainbow();
-                if(!p._model) p._model = GlintCache.getModel(p._rbPal);
-                let model = p._model;
+                if(!p._rbPal || typeof p._rbPal !== 'string') p._rbPal = GlintCache.pickRainbow();
+                // Derive model from palette every frame; never cache canvas on p (breaks JSON sync to clients)
+                let model = GlintCache.getModel(p._rbPal);
                 let s = (p.type === 'jubilee_bigfire' ? 1.733 : (p.type === 'jubilee_stream' ? 0.5 : (p.type === 'bomblet' ? 0.9 : 1.3)));
                 let pulse = (Date.now() % 200)/200; s *= (0.9 + 0.2*Math.sin(pulse*6.28));
                 ctx.rotate((p.angle||0) + Date.now()/(p.type==='jubilee_bigfire'?40:300));
@@ -8176,6 +8176,27 @@ function drawAeroContextMenuWorld(ctx2) {
     }
 }
 
+// DOM FPS counter - always visible (independent of game state)
+(function(){
+    let el = document.createElement('div');
+    el.id = '__fpsCounter';
+    el.style.cssText = 'position:fixed;top:8px;left:8px;z-index:999999;font:bold 14px monospace;padding:4px 8px;background:rgba(0,0,0,0.6);color:#22c55e;border-radius:4px;pointer-events:none;';
+    el.textContent = 'FPS --';
+    document.body.appendChild(el);
+    let frames=0, last=performance.now();
+    function tick(now){
+        frames++;
+        if(now-last>=500){
+            let fps=Math.round(frames*1000/(now-last));
+            el.textContent='FPS '+fps;
+            el.style.color = fps>=55?'#22c55e':fps>=30?'#fbbf24':'#ef4444';
+            frames=0; last=now;
+        }
+        requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+})();
 </script>
 </body>
 </html>
+
