@@ -335,7 +335,7 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
         <div class="ability-slot" id="ui-nitro-charge"><div class="key">HOLD L-CLICK</div><div class="name" id="name-nitro-charge">Ram-Charge</div><div class="status" id="status-nitro-charge">Ready</div><div class="cooldown-overlay" id="cd-nitro-charge"></div></div>
         <div class="ability-slot" id="ui-nitro-vault"><div class="key">HOLD SPACE</div><div class="name">Stratosphere Vault</div><div class="status" id="status-nitro-vault">Ready</div><div class="cooldown-overlay" id="cd-nitro-vault"></div></div>
 
-        <div class="ability-slot" id="ui-jubilee-primary"><div class="key">L-CLICK</div><div class="name">Fireworks</div><div class="status" id="status-jubilee-primary">Ready</div><div class="cooldown-overlay" id="cd-jubilee-primary"></div></div>
+        <div class="ability-slot" id="ui-jubilee-primary"><div class="key">L-CLICK / Q</div><div class="name">Fireworks (Big/Stream)</div><div class="status" id="status-jubilee-primary">Ready</div><div class="cooldown-overlay" id="cd-jubilee-primary"></div></div>
 
         <div class="ability-slot" id="ui-corsair-primary"><div class="key">L-CLICK</div><div class="name" id="name-corsair-primary">Broadside</div><div class="status" id="status-corsair-primary">Ready</div><div class="cooldown-overlay" id="cd-corsair-primary"></div></div>
         <div class="ability-slot" id="ui-corsair-stance"><div class="key">SHIFT</div><div class="name">Stance</div><div class="status" id="status-corsair-stance">Cannon</div></div>
@@ -553,8 +553,18 @@ const GlintCache = {
     palettes: {
         'Napalm_Orange':   { outer: '#ff4545', mid: '#ffcc00', core: '#ffffff' },
         'Electric_Yellow': { outer: '#ffaa00', mid: '#fffae6', core: '#ffffff' },
-        'Crimson_Red':     { outer: '#cc0022', mid: '#ff7733', core: '#ffffff' }
+        'Crimson_Red':     { outer: '#cc0022', mid: '#ff7733', core: '#ffffff' },
+        'Rainbow_Red':     { outer: '#ff0033', mid: '#ff6677', core: '#ffffff' },
+        'Rainbow_Orange':  { outer: '#ff7700', mid: '#ffaa55', core: '#ffffff' },
+        'Rainbow_Yellow':  { outer: '#ffdd00', mid: '#ffff99', core: '#ffffff' },
+        'Rainbow_Green':   { outer: '#22dd33', mid: '#88ff99', core: '#ffffff' },
+        'Rainbow_Cyan':    { outer: '#00ddff', mid: '#88eeff', core: '#ffffff' },
+        'Rainbow_Blue':    { outer: '#0055ff', mid: '#6699ff', core: '#ffffff' },
+        'Rainbow_Indigo':  { outer: '#5500ff', mid: '#9988ff', core: '#ffffff' },
+        'Rainbow_Violet':  { outer: '#cc00ff', mid: '#ee99ff', core: '#ffffff' }
     },
+    rainbowPalettes: ['Rainbow_Red','Rainbow_Orange','Rainbow_Yellow','Rainbow_Green','Rainbow_Cyan','Rainbow_Blue','Rainbow_Indigo','Rainbow_Violet'],
+    pickRainbow(){ return this.rainbowPalettes[Math.floor(Math.random()*8)]; },
     init(){ for(const [n,c] of Object.entries(this.palettes)) this.models[n]=this.create(c.outer,c.mid,c.core); },
     create(co,cm,cc){
         const cnv=document.createElement('canvas'); cnv.width=cnv.height=this.size;
@@ -959,8 +969,8 @@ let localCombat = {
     dash:{charges:3,maxCharges:3,cds:[0,0,0],maxCd:4.0,v:{x:0,y:0},rec:0}, 
     slash:{cd:0,maxCd:0.5}, kendoRide:{cd:0,maxCd:9.0}, kendoShield:{cd:0,maxCd:8.0},
     glitchShoot:{cd:0,maxCd:0.6}, glitchClone:{cd:0,maxCd:2.0}, glitchSwap:{cd:0,maxCd:2.0},
-    jubileePrimary:{cd:0,maxCd:1.2},
-    nitroCharge:{cd:0,maxCd:0.5,charging:false,chargeT:0,boostTm:0,ang:0,dist:0,grabbedId:null,trailTm:0},
+    jubileePrimary:{cd:0,maxCd:0.8}, jubileeMode:'big', jubileeCharge:{active:false,t:0}, jubileeStreamSpin:0,
+    nitroCharge:{cd:0,maxCd:0.67,charging:false,chargeT:0,boostTm:0,ang:0,dist:0,grabbedId:null,trailTm:0},
     nitroVault:{cd:0,maxCd:10.0,charging:false,chargeT:0,flying:false,flightT:0,flightDur:0,sx:0,sy:0,tx:0,ty:0,trailTm:0}, jubileeDash:{cd:0,maxCd:5.0,delay:0,dTm:0,ang:0,spd:0,dr:0}, 
     misakiShoot:{cd:0,maxCd:1.8}, misakiGrapple:{cd:0,maxCd:6.0,dTm:0,ang:0,spd:1800}, misakiFlare:{cd:0,maxCd:10.0},
     blitzPrimary:{cd:0,rTm:0}, blitzParry:{cd:0,maxCd:5.0}, blitzTp:{ch:3,maxCh:3,cds:[0,0,0],maxCd:4.0,dTm:0,dx:0,dy:0}, blitzGrab:{cd:0,maxCd:10.0}, 
@@ -972,7 +982,7 @@ let localCombat = {
     riftPrimary: { cd: 0, maxCd: 0.66, ammo: 18, rTm: 0, burstCount: 0, burstTimer: 0 },
     riftOrb: { cd: 0, maxCd: 2.0 },
     riftJab: { cd: 0, maxCd: 2.0 },
-    riftShift: { charges: 1, maxCharges: 1, cds: [0, 0], maxCd: 4.0 },
+    riftShift: { charges: 1, maxCharges: 1, cds: [0, 0], maxCd: 2.25 },
     breadShoot:{cd:0,maxCd:0.25,ammo:80,reload:0,reloadDur:1.5,heat:0,firingTm:0},
     breadShield:{cd:0,maxCd:22.0,active:false,activeTm:0,maxActive:8.0,shieldHp:200,maxShieldHp:200},
     breadGrapple:{cd:0,maxCd:9.0,phase:'idle',anchor:null,fireTm:0,pullTm:0,curX:0,curY:0,vx:0,vy:0},
@@ -996,7 +1006,6 @@ function resetAllCooldowns() {
     });
     myPlayer.blitzAmmo = 8;
     myPlayer.riftAmmo = 18;
-    myPlayer.daggers = 2;
     if(localCombat.breadShoot){localCombat.breadShoot.ammo=32;localCombat.breadShoot.reload=0;localCombat.breadShoot.heat=0;localCombat.breadShoot.firingTm=0;}
     if(localCombat.breadShield){localCombat.breadShield.active=false;localCombat.breadShield.activeTm=0;localCombat.breadShield.shieldHp=200;}
     if(localCombat.breadGrapple){localCombat.breadGrapple.phase='idle';localCombat.breadGrapple.anchor=null;}
@@ -2115,7 +2124,7 @@ function genMap() {
 
 function processVFX(d) {
     if(d.type==='slash_vfx') vfx.push({type:'animeSlash', x:d.x, y:d.y, angle:d.angle, life:0.15, maxLife:0.15, daggerCount:d.daggers});
-    else if(d.type==='nitro_explosion_vfx') { let pal = d.palette==='vault'?['Crimson_Red','Napalm_Orange','Electric_Yellow']:(d.palette==='mini'?['Electric_Yellow','Napalm_Orange']:undefined); spawnNitroExplosion(d.x, d.y, d.radius, pal); applyExpKbk(d.x, d.y, d.radius); }
+    else if(d.type==='nitro_explosion_vfx') { let pal = d.palette==='vault'?['Crimson_Red','Napalm_Orange','Electric_Yellow']:(d.palette==='mini'?['Electric_Yellow','Napalm_Orange']:(d.palette==='rainbow'?GlintCache.rainbowPalettes:undefined)); spawnNitroExplosion(d.x, d.y, d.radius, pal); applyExpKbk(d.x, d.y, d.radius); }
     else if(d.type==='firework_boom') { vfx.push({type:'fireworkBoom', x:d.x, y:d.y, color:d.color, radius:d.radius, life:0.4, maxLife:0.4}); applyExpKbk(d.x, d.y, d.radius); }
     else if(d.type==='sniper_vfx') vfx.push({type:'sniperMuzzle', x:d.x, y:d.y, angle:d.angle, life:0.15, maxLife:0.15});
     else if(d.type==='mirror_flash') vfx.push({type:'mirrorFlash', x:d.x, y:d.y, life:0.3, maxLife:0.3});
@@ -2397,6 +2406,10 @@ window.addEventListener('keydown', e => {
                 localCombat.riftOrb.cd = (activeServerMode==='CHAOS')?0.05:localCombat.riftOrb.maxCd;
                 sdEv({type:'rift_orb_fire', x: myPlayer.x, y: myPlayer.y, angle: myPlayer.angle});
             }
+        } else if(myPlayer.heroClass === 'jubilee' && !localCombat.mQ) {
+            localCombat.mQ = true;
+            localCombat.jubileeMode = (localCombat.jubileeMode === 'big') ? 'stream' : 'big';
+            localCombat.jubileeCharge.active = false; localCombat.jubileeCharge.t = 0;
         }
     }
     
@@ -2767,7 +2780,15 @@ function trBlKt(){if(localCombat.blitzPrimary.cd<=0&&!myPlayer.grabbedLocked){lo
 function trMisG(){if(localCombat.misakiGrapple.cd<=0&&myPlayer.kisakiDeployed){let k=gameState.projectiles.find(p=>p.type==='kisaki'&&p.ownerId===myId);if(k){localCombat.misakiGrapple.cd=(activeServerMode==='CHAOS')?0.05:localCombat.misakiGrapple.maxCd;let dx=k.x-myPlayer.x,dy=k.y-myPlayer.y;localCombat.misakiGrapple.ang=Math.atan2(dy,dx);localCombat.misakiGrapple.dTm=Math.hypot(dx,dy)/1800;sdEv({type:'misaki_grapple',targetX:k.x,targetY:k.y});}}}
 function trMisF(){if(localCombat.misakiFlare.cd<=0&&myPlayer.kisakiDeployed&&myPlayer.kisakiMirrorOn){localCombat.misakiFlare.cd=(activeServerMode==='CHAOS')?0.05:localCombat.misakiFlare.maxCd;sdEv({type:'misaki_flare'});}}
 function trMisS(){if(localCombat.misakiShoot.cd<=0){localCombat.misakiShoot.cd=(activeServerMode==='CHAOS')?0.05:localCombat.misakiShoot.maxCd;applyShake(5,0.15);sdEv({type:'misaki_shoot',angle:myPlayer.angle});}}
-function trJubP(){if(localCombat.jubileePrimary.cd<=0){localCombat.jubileePrimary.cd=(activeServerMode==='CHAOS')?0.05:localCombat.jubileePrimary.maxCd;applyShake(3,0.1);sdEv({type:'jubilee_shoot',targetX:myPlayer.targetX,targetY:myPlayer.targetY,x:myPlayer.x,y:myPlayer.y});}}
+function trJubP(){
+    if(localCombat.jubileeMode === 'big'){
+        if(localCombat.jubileePrimary.cd<=0 && !localCombat.jubileeCharge.active){
+            localCombat.jubileeCharge.active = true; localCombat.jubileeCharge.t = 0;
+        }
+    } else {
+        // stream mode handled in update loop while mDwn
+    }
+}
 function trJubD(){if(localCombat.jubileeDash.cd<=0&&localCombat.jubileeDash.delay<=0&&!myPlayer.isFlying){localCombat.jubileeDash.cd=(activeServerMode==='CHAOS')?0.05:localCombat.jubileeDash.maxCd;localCombat.jubileeDash.delay=0.3;let a=Math.atan2(myPlayer.targetY-myPlayer.y,myPlayer.targetX-myPlayer.x);sdEv({type:'jubilee_dash_setup',x:myPlayer.x-Math.cos(a)*35,y:myPlayer.y-Math.sin(a)*35});}}
 function trGlSh(){if(localCombat.glitchShoot.cd<=0){localCombat.glitchShoot.cd=(activeServerMode==='CHAOS')?0.05:localCombat.glitchShoot.maxCd;applyShake(3,0.1);sdEv({type:'glitch_shoot',targetX:myPlayer.targetX,targetY:myPlayer.targetY});}}
 function trGlC(){if(localCombat.glitchClone.cd<=0){let p=gnV(myPlayer.targetX,myPlayer.targetY);localCombat.glitchClone.cd=(activeServerMode==='CHAOS')?0.05:localCombat.glitchClone.maxCd;sdEv({type:'glitch_clone',x:p.x,y:p.y});}}
@@ -2783,7 +2804,7 @@ function trTimVents(){if(myPlayer.heroClass==='tim'&&localCombat.timVents.cd<=0)
 function trBreadShield(){
     let bs=localCombat.breadShield;
     if(bs.cd<=0 && !bs.active){
-        bs.active=true; bs.activeTm=bs.maxActive; bs.shieldHp=bs.maxShieldHp;
+        bs.active=true; bs.maxActive=10.0; bs.activeTm=10.0; bs.shieldHp=bs.maxShieldHp;
         bs.cd=(activeServerMode==='CHAOS')?0.5:bs.maxCd;
         applyShake(3,0.1);
         sdEv({type:'bread_shield_deploy', x:myPlayer.x, y:myPlayer.y, hp:bs.maxShieldHp, dur:bs.maxActive});
@@ -2869,6 +2890,11 @@ function cDm(a, t) {
     if(!gameState.isTeamMode) return true;
     let A = gameState.players[a], T = gameState.players[t];
     return A && T && A.team !== T.team;
+}
+// Esper-flicked projectiles damage everyone (including original owner)
+function cDmProj(p, t) {
+    if(p && p._esperFlicked) { return p.ownerId !== t || p._origOwner === t ? true : true; }
+    return cDm(p ? p.ownerId : null, t);
 }
 
 function riftSegmentCircleHitT(ax, ay, bx, by, cx, cy, r) {
@@ -3132,6 +3158,31 @@ function emEx(x, y, dmg, r, oId, c, vOnly=false) {
     }
 }
 
+function rainbowExplosion(x, y, dmgMin, dmgMax, r, oId, kbk){
+    connections.forEach(C => { if(C.open) C.send({type:'nitro_explosion_vfx', x:x, y:y, radius:r, palette:'rainbow'});});
+    spawnNitroExplosion(x, y, r, GlintCache.rainbowPalettes);
+    applyExpKbk(x, y, r);
+    for(let C of gameState.clones){
+        if(cDm(oId, C.ownerId) && !C.invulnerable){
+            let d = Math.hypot(C.x-x, C.y-y);
+            if(d<=r){ let dmg = dmgMax - (dmgMax-dmgMin)*(d/r); dmgTk(C, dmg, oId); sendHitmarker(oId, C, dmg); }
+        }
+    }
+    for(let id in gameState.players){
+        let t = gameState.players[id]; if(!t || t.isDead) continue;
+        let d = Math.hypot(t.x-x, t.y-y); if(d > r) continue;
+        let dmg = dmgMax - (dmgMax-dmgMin)*(d/r);
+        if(cDm(oId, id) && !t.invulnerable){
+            dmgTk(t, dmg, oId); sendHitmarker(oId, t, dmg); t.lastAttacker = oId; t.lastHitTime = Date.now(); chD(t, id);
+        }
+        if(kbk){
+            let ka = Math.atan2(t.y-y, t.x-x);
+            if(myId === id){ localCombat.dash.v.x += Math.cos(ka)*kbk; localCombat.dash.v.y += Math.sin(ka)*kbk; localCombat.dash.rec = 0.3; }
+            else { connections.forEach(c=>{if(c.open) c.send({type:'knockback_apply', targetId:id, angle:ka, force:kbk});}); }
+        }
+    }
+}
+
 function processCombatEvent(sId, e) {
     if(!isHost) return; 
     let s = gameState.players[sId]; 
@@ -3151,6 +3202,12 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='glitch_swap'){let c=gameState.clones.find(x=>x.id===e.cloneId);if(c){c.x=e.newCloneX;c.y=e.newCloneY;}}
     else if(e.type==='jubilee_shoot'){const C=['#ff0044','#ff7643','#ff7700','#ffcc00','#33ff33','#00ccff','#aa00ff','#ff87d3','#87ffd3','#ffffff','#00c018'];let ba=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(let i=-1;i<=1;i++)gameState.projectiles.push({type:'firework',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,startAngle:ba,angle:ba,speed:550,life:0.6,index:i,state:'straight',color:C[Math.floor(Math.random()*C.length)],dmgMult:e.dmgMult||1.0});}
     else if(e.type==='jubilee_dash_setup'){gameState.projectiles.push({type:'dash_bomb',id:Math.random().toString(),ownerId:sId,x:e.x,y:e.y,life:0.3});}
+    else if(e.type==='jubilee_bigfire'){
+        gameState.projectiles.push({type:'jubilee_bigfire', id:Math.random().toString(), ownerId:sId, x:e.x, y:e.y, vx:Math.cos(e.angle)*700, vy:Math.sin(e.angle)*700, angle:e.angle, life:2.0});
+    }
+    else if(e.type==='jubilee_stream_glint'){
+        gameState.projectiles.push({type:'jubilee_stream', id:Math.random().toString(), ownerId:sId, x:e.x, y:e.y, vx:Math.cos(e.angle)*900, vy:Math.sin(e.angle)*900, life:0.3, dmg:5});
+    }
 
     else if(e.type==='nitro_boost_start'){ /* purely cosmetic for remotes */ s.nitroBoosting = true; }
     else if(e.type==='nitro_ram_grab'){
@@ -3233,7 +3290,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='bread_grapple_end'){ /* visual */ }
     // ===== ESPER =====
     else if(e.type==='esper_comet_fire'){
-        gameState.projectiles.push({type:'esper_comet', id:e.id, ownerId:sId, x:e.x, y:e.y, angle:e.angle, speed:520, life:6.0, bounced:false, dmg:30, hitIds:{}});
+        gameState.projectiles.push({type:'esper_comet', id:e.id, ownerId:sId, x:e.x, y:e.y, angle:e.angle, speed:520, life:20.0, bounced:false, dmg:30, hitIds:{}});
     }
     else if(e.type==='esper_comet_detonate'){
         let c = gameState.projectiles.find(p=>p.type==='esper_comet' && p.id===e.id);
@@ -3268,17 +3325,20 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     }
     else if(e.type==='esper_cradle_burst_vfx'){ vfx.push({type:'esperCradleBurst', x:e.x, y:e.y, life:0.4, maxLife:0.4}); }
     else if(e.type==='esper_flick'){
-        // Esper releasing held projectiles
+        // Esper releasing held projectiles - now damages everyone (including original owner)
         for(let id of (e.ids||[])){
             let p = gameState.projectiles.find(pp=>pp.id===id);
             if(p && p._esperHeld){
                 if(p.vx !== undefined){ p.vx = Math.cos(e.angle)*e.speed; p.vy = Math.sin(e.angle)*e.speed; p.angle = e.angle; }
                 else if(p.speed !== undefined){ p.angle = e.angle; p.speed = e.speed; }
-                p.ownerId = e.ownerId; // change ownership
+                p._origOwner = p.ownerId; // remember original
+                p.ownerId = e.ownerId; // change ownership to esper
+                p._esperFlicked = true; // marks: damages everyone including original owner
                 if(p.dmg) p.dmg *= e.dmgMul;
                 if(p.damage) p.damage *= e.dmgMul;
                 p._esperHeld = false;
                 p.hitIds = {};
+                p.hitCooldowns = {};
             }
         }
     }
@@ -3522,6 +3582,14 @@ function updateMovement(dt) {
         }
     }
     
+    // Bread Tank Mode: stationary for 10s (can rotate + shoot, can't move)
+    if(myPlayer.heroClass === 'bread' && localCombat.breadShield && localCombat.breadShield.active){
+        // allow facing/aim updates but block movement
+        let wxL = (sMx/cam.zoom) + cam.x, wyL = (sMy/cam.zoom) + cam.y;
+        myPlayer.targetX = wxL; myPlayer.targetY = wyL;
+        myPlayer.angle = Math.atan2(wyL - myPlayer.y, wxL - myPlayer.x);
+        sdUp(); return;
+    }
     if(myPlayer.grabbedLocked || myPlayer.isDead) return;
     
     let wx = (sMx/cam.zoom) + cam.x, wy = (sMy/cam.zoom) + cam.y;
@@ -3684,9 +3752,11 @@ function updateMovement(dt) {
             let stepX = Math.cos(nc.ang)*speed*dt, stepY = Math.sin(nc.ang)*speed*dt;
             let nx = myPlayer.x + stepX, ny = myPlayer.y + stepY;
             let hitWall = iW(nx, ny);
-            if(hitWall){
-                // Wall impact -> glint explosion
+            let outOfBounds = nx < 20 || nx > W-20 || ny < 20 || ny > H-20;
+            if(hitWall || outOfBounds){
+                // Wall/border impact -> glint explosion
                 myPlayer.isFlying = false;
+                if(outOfBounds){ myPlayer.x = Math.max(20, Math.min(W-20, myPlayer.x)); myPlayer.y = Math.max(20, Math.min(H-20, myPlayer.y)); }
                 let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
                 spawnNitroExplosion(myPlayer.x + Math.cos(nc.ang)*40, myPlayer.y + Math.sin(nc.ang)*40, 110);
                 applyShake(10,0.3);
@@ -3721,8 +3791,9 @@ function updateMovement(dt) {
                     sdEv({type:'nitro_glint_drop', x:myPlayer.x-Math.cos(nc.ang)*18, y:myPlayer.y-Math.sin(nc.ang)*18, fuse:0.6, dmg:7, kbk:18});
                 }
                 if(nc.boostTm <= 0){
-                    // Ran out of boost — release without explosion
+                    // Ran out of boost — release without explosion (and free any grabbed target)
                     myPlayer.isFlying = false;
+                    if(nc.grabbedId){ sdEv({type:'nitro_ram_impact', x:myPlayer.x, y:myPlayer.y, ang:nc.ang, grabbedId:nc.grabbedId}); }
                     nc.grabbedId = null;
                 }
             }
@@ -3764,6 +3835,32 @@ function updateMovement(dt) {
             let prog = 1 - (myPlayer.jumpTimer / (myPlayer.jumpDuration||0.4));
             myPlayer.z = Math.sin(prog * Math.PI) * 90;
         } else { myPlayer.z = 0; }
+
+        // Big firework charge-up
+        if(localCombat.jubileeCharge.active){
+            localCombat.jubileeCharge.t += dt;
+            if(localCombat.jubileeCharge.t >= 0.8){
+                localCombat.jubileeCharge.active = false;
+                localCombat.jubileeCharge.t = 0;
+                localCombat.jubileePrimary.cd = (activeServerMode==='CHAOS')?0.05:1.5;
+                applyShake(6,0.18);
+                let ang = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
+                sdEv({type:'jubilee_bigfire', x:myPlayer.x, y:myPlayer.y, angle:ang});
+            }
+        }
+        // Stream mode (continuous spinning glints)
+        if(localCombat.jubileeMode === 'stream' && mDwn && !myPlayer.isDead && myPlayer.stunTimer<=0){
+            localCombat.jubileeStreamSpin = (localCombat.jubileeStreamSpin||0) + dt*12;
+            if((localCombat.jubileePrimary.cd||0) <= 0){
+                localCombat.jubileePrimary.cd = (activeServerMode==='CHAOS')?0.02:0.06;
+                let baseAng = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
+                for(let k=0;k<3;k++){
+                    let a = baseAng + localCombat.jubileeStreamSpin + k*2.094;
+                    sdEv({type:'jubilee_stream_glint', x:myPlayer.x+Math.cos(a)*22, y:myPlayer.y+Math.sin(a)*22, angle:a});
+                }
+            }
+        }
+
         if(localCombat.jubileeDash.delay > 0) {
             localCombat.jubileeDash.delay -= dt;
             if(localCombat.jubileeDash.delay <= 0) {
@@ -4353,12 +4450,15 @@ function updateGameState(dt) {
                 let nx = p.x + Math.cos(p.angle)*p.speed*sm*dt;
                 let ny = p.y + Math.sin(p.angle)*p.speed*sm*dt;
                 if(iW(nx,ny)){
-                    if(!p.bounced){ p.bounced=true; p.angle += Math.PI; }
-                    else { gameState.projectiles.splice(i,1); continue; }
+                    // Infinite wall bounces - reflect angle
+                    let stepX = Math.cos(p.angle), stepY = Math.sin(p.angle);
+                    if(!iW(p.x+stepX*4, ny)) { p.angle = -p.angle; }
+                    else if(!iW(nx, p.y+stepY*4)) { p.angle = Math.PI - p.angle; }
+                    else { p.angle += Math.PI; }
                 } else { p.x = nx; p.y = ny; }
                 p.life -= dt;
                 let hit=false;
-                for(let id in gameState.players){ let t=gameState.players[id]; if(!t.isDead && cDm(p.ownerId,id) && !t.invulnerable && Math.hypot(t.x-p.x,t.y-p.y)<22){ dmgTk(t,p.dmg,p.ownerId); sendHitmarker(p.ownerId,t,p.dmg); t.lastAttacker=p.ownerId; t.lastHitTime=Date.now(); chD(t,id); hit=true; break; } }
+                for(let id in gameState.players){ let t=gameState.players[id]; if(!t.isDead && cDmProj(p,id) && !t.invulnerable && !p.hitIds[id] && Math.hypot(t.x-p.x,t.y-p.y)<22){ dmgTk(t,p.dmg,p.ownerId); sendHitmarker(p.ownerId,t,p.dmg); t.lastAttacker=p.ownerId; t.lastHitTime=Date.now(); chD(t,id); p.hitIds[id]=true; hit=true; break; } }
                 if(hit || p.life<=0) gameState.projectiles.splice(i,1);
             } else if(p.type === 'esper_cradle') {
                 p.life -= dt;
@@ -4405,7 +4505,7 @@ function updateGameState(dt) {
                 if(!hs) for(let id in gameState.players) if(!gameState.players[id].isDead && cDm(p.ownerId, id) && Math.hypot(gameState.players[id].x - p.x, gameState.players[id].y - p.y) < 20) { hs = true; break; }
                 if(p.life <= 0 || hs) { emEx(p.x, p.y, (p.index === 0 ? 50 : 25)*(p.dmgMult||1), 80, p.ownerId, p.color, false); gameState.projectiles.splice(i, 1); }
             } else if(p.type === 'dash_bomb') {
-                p.life -= dt; if(p.life <= 0) { emEx(p.x, p.y, 0, 95, p.ownerId, '#fff', true); gameState.projectiles.splice(i, 1); }
+                p.life -= dt; if(p.life <= 0) { rainbowExplosion(p.x, p.y, 0, 0, 95, p.ownerId, 25); gameState.projectiles.splice(i, 1); }
             } else if(p.type === 'nitro_glint') {
                 p.life -= dt;
                 if(p.life <= 0 && !p.exploded){
@@ -4419,6 +4519,16 @@ function updateGameState(dt) {
                         connections.forEach(c=>{if(c.open) c.send({type:'knockback_apply', targetId:id, angle:kang, force:p.kbk});});
                         if(myId===id){ localCombat.dash.v.x += Math.cos(kang)*p.kbk; localCombat.dash.v.y += Math.sin(kang)*p.kbk; localCombat.dash.rec=0.2; }
                     } } }
+                    // Owner is also affected by knockback from their own glint trail
+                    let owner = gameState.players[p.ownerId];
+                    if(owner && !owner.isDead){
+                        let dO = Math.hypot(owner.x-p.x, owner.y-p.y);
+                        if(dO <= R){
+                            let oa = Math.atan2(owner.y-p.y, owner.x-p.x);
+                            if(myId === p.ownerId){ localCombat.dash.v.x += Math.cos(oa)*p.kbk; localCombat.dash.v.y += Math.sin(oa)*p.kbk; localCombat.dash.rec = 0.2; }
+                            else { connections.forEach(c=>{if(c.open) c.send({type:'knockback_apply', targetId:p.ownerId, angle:oa, force:p.kbk});}); }
+                        }
+                    }
                     for(let c of gameState.clones){ if(cDm(p.ownerId,c.ownerId) && !c.invulnerable){ let d=Math.hypot(c.x-p.x,c.y-p.y); if(d<=R){ dmgTk(c,p.dmg,p.ownerId); sendHitmarker(p.ownerId,c,p.dmg);} } }
                     gameState.projectiles.splice(i,1);
                 }
@@ -4427,7 +4537,25 @@ function updateGameState(dt) {
             } else if(p.type === 'bomblet') {
                 p.life -= dt; let he = false;
                 for(let id in gameState.players) if(!gameState.players[id].isDead && cDm(p.ownerId, id) && Math.hypot(gameState.players[id].x - p.x, gameState.players[id].y - p.y) < 20) { he = true; break; }
-                if(p.life <= 0 || he) { emEx(p.x, p.y, 15, 60, p.ownerId, p.color, false); gameState.projectiles.splice(i, 1); }
+                if(p.life <= 0 || he) { rainbowExplosion(p.x, p.y, 5, 15, 60, p.ownerId, 15); gameState.projectiles.splice(i, 1); }
+            } else if(p.type === 'jubilee_bigfire') {
+                p.lastX = p.x; p.lastY = p.y;
+                p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+                let hw = iW(p.x, p.y), hitSomething = false;
+                if(!hw) for(let id in gameState.players) if(!gameState.players[id].isDead && cDm(p.ownerId, id) && Math.hypot(gameState.players[id].x - p.x, gameState.players[id].y - p.y) < 30) { hitSomething = true; break; }
+                if(hw || hitSomething || p.life <= 0) {
+                    rainbowExplosion(p.x, p.y, 30, 60, 220, p.ownerId, 60);
+                    gameState.projectiles.splice(i, 1);
+                }
+            } else if(p.type === 'jubilee_stream') {
+                p.lastX = p.x; p.lastY = p.y;
+                p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+                let hw = iW(p.x, p.y), hs = false;
+                if(!hw) for(let id in gameState.players) if(!gameState.players[id].isDead && cDm(p.ownerId, id) && Math.hypot(gameState.players[id].x - p.x, gameState.players[id].y - p.y) < 22) { hs = true; break; }
+                if(hw || hs || p.life <= 0) {
+                    rainbowExplosion(p.x, p.y, 2, p.dmg, 50, p.ownerId, 8);
+                    gameState.projectiles.splice(i, 1);
+                }
             } else if(p.type === 'corsair_cannonball') {
                 p.lastX = p.x; p.lastY = p.y;
                 p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
@@ -4928,7 +5056,7 @@ function updateUI(now = performance.now()) {
     }
     else if(myPlayer.heroClass === 'jubilee') {
         setVisibleAbilities(['jubilee-primary','jubilee-dash']);
-        let p1 = localCombat.jubileePrimary.cd; getEl('cd-jubilee-primary').style.height = `${p1 > 0 ? (p1 / 1.2) * 100 : 0}%`; getEl('status-jubilee-primary').innerText = p1 > 0 ? p1.toFixed(1) + 's' : 'Ready';
+        let p1 = localCombat.jubileePrimary.cd; getEl('cd-jubilee-primary').style.height = `${p1 > 0 ? (p1 / 1.5) * 100 : 0}%`; getEl('status-jubilee-primary').innerText = (localCombat.jubileeMode==='big'?'BIG ':'STREAM ') + (p1 > 0 ? p1.toFixed(1) + 's' : 'Ready');
         let pd = localCombat.jubileeDash.cd; getEl('cd-jubilee-dash').style.height = `${pd > 0 ? (pd / 5.0) * 100 : 0}%`; getEl('status-jubilee-dash').innerText = pd > 0 ? pd.toFixed(1) + 's' : 'Ready';
     }
     else if(myPlayer.heroClass === 'misaki') {
@@ -5678,11 +5806,18 @@ function drawEnts() {
             if(p.phase === 'slow') { ctx.fillRect(-8, -12, 16, 24); ctx.fillStyle = '#fff'; ctx.shadowBlur = 0; ctx.fillRect(-2, -6, 4, 12); }
             else { ctx.fillRect(-25, -4, 50, 8); ctx.fillStyle = '#fff'; ctx.shadowBlur = 0; ctx.fillRect(-15, -1, 30, 2); }
             ctx.restore();
-        } else if(['firework','dash_bomb','bomblet'].includes(p.type)) {
-            ctx.save(); ctx.translate(p.x, p.y); let f = (Date.now() % 80 > 40) ? 1.3 : 0.7, s = p.type === 'dash_bomb' ? 18 : (p.type === 'bomblet' ? 10 : 15); s *= f;
-            ctx.fillStyle = p.color || '#fff'; ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 18; if(p.angle) ctx.rotate(p.angle + Date.now() / 100);
-            ctx.beginPath(); ctx.moveTo(0, -s); ctx.quadraticCurveTo(0, 0, s, 0); ctx.quadraticCurveTo(0, 0, 0, s); ctx.quadraticCurveTo(0, 0, -s, 0); ctx.quadraticCurveTo(0, 0, 0, -s); ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.shadowBlur = 0; let c = s * 0.5; ctx.beginPath(); ctx.moveTo(0, -c); ctx.quadraticCurveTo(0, 0, c, 0); ctx.quadraticCurveTo(0, 0, 0, c); ctx.quadraticCurveTo(0, 0, -c, 0); ctx.quadraticCurveTo(0, 0, 0, -c); ctx.fill(); ctx.restore();
+        } else if(['firework','dash_bomb','bomblet','jubilee_bigfire','jubilee_stream'].includes(p.type)) {
+            // Jubilee projectiles render as nitro glints with random rainbow color
+            ctx.save(); ctx.translate(p.x, p.y);
+            if(!p._rbPal) p._rbPal = GlintCache.pickRainbow();
+            let model = GlintCache.getModel(p._rbPal);
+            let s = (p.type === 'jubilee_bigfire' ? 2.6 : (p.type === 'jubilee_stream' ? 0.7 : (p.type === 'dash_bomb' ? 1.6 : (p.type === 'bomblet' ? 0.9 : 1.3))));
+            let pulse = (Date.now() % 200)/200; s *= (0.9 + 0.2*Math.sin(pulse*6.28));
+            ctx.rotate((p.angle||0) + Date.now()/300);
+            ctx.scale(s * (60/GlintCache.size), s * (60/GlintCache.size));
+            ctx.globalCompositeOperation = 'screen';
+            if(model) ctx.drawImage(model, -GlintCache.size/2, -GlintCache.size/2);
+            ctx.restore();
         } else if(p.type === 'corsair_cannonball') {
             ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
             // Smooth round cannonball with fire trail
