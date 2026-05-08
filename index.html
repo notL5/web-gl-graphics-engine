@@ -333,7 +333,7 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
         <div class="ability-slot" id="ui-glitch-swap"><div class="key">E</div><div class="name">Swap</div><div class="status" id="status-glitch-swap">Ready</div><div class="cooldown-overlay" id="cd-glitch-swap"></div></div>
 
         <div class="ability-slot" id="ui-nitro-charge"><div class="key">HOLD L-CLICK</div><div class="name" id="name-nitro-charge">Ram-Charge</div><div class="status" id="status-nitro-charge">Ready</div><div class="cooldown-overlay" id="cd-nitro-charge"></div></div>
-        <div class="ability-slot" id="ui-nitro-vault"><div class="key">HOLD SPACE</div><div class="name">Stratosphere Vault</div><div class="status" id="status-nitro-vault">Ready</div><div class="cooldown-overlay" id="cd-nitro-vault"></div></div>
+       <div class="ability-slot" id="ui-nitro-vault"><div class="key">PRESS SPACE</div><div class="name">Stratosphere Launch</div><div class="status" id="status-nitro-vault">Ready</div><div class="cooldown-overlay" id="cd-nitro-vault"></div></div>
 
         <div class="ability-slot" id="ui-jubilee-primary"><div class="key">L-CLICK / Q</div><div class="name">Fireworks (Big/Stream)</div><div class="status" id="status-jubilee-primary">Ready</div><div class="cooldown-overlay" id="cd-jubilee-primary"></div></div>
 
@@ -667,7 +667,7 @@ const HERO_DATA = {
     tim:{name:'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',role:'Stance-Shifting Tank',hp:330,speed:'Variable',color:'#1eff00',desc:'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',abilities:['Quantum Condenser (Shift)','Core Beam / Pea-Shooter (L-Click)','Lateral Vents / Sprint (Space)','[ULT] Sub-Orbital Discharge (Q)']},
     rift:{name:'Rift',role:'Portal-Hopping Duelist',hp:250,speed:'Medium',color:'#c084fc',desc:'Spatial controller wielding a burst-fire rifle and deployable wormholes.',abilities:['Burst Rifle (L-Click)','Condensed Rift Orb (Q)','Rift Jab (E)','Vector Shift (Space)']},
     roulette:{name:'Roulette',role:'Randomized Wildcard',hp:250,speed:'Variable',color:'#fbbf24',desc:'Not a hero — a randomized game mode. Spawns as a random hero. Every 35s OR on kill, the One-Armed Bandit spins and you transform into a different hero (no repeats). Full stats and abilities of whoever you become.',abilities:['Random Hero on Spawn','Auto-Swap Every 35s','Kill = Instant Re-Spin','Gold Outline (You are the Jackpot)']},
-nitro:{name:'Nitro',role:'Explosive Rocket Rider',hp:200,speed:'slow',color:'#ff5500',desc:'Nimble brawler wielding a colossal rocket ram. Charge, boost, scoop, and carpet-bomb glints across the battlefield.',abilities:['Ram-Charge & Pin (Hold L-Click)','Stratosphere Vault (Hold Space)']},
+nitro:{name:'Nitro',role:'Explosive Rocket Rider',hp:230,speed:'slow',color:'#ff5500',desc:'Nimble brawler wielding a colossal rocket ram. Charge, boost, scoop, and carpet-bomb glints across the battlefield.',abilities:['Ram-Charge & Pin (Hold L-Click)','Stratosphere Vault (Press Space)']},
     bread:{name:'The Bread-Burner',role:'Heated Tank',hp:280,speed:'Slow',color:'#d97706',desc:'A walking hyper-detailed toaster. Burns bread, deploys a bubble shield, and grapples around with his power cord.',abilities:['Burnt Bread Spitter (L-Click, ramps up)','Tank Mode Bubble Shield (E)','Cord Grapple (SPACE)']},
     esper:{name:'The Esper',role:'Anti-Projectile Brawler',hp:250,speed:'Medium',color:'#ff66ff',desc:'Psychokinetic brawler. Catch enemy projectiles with a gravity well, flick them back, fire homing aura comets, and warp battlefields with the Kinetic Cradle.',abilities:['Spectral Sweep & Flick (Hold R-Click)','Aura Comets (L-Click)','Sequential Detonation (E)','Kinetic Cradle (SPACE)']},
          mystery:{name:'???',role:'idk',hp:250,speed:'fast',color:'#000',desc:'idk',abilities:[]}
@@ -1008,7 +1008,7 @@ let localCombat = {
     glitchShoot:{cd:0,maxCd:0.6}, glitchClone:{cd:0,maxCd:2.0}, glitchSwap:{cd:0,maxCd:2.0},
     jubileePrimary:{cd:0,maxCd:0.8}, jubileeMode:'big', jubileeCharge:{active:false,t:0}, jubileeStreamSpin:0,
     nitroCharge:{cd:0,maxCd:0.67,charging:false,chargeT:0,boostTm:0,ang:0,dist:0,grabbedId:null,trailTm:0},
-    nitroVault:{cd:0,maxCd:10.0,charging:false,chargeT:0,flying:false,flightT:0,flightDur:0,sx:0,sy:0,tx:0,ty:0,trailTm:0}, jubileeDash:{cd:0,maxCd:5.0,delay:0,dTm:0,ang:0,spd:0,dr:0}, 
+    nitroVault:{cd:0,maxCd:10.0,charging:false,chargeT:0,flying:false,flightT:0,flightDur:0,sx:0,sy:0,tx:0,ty:0,trailTm:0, phase:'idle', phaseT:0, z:0, vz:0, ramAngle:0, glintTm:0}, jubileeDash:{cd:0,maxCd:5.0,delay:0,dTm:0,ang:0,spd:0,dr:0}, 
     misakiShoot:{cd:0,maxCd:1.8}, misakiGrapple:{cd:0,maxCd:6.0,dTm:0,ang:0,spd:1800}, misakiFlare:{cd:0,maxCd:10.0},
     blitzPrimary:{cd:0,rTm:0}, blitzParry:{cd:0,maxCd:5.0}, blitzTp:{ch:3,maxCh:3,cds:[0,0,0],maxCd:4.0,dTm:0,dx:0,dy:0}, blitzGrab:{cd:0,maxCd:10.0}, 
     mQ:false, m1:false,
@@ -2461,7 +2461,7 @@ window.addEventListener('keydown', e => {
             else if(myPlayer.heroClass === 'blitz') trBlTp();
             else if(myPlayer.heroClass === 'tim') trTimVents();
             else if(myPlayer.heroClass === 'rift') trRiftShift();
-            else if(myPlayer.heroClass === 'nitro') { let nv = localCombat.nitroVault; if(nv.cd<=0 && !nv.charging && !nv.flying && localCombat.nitroCharge.boostTm<=0){ nv.charging=true; nv.chargeT=0; } }
+            else if(myPlayer.heroClass === 'nitro') { let nv = localCombat.nitroVault; if(nv.cd<=0 && nv.phase==='idle' && localCombat.nitroCharge.boostTm<=0){ nv.phase='charging'; nv.phaseT=0; nv.charging=true; nv.chargeT=0; nv.ramAngle=0; } }
             else if(myPlayer.heroClass === 'bread') trBreadGrapple();
             else if(myPlayer.heroClass === 'esper') trEsperCradle();
             else if(myPlayer.heroClass === 'corsair') {
@@ -2565,29 +2565,7 @@ window.addEventListener('keyup', e => {
     
     if(e.code === 'Space') {
         keys.space = false;
-        if(myPlayer.heroClass === 'nitro' && localCombat.nitroVault.charging){
-            let nv = localCombat.nitroVault;
-            let chP = Math.min(1, nv.chargeT/2.0);
-            let dist = (4 + chP*11) * GRID;
-            if(nv.chargeT < 0.15){ nv.charging=false; nv.chargeT=0; }
-            else {
-                nv.charging = false;
-                let ang = Math.atan2(myPlayer.targetY-myPlayer.y, myPlayer.targetX-myPlayer.x);
-                let curDist = Math.hypot(myPlayer.targetX-myPlayer.x, myPlayer.targetY-myPlayer.y);
-                let useDist = Math.min(dist, curDist + 30);
-                nv.sx = myPlayer.x; nv.sy = myPlayer.y;
-                nv.tx = myPlayer.x + Math.cos(ang)*useDist;
-                nv.ty = myPlayer.y + Math.sin(ang)*useDist;
-                let s = gnV(nv.tx, nv.ty); nv.tx = s.x; nv.ty = s.y;
-                nv.flightDur = 0.45 + (useDist/800)*0.3;
-                nv.flightT = nv.flightDur;
-                nv.flying = true; nv.trailTm = 0;
-                nv.cd = nv.maxCd;
-                myPlayer.invulnerable = true; myPlayer.isFlying = true;
-                applyShake(6,0.15);
-                sdEv({type:'nitro_vault_start', sx:nv.sx, sy:nv.sy, tx:nv.tx, ty:nv.ty, dur:nv.flightDur});
-            }
-        }
+        // Stratosphere Launch is press-once now (no hold-to-aim). keyup does nothing.
         if(myPlayer.heroClass === 'trace' && myPlayer.traceDashing) {
             myPlayer.traceDashing = false; myPlayer.traceFreeze = false;
             if(myPlayer.traceDashNodes.length > 0) { localCombat.traceDash.active = true; localCombat.traceDash.path = myPlayer.traceDashNodes; localCombat.traceDash.idx = 0; myPlayer.invulnerable = true; localCombat.traceDash.cd = (activeServerMode === 'CHAOS') ? 0.05 : 2.0; }
@@ -3270,11 +3248,10 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='nitro_ram_impact'){
         // Release any grabbed
         for(let id in gameState.players){ let t=gameState.players[id]; if(t && t.nitroGrabbedBy===sId){ t.grabbedLocked=false; t.nitroGrabbedBy=null; } }
-        // AoE: 54 epicenter -> 30 minimum within radius 110
-        let ex=e.x, ey=e.y, R=110;
-        connections.forEach(c=>{ if(c.open) c.send({type:'nitro_explosion_vfx', x:ex, y:ey, radius:R, palette:'ram'}); });
-        if(sId!==myId) spawnNitroExplosion(ex,ey,R);
-        else spawnNitroExplosion(ex,ey,R);
+        // AoE: 54 epicenter -> 30 minimum within radius 110 (visual reuses Stratosphere landing explosion)
+        let ex=e.x, ey=e.y, R=110, vR=220;
+        connections.forEach(c=>{ if(c.open) c.send({type:'nitro_explosion_vfx', x:ex, y:ey, radius:vR, palette:'vault'}); });
+        spawnNitroExplosion(ex,ey,vR,['Crimson_Red','Napalm_Orange','Electric_Yellow']);
         applyExpKbk(ex,ey,R);
         let dealt = (t,dist)=>{ let p=Math.max(0,1-dist/R); return 1 + (42-25)*p; };
         for(let id in gameState.players){ if(!gameState.players[id].isDead && cDm(sId,id)){ let t=gameState.players[id]; let d=Math.hypot(t.x-ex,t.y-ey); if(d<=R && !t.invulnerable){ let dmg=dealt(t,d); dmgTk(t,dmg,sId); sendHitmarker(sId,t,dmg); t.lastAttacker=sId; t.lastHitTime=Date.now(); chD(t,id); } } }
@@ -3815,8 +3792,18 @@ function updateMovement(dt) {
                 myPlayer.isFlying = false;
                 if(outOfBounds){ myPlayer.x = Math.max(20, Math.min(W-20, myPlayer.x)); myPlayer.y = Math.max(20, Math.min(H-20, myPlayer.y)); }
                 let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
-                spawnNitroExplosion(myPlayer.x + Math.cos(nc.ang)*40, myPlayer.y + Math.sin(nc.ang)*40, 110);
-                applyShake(10,0.3);
+                spawnNitroExplosion(myPlayer.x + Math.cos(nc.ang)*40, myPlayer.y + Math.sin(nc.ang)*40, 220, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
+                // Extra glint shower (matches Stratosphere landing, but more glints)
+                for(let g=0; g<90; g++){
+                    let ang = Math.random()*Math.PI*2;
+                    let d = 30 + Math.random()*220;
+                    let gx = myPlayer.x + Math.cos(nc.ang)*40 + Math.cos(ang)*d;
+                    let gy = myPlayer.y + Math.sin(nc.ang)*40 + Math.sin(ang)*d;
+                    vfx.push({type:'nitroGlint', x:gx, y:gy,
+                        vx:Math.cos(ang)*(140+Math.random()*260), vy:Math.sin(ang)*(140+Math.random()*260),
+                        life:0.9+Math.random()*0.6, maxLife:1.5, palette:['Crimson_Red','Napalm_Orange','Electric_Yellow'][Math.floor(Math.random()*3)]});
+                }
+                applyShake(22,0.45);
                 sdEv({type:'nitro_ram_impact', x:myPlayer.x+Math.cos(nc.ang)*40, y:myPlayer.y+Math.sin(nc.ang)*40, ang:nc.ang, grabbedId:nc.grabbedId});
                 nc.boostTm = 0; nc.grabbedId = null; nc.distLeft = 0;
             } else {
@@ -3855,35 +3842,110 @@ function updateMovement(dt) {
                 }
             }
         }
-        // ===== Vault flight =====
-        if(nv.flying){
-            nv.flightT -= dt;
-            let p = 1 - (nv.flightT / nv.flightDur);
-            p = Math.max(0, Math.min(1, p));
-            myPlayer.x = nv.sx + (nv.tx-nv.sx)*p;
-            myPlayer.y = nv.sy + (nv.ty-nv.sy)*p;
-            myPlayer.z = Math.sin(p*Math.PI)*180;
-            myPlayer.isFlying = true;
-            myPlayer.invulnerable = true;
-            // Carpet bombing
-            nv.trailTm -= dt;
-            if(nv.trailTm <= 0){
-                nv.trailTm = 0.07;
-                let jitterX = (Math.random()-0.5)*40, jitterY = (Math.random()-0.5)*40;
-                sdEv({type:'nitro_glint_drop', x:myPlayer.x+jitterX, y:myPlayer.y+jitterY, fuse:0.9, dmg:18, kbk:22});
+        // ===== STRATOSPHERE LAUNCH (press-once pogo rocket jump) =====
+        if(nv.phase !== 'idle'){
+            nv.phaseT += dt;
+
+            // ---- CHARGING (1.5s) — pogo crouch, ram pivots upward ----
+            if(nv.phase === 'charging'){
+                // Lock movement; keep aim possible. Ram orientation interpolates 0 -> -PI/2 over 0.4s.
+                let pivP = Math.min(1, nv.phaseT/0.4);
+                // ease-out-cubic
+                let eP = 1 - Math.pow(1-pivP, 3);
+                nv.ramAngle = -Math.PI/2 * eP;
+                nv.chargeT = nv.phaseT;
+                nv.charging = true;
+                myPlayer.isFlying = false;
+                myPlayer.invulnerable = false;
+                if(nv.phaseT >= 1.5){
+                    // LAUNCH
+                    nv.phase = 'ascending';
+                    nv.phaseT = 0;
+                    nv.charging = false;
+                    nv.z = 0;
+                    nv.vz = 1100;        // very fast initial upward velocity
+                    nv.ramAngle = -Math.PI/2;
+                    myPlayer.isFlying = true;
+                    myPlayer.invulnerable = true;
+                    applyShake(10,0.25);
+                    nv.glintTm = 0;
+                }
             }
-            if(nv.flightT <= 0){
-                nv.flying = false; myPlayer.z = 0; myPlayer.isFlying = false; myPlayer.invulnerable = false;
-                let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
-                spawnNitroExplosion(myPlayer.x, myPlayer.y, 220, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
-                applyShake(16,0.4);
-                sdEv({type:'nitro_vault_land', x:myPlayer.x, y:myPlayer.y});
+            // ---- ASCENDING — slow climb, player can steer with WASD ----
+            else if(nv.phase === 'ascending'){
+                let g = 480; // upward gravity decel
+                nv.vz -= g * dt;
+                nv.z += nv.vz * dt;
+                if(nv.z > 1500) nv.z = 1500;
+                myPlayer.z = nv.z;
+                myPlayer.isFlying = true;
+                myPlayer.invulnerable = true;
+                // air control
+                let as = 3.4;
+                let mx=0,my=0;
+                if(keys.w) my-=as; if(keys.s) my+=as; if(keys.a) mx-=as; if(keys.d) mx+=as;
+                let nx2 = myPlayer.x+mx, ny2 = myPlayer.y+my;
+                myPlayer.x = Math.max(15, Math.min(W-15, nx2));
+                myPlayer.y = Math.max(15, Math.min(H-15, ny2));
+                if(nv.vz <= 0){
+                    nv.phase = 'descending';
+                    nv.phaseT = 0;
+                }
             }
+            // ---- DESCENDING — rotate ram down, accelerate, telegraph crosshair ----
+            else if(nv.phase === 'descending'){
+                // Ram smoothly rotates from -PI/2 (up) to +PI/2 (down) over 0.5s
+                let rotP = Math.min(1, nv.phaseT/0.5);
+                let eR = rotP < 0.5 ? 2*rotP*rotP : 1 - Math.pow(-2*rotP+2, 2)/2;
+                nv.ramAngle = -Math.PI/2 + Math.PI * eR;
+                // Slow at first then accelerate. vz starts ~0; gravity grows over time for accel feel
+                let baseG = 700;
+                let gAccel = baseG + Math.min(1, nv.phaseT/0.6) * 1400; // ramps up
+                nv.vz -= gAccel * dt;
+                nv.z += nv.vz * dt;
+                myPlayer.z = Math.max(0, nv.z);
+                myPlayer.isFlying = true;
+                myPlayer.invulnerable = true;
+                // air control (slightly stronger near ground for last-moment landing adjust)
+                let as = 3.0;
+                let mx=0,my=0;
+                if(keys.w) my-=as; if(keys.s) my+=as; if(keys.a) mx-=as; if(keys.d) mx+=as;
+                myPlayer.x = Math.max(15, Math.min(W-15, myPlayer.x+mx));
+                myPlayer.y = Math.max(15, Math.min(H-15, myPlayer.y+my));
+                // LANDING
+                if(nv.z <= 0){
+                    nv.z = 0; myPlayer.z = 0;
+                    nv.phase = 'idle';
+                    nv.phaseT = 0;
+                    nv.ramAngle = 0;
+                    myPlayer.isFlying = false;
+                    myPlayer.invulnerable = false;
+                    let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
+                    // GIANT IMPACT
+                    spawnNitroExplosion(myPlayer.x, myPlayer.y, 320, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
+                    // Extra glint shower
+                    for(let g=0; g<60; g++){
+                        let ang = Math.random()*Math.PI*2;
+                        let d = 40 + Math.random()*260;
+                        vfx.push({type:'nitroGlint', x:myPlayer.x+Math.cos(ang)*d, y:myPlayer.y+Math.sin(ang)*d,
+                            vx:Math.cos(ang)*(120+Math.random()*240), vy:Math.sin(ang)*(120+Math.random()*240),
+                            life:0.9+Math.random()*0.5, maxLife:1.4, palette:['Crimson_Red','Napalm_Orange','Electric_Yellow'][Math.floor(Math.random()*3)]});
+                    }
+                    applyShake(28, 0.55);
+                    sdEv({type:'nitro_vault_land', x:myPlayer.x, y:myPlayer.y});
+                    nv.cd = nv.maxCd;
+                }
+            }
+        } else {
+            myPlayer.z = 0;
         }
-        // Sync state for charging visuals
+
+        // Sync state for charging visuals (for the ram-charge ability, not vault)
         myPlayer.nitroCharging = nc.charging;
         myPlayer.nitroChargeT = nc.chargeT;
         myPlayer.nitroBoosting = nc.boostTm > 0;
+        myPlayer.nitroVaultPhase = nv.phase;
+        myPlayer.nitroVaultRamAngle = nv.ramAngle;
     }
 
     if(myPlayer.heroClass === 'jubilee') {
@@ -3981,7 +4043,7 @@ function updateMovement(dt) {
             if(ds <= 5) {
                 let bs = 4.5;
                 if(myPlayer.heroClass === 'jubilee') bs = 4.0;
-                if(myPlayer.heroClass === 'nitro') { bs = 4.5; if(localCombat.nitroCharge.charging || localCombat.nitroVault.charging) bs *= 0.5; }
+                if(myPlayer.heroClass === 'nitro') { bs = 4.5; if(localCombat.nitroCharge.charging) bs *= 0.5; if(localCombat.nitroVault.phase === 'charging') bs *= 0.5; }
                 if(myPlayer.heroClass === 'corsair' && myPlayer.corsairStance === 'cannon') bs = 2.88;
                 if(myPlayer.heroClass === 'bread') bs = 2.6;
                 if(myPlayer.heroClass === 'tim') {
@@ -5102,11 +5164,19 @@ function updateUI(now = performance.now()) {
             getEl('ui-nitro-charge').style.borderColor = '#52525b';
         }
         let nv = localCombat.nitroVault;
-        if(nv.charging){
-            let chP = Math.min(1, nv.chargeT/2.0);
-            getEl('status-nitro-vault').innerText = 'Aim '+(4+chP*11).toFixed(1)+'g';
+        if(nv.phase === 'charging'){
+            let chP = Math.min(1, nv.phaseT/1.5);
+            getEl('status-nitro-vault').innerText = 'CHARGING '+(chP*100).toFixed(0)+'%';
             getEl('cd-nitro-vault').style.height = (chP*100)+'%';
             getEl('ui-nitro-vault').style.borderColor = '#ffaa00';
+        } else if(nv.phase === 'ascending'){
+            getEl('status-nitro-vault').innerText = 'ASCENDING';
+            getEl('cd-nitro-vault').style.height = '100%';
+            getEl('ui-nitro-vault').style.borderColor = '#fde047';
+        } else if(nv.phase === 'descending'){
+            getEl('status-nitro-vault').innerText = 'INCOMING';
+            getEl('cd-nitro-vault').style.height = '100%';
+            getEl('ui-nitro-vault').style.borderColor = '#dc2626';
         } else {
             getEl('status-nitro-vault').innerText = nv.cd>0 ? nv.cd.toFixed(1)+'s' : 'Ready';
             getEl('cd-nitro-vault').style.height = (nv.cd>0?(nv.cd/nv.maxCd)*100:0)+'%';
@@ -6283,6 +6353,55 @@ function drawShields() {
 }
 
 function drawPlayers() {
+    // ===== STRATOSPHERE LAUNCH — flashing red landing telegraph for any player in 'descending' =====
+    {
+        const _drawTel = (px, py, intensity) => {
+            ctx.save();
+            ctx.translate(px, py);
+            let t = (Date.now()/120) % 1;
+            let pulse = 0.55 + 0.45 * Math.sin(Date.now()/90);
+            let baseR = 90 + intensity*40;
+            // Outer dashed ring, rotating
+            ctx.globalAlpha = 0.85 * pulse;
+            ctx.strokeStyle = '#ff1f1f'; ctx.lineWidth = 6;
+            ctx.setLineDash([22, 14]); ctx.lineDashOffset = -Date.now()/20;
+            ctx.beginPath(); ctx.arc(0, 0, baseR + t*10, 0, 6.28); ctx.stroke();
+            // Mid solid ring
+            ctx.setLineDash([]);
+            ctx.strokeStyle = '#ff5555'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.arc(0, 0, baseR*0.7, 0, 6.28); ctx.stroke();
+            // Filled flashing core
+            ctx.globalAlpha = 0.25 * pulse;
+            ctx.fillStyle = '#ff1f1f';
+            ctx.beginPath(); ctx.arc(0, 0, baseR*0.55, 0, 6.28); ctx.fill();
+            // Giant crosshair lines
+            ctx.globalAlpha = 0.95 * pulse;
+            ctx.strokeStyle = '#ff2222'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+            ctx.shadowBlur = 24; ctx.shadowColor = '#ff0000';
+            let hl = baseR + 30;
+            ctx.beginPath(); ctx.moveTo(-hl, 0); ctx.lineTo(-baseR*0.35, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(baseR*0.35, 0); ctx.lineTo(hl, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, -hl); ctx.lineTo(0, -baseR*0.35); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, baseR*0.35); ctx.lineTo(0, hl); ctx.stroke();
+            // Center dot
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(0, 0, 4, 0, 6.28); ctx.fill();
+            ctx.restore();
+        };
+        if(myPlayer && myPlayer.heroClass === 'nitro' && localCombat.nitroVault.phase === 'descending'){
+            let nv = localCombat.nitroVault;
+            let intensity = Math.min(1, nv.phaseT/0.6);
+            _drawTel(myPlayer.x, myPlayer.y, intensity);
+        }
+        for(let id in gameState.players){
+            let p = gameState.players[id];
+            if(p && p !== myPlayer && p.heroClass==='nitro' && p.nitroVaultPhase === 'descending'){
+                _drawTel(p.x, p.y, 1);
+            }
+        }
+    }
+
     let ents = [...gameState.clones, ...Object.values(gameState.players).filter(p => !p.isDead)], mp = ents.some(e => (e.ownerId !== undefined ? gameState.players[e.ownerId] : e)?.heroClass === 'glitch') ? getMatrixPat() : null;
     const vW = can.width/cam.zoom, vH = can.height/cam.zoom;
     const iV = (x, y, p=150) => (x > cam.x - p && x < cam.x + vW + p && y > cam.y - p && y < cam.y + vH + p);
@@ -6333,7 +6452,7 @@ function drawPlayers() {
             ctx.beginPath(); ctx.ellipse(0, 6, 18*shScale, 7*shScale, 0, 0, 6.28); ctx.fill();
             ctx.restore();
             ctx.translate(0, -_jubZ);
-            let liftScale = 1 + _jubZ/400;
+            let liftScale = Math.min(1.6, 1 + _jubZ/400);
             ctx.scale(liftScale, liftScale);
         }
         if(o.isJuggernaut) ctx.scale(1.8, 1.8);
@@ -6883,7 +7002,12 @@ o.timBeamCharge * 9;
             let isCharging = (o.id === myId) ? (localCombat.nitroCharge.charging) : !!o.nitroCharging;
             let chargeT = (o.id === myId) ? localCombat.nitroCharge.chargeT : (o.nitroChargeT||0);
             let chP = Math.min(1, chargeT/2.0);
+            let vaultPhase = (o.id === myId) ? localCombat.nitroVault.phase : (o.nitroVaultPhase || 'idle');
+            let vaultRamAngle = (o.id === myId) ? localCombat.nitroVault.ramAngle : (o.nitroVaultRamAngle || 0);
+            let vaultPhaseT = (o.id === myId) ? localCombat.nitroVault.phaseT : 0;
+            let vaultLaunching = vaultPhase === 'ascending' || vaultPhase === 'descending';
             let isFlying = (o.id === myId) ? (localCombat.nitroCharge.boostTm>0) : !!o.nitroBoosting;
+            isFlying = isFlying || vaultLaunching;
 
             // ====== PUFFY ANIME EXHAUST TRAIL (rendered BEFORE the ram so trail is behind) ======
             // Long trailing smoke when boosting; subtle puff when charging.
@@ -6968,7 +7092,31 @@ o.timBeamCharge * 9;
 
             // ===== THE ROCKET RAM (matches reference: grimy industrial cannon-gauntlet) =====
             ctx.save();
-            // Charge wobble
+            // ===== Stratosphere Launch ram orientation override =====
+            if(vaultPhase !== 'idle'){
+                // Cancel parent facing rotation so ram pivots in world frame
+                ctx.rotate(-(e.angle||0));
+                // Pivot at the rear of the ram (-15,0): the muzzle sweeps from horizontal -> up -> down
+                ctx.translate(-15, 0);
+                ctx.rotate(vaultRamAngle);
+                ctx.translate(15, 0);
+                // Foreshorten when more vertical (sells "rocket pointing into/out of screen")
+                let absA = Math.abs(vaultRamAngle);
+                let foreshorten = 1 - Math.sin(absA) * 0.55;
+                ctx.translate(15, 0);
+                ctx.scale(foreshorten, 1);
+                ctx.translate(-15, 0);
+                // Pogo wobble while charging
+                if(vaultPhase === 'charging'){
+                    let chP2 = Math.min(1, vaultPhaseT/1.5);
+                    ctx.translate((Math.random()-0.5)*chP2*5, (Math.random()-0.5)*chP2*3);
+                }
+                // Subtle shake during ascent/descent
+                if(vaultLaunching){
+                    ctx.translate((Math.random()-0.5)*1.6, (Math.random()-0.5)*1.6);
+                }
+            }
+            // Charge wobble (ram-charge ability)
             if(isCharging){ ctx.translate((Math.random()-0.5)*chP*2,(Math.random()-0.5)*chP*2); }
 
             // ---- Rear knuckle / housing block (chunky dark grey grip end) ----
