@@ -273,6 +273,33 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
 #cursor-hud svg{width:100%;height:100%;overflow:visible;display:block;}
 #cursor-hud .ch-spin{animation:chSpin 0.85s linear infinite;transform-origin:42px 42px;transform-box:fill-box;}
 @keyframes chSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* ===== Settings menu + global chat (added) ===== */
+#settings-btn{position:fixed;top:18px;right:18px;width:42px;height:42px;border-radius:50%;background:rgba(24,24,27,0.85);border:1px solid #52525b;color:#e4e4e7;cursor:pointer;z-index:9999;display:flex;align-items:center;justify-content:center;font-size:20px;backdrop-filter:blur(6px);transition:transform 0.2s,background 0.2s;}
+#settings-btn:hover{background:#3f3f46;transform:rotate(35deg);}
+#settings-panel{position:fixed;top:70px;right:18px;width:300px;background:rgba(15,15,20,0.96);border:1px solid #3f3f46;border-radius:12px;padding:16px;color:#e4e4e7;font-family:"Dela Gothic One",sans-serif;z-index:9998;display:none;box-shadow:0 12px 40px rgba(0,0,0,0.6);backdrop-filter:blur(10px);font-size:0.8rem;}
+#settings-panel.open{display:block;}
+#settings-panel h4{margin:0 0 10px 0;color:#a855f7;letter-spacing:1px;font-size:0.85rem;}
+#settings-panel .row{display:flex;justify-content:space-between;align-items:center;margin:8px 0;gap:10px;}
+#settings-panel input[type=range]{flex:1;}
+#settings-panel select,#settings-panel input[type=checkbox]{cursor:pointer;}
+#settings-panel select{background:#27272a;color:#fff;border:1px solid #52525b;padding:4px 6px;border-radius:6px;}
+#fps-display{min-width:55px;text-align:right;color:#22d3ee;font-weight:bold;}
+
+/* Graphics-low: drop blurs / heavy effects for performance */
+body.gfx-low *{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+body.gfx-low #screen-wrapper{animation:none !important;background:#3f3f46 !important;}
+
+/* Move chat to body level so it shows on start screen AND in-game.
+   Override the in-game-only positioning from rule above. */
+#chat-wrapper{position:fixed !important;left:14px;bottom:14px;top:auto;width:300px;height:34vh;min-width:260px;background:rgba(15,15,20,0.92);border:1px solid #3f3f46;border-radius:10px;z-index:9990;pointer-events:auto !important;opacity:1 !important;-webkit-mask-image:none !important;mask-image:none !important;backdrop-filter:blur(8px);}
+#chat-wrapper #chat-messages{font-family:-apple-system,sans-serif;}
+#chat-wrapper #chat-input{font-family:-apple-system,sans-serif;border-radius:0 0 10px 10px;}
+#chat-wrapper.hidden{display:none !important;}
+
+/* Compress game container to make room for chat on the left */
+body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
+#game-container{transition:width 0.18s ease,max-width 0.18s ease;}
 </style>
 </head>
 <body>
@@ -288,7 +315,7 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
     </div>
 
     <div id="scoreboard" class="cursor-stealth"></div><div id="kill-feed" class="cursor-stealth"></div>
-    <div id="chat-wrapper" class="cursor-stealth">
+    <div id="chat-wrapper">
         <div id="chat-messages"></div>
         <input type="text" id="chat-input" placeholder="Press Enter to chat...">
     </div>
@@ -366,6 +393,21 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
 
 <!-- LOBBY UI -->
 <div id="screen-wrapper" class="screen-wrapper active">
+
+<!-- Settings button + panel (added) -->
+<button id="settings-btn" title="Settings" onclick="toggleSettingsPanel()">⚙</button>
+<div id="settings-panel">
+    <h4>SETTINGS</h4>
+    <div class="row"><span>FPS Limit</span><span id="fps-display">60</span></div>
+    <div class="row"><input type="range" id="fps-slider" min="60" max="160" step="1" value="60"></div>
+    <div class="row"><span>Unlimited FPS</span><input type="checkbox" id="fps-unlimited"></div>
+    <div class="row"><span>V-Sync</span><input type="checkbox" id="vsync-toggle" checked></div>
+    <div class="row"><span>Graphics</span>
+        <select id="graphics-select"><option value="high">High</option><option value="low">Low</option></select>
+    </div>
+    <div style="font-size:0.65rem;color:#71717a;margin-top:8px;line-height:1.4;">Scroll over the slider to fine-tune FPS. V-Sync syncs frames to your monitor's refresh rate.</div>
+</div>
+
     <div id="lobby-screen" class="screen">
         <h1 class="lobby-title">RIVALS</h1>
         
@@ -425,8 +467,8 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
                         <button id="btn-jubilee" class="class-list-btn" onclick="selectHero('jubilee')" style="--glow-color: #ec4899; background:url('https://rguanime.wordpress.com/wp-content/uploads/2016/11/more-anime-fireworks-gif.gif');color:#fff;">Jubilee</button>
                         <button id="btn-corsair" class="class-list-btn" onclick="selectHero('corsair')" style="--glow-color: #ea580c; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyaTA4bjYwdzRmbWFhOG0wc2JweHVwMTg5czM1b3N4MmxxamM4MGU5OCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/7SrHwak3yoO9a/200.gif') center/100% 180%;">Corsair</button>
                         <button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
-                        <button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://gifdb.com/images/thumbnail/dice-roll-jump-scare-angry-birds-meme-bhr66fsxdyaipbt5.gif') center/95%;">Roulette!</button>
-                             <button id="btn-nitro" class="class-list-btn" onclick="selectHero('nitro')" style="--glow-color: #ff5500; background:url('https://external-preview.redd.it/M9O71AtU29lDwtQJUhp7SDRf4YggDRy1cxBlXyDH6VA.gif?auto=webp&s=19994d15dad85c165f540d9ee0ed9219c7e447ab') center/ 100% 160%;color:#fff;">Nitro</button>
+                        <button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://gifdb.com/images/thumbnail/dice-roll-jump-scare-angry-birds-meme-bhr66fsxdyaipbt5.gif') center/100% 500%;">Roulette!</button>
+                             <button id="btn-nitro" class="class-list-btn" onclick="selectHero('nitro')" style="--glow-color: #ff5500; background:url('https://external-preview.redd.it/M9O71AtU29lDwtQJUhp7SDRf4YggDRy1cxBlXyDH6VA.gif?auto=webp&s=19994d15dad85c165f540d9ee0ed9219c7e447ab') center/ 100% 270%;color:#fff;">Nitro</button>
                              <button id="btn-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
                              <button id="btn-esper" class="class-list-btn" onclick="selectHero('esper')" style="--glow-color: #ff00ff; background: linear-gradient(135deg, #ff0055, #ffaa00, #55ff00, #00ffaa, #0055ff, #aa00ff); color:#fff;">The Esper</button>
                            <button id="btn-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>  
@@ -515,6 +557,94 @@ aeroUrls.forEach(src => { let img = new Image(); img.crossOrigin="anonymous"; im
 
 let peer, isHost=false, connections=[], hostConnection, myId=null, hostInGame=false, lobbyPlayers={};
 let currentHostPeerId = null; // last known host peer id (for migration)
+
+// ===== PeerJS network compatibility config =====
+// The default PeerJS cloud only ships a couple of Google STUN servers. On
+// stricter NATs (school / corporate / mobile hotspot / some home routers)
+// peers behind symmetric NAT cannot reach each other without a TURN relay,
+// which is exactly the "my friend hosted but nobody could join" symptom.
+// Adding free public STUN + TURN servers dramatically improves cross-device
+// connectivity. (openrelay.metered.ca is a free public TURN service.)
+window.PEER_CFG = {
+    config: {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' },
+            { urls: 'stun:openrelay.metered.ca:80' },
+            { urls: 'turn:openrelay.metered.ca:80',   username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443',  username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+        ],
+        iceCandidatePoolSize: 4
+    },
+    debug: 0
+};
+
+// ===== Settings (FPS, V-Sync, Graphics) + chat panel =====
+window.RIVALS_SETTINGS = (function(){
+    let def = { fpsTarget: 60, unlimitedFps: false, vsync: true, graphics: 'high' };
+    try { let s = JSON.parse(localStorage.getItem('rivals_settings')||'null'); if(s) return Object.assign(def, s); } catch(e){}
+    return def;
+})();
+function saveSettings(){ try { localStorage.setItem('rivals_settings', JSON.stringify(window.RIVALS_SETTINGS)); } catch(e){} }
+function applyGraphicsMode(){
+    if(window.RIVALS_SETTINGS.graphics === 'low') document.body.classList.add('gfx-low');
+    else document.body.classList.remove('gfx-low');
+    window.GFX_LOW = (window.RIVALS_SETTINGS.graphics === 'low');
+}
+function toggleSettingsPanel(){ document.getElementById('settings-panel').classList.toggle('open'); }
+function _wireSettings(){
+    const s = window.RIVALS_SETTINGS;
+    // Hoist chat panel out of #game-container so it remains visible on the
+    // lobby/start screen (its hidden ancestor would otherwise hide it).
+    const cw = document.getElementById('chat-wrapper');
+    if(cw && cw.parentNode && cw.parentNode.id === 'game-container') document.body.appendChild(cw);
+    const slider = document.getElementById('fps-slider');
+    const disp = document.getElementById('fps-display');
+    const unl = document.getElementById('fps-unlimited');
+    const vs = document.getElementById('vsync-toggle');
+    const gfx = document.getElementById('graphics-select');
+    if(!slider) return;
+    slider.value = s.fpsTarget; unl.checked = s.unlimitedFps; vs.checked = s.vsync; gfx.value = s.graphics;
+    const refreshDisp = ()=>{ disp.textContent = s.unlimitedFps ? '∞' : (s.vsync ? 'V-Sync' : s.fpsTarget); };
+    refreshDisp();
+    slider.addEventListener('input', e => { s.fpsTarget = +e.target.value; refreshDisp(); saveSettings(); });
+    // Scroll wheel on slider adjusts FPS in 5-step increments
+    slider.addEventListener('wheel', e => {
+        e.preventDefault();
+        let cur = s.fpsTarget;
+        cur += (e.deltaY < 0 ? 5 : -5);
+        cur = Math.max(60, Math.min(160, cur));
+        s.fpsTarget = cur; slider.value = cur; refreshDisp(); saveSettings();
+    }, { passive:false });
+    unl.addEventListener('change', e => { s.unlimitedFps = e.target.checked; refreshDisp(); saveSettings(); });
+    vs.addEventListener('change', e => { s.vsync = e.target.checked; refreshDisp(); saveSettings(); });
+    gfx.addEventListener('change', e => { s.graphics = e.target.value; applyGraphicsMode(); saveSettings(); });
+    applyGraphicsMode();
+}
+document.addEventListener('DOMContentLoaded', _wireSettings);
+// Close settings panel when clicking outside
+document.addEventListener('click', e => {
+    let p = document.getElementById('settings-panel');
+    let b = document.getElementById('settings-btn');
+    if(p && p.classList.contains('open') && !p.contains(e.target) && e.target !== b && !b.contains(e.target))
+        p.classList.remove('open');
+});
+
+// Frame scheduler honoring V-Sync / FPS-cap / Unlimited
+window._lastFrameSched = 0;
+function _scheduleFrame(loopFn){
+    const s = window.RIVALS_SETTINGS;
+    if(s.vsync) return requestAnimationFrame(loopFn);
+    if(s.unlimitedFps) return setTimeout(() => loopFn(performance.now()), 0);
+    const interval = 1000 / Math.max(30, s.fpsTarget);
+    const now = performance.now();
+    const wait = Math.max(0, interval - (now - window._lastFrameSched));
+    window._lastFrameSched = now + wait;
+    return setTimeout(() => loopFn(performance.now()), wait);
+}
 
 // =====================================================================
 // BALANCE CONFIG - Easy to tweak hero numbers here
@@ -1782,6 +1912,7 @@ let connectingTimeout = null;
 
 function selectServer(mode) {
     activeServerMode = mode;
+    try { localStorage.setItem('rivals_lastMode', mode); } catch(e){}
     document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
     getEl('btn-srv-' + mode.toLowerCase()).classList.add('active');
     
@@ -1820,7 +1951,7 @@ function handleHostGone() {
         try { peer.destroy(); } catch(e){}
         peer = null; connections = []; hostConnection = null;
         // Use a fresh random Peer (no fixed id) to avoid colliding with the dead public id
-        peer = new Peer();
+        peer = new Peer(undefined, window.PEER_CFG);
         peer.on('error', err => { /* swallow */ });
         // Reuse becomeHost's connection handler by calling it with a random srvId trick:
         // We need it to use this fresh peer. Easiest path: replicate the inner logic.
@@ -1911,7 +2042,7 @@ function connectToServer(mode, explicitHostId) {
     // peer don't trigger migration / fallbacks for the next attempt.
     let attemptDone = false;
     let joinedHost = false;
-    let myPeer = new Peer();
+    let myPeer = new Peer(undefined, window.PEER_CFG);
     peer = myPeer;
 
     const finishAttempt = () => { attemptDone = true; clearTimeout(connectingTimeout); };
@@ -2003,7 +2134,7 @@ function connectToServer(mode, explicitHostId) {
 
 function becomeHost(mode, srvId, opts) {
     opts = opts || {};
-    peer = new Peer(srvId);
+    peer = new Peer(srvId, window.PEER_CFG);
     peer.on('open', id => {
         myId = id; myPlayer.id = id; isHost = true; hostInGame = true;
         currentHostPeerId = id;
@@ -2125,7 +2256,9 @@ function becomeHost(mode, srvId, opts) {
 
 window.addEventListener('DOMContentLoaded', () => {
     let last = localStorage.getItem('rivals_lastHero') || 'trace';
-    selectHero(last); selectServer('FFA');
+    let lastMode = localStorage.getItem('rivals_lastMode') || 'FFA';
+    if (!['FFA','RVB','KOTH','CHAOS'].includes(lastMode)) lastMode = 'FFA';
+    selectHero(last); selectServer(lastMode);
 });
 
 // Properly clean up on tab close/navigate away to prevent ghost players
@@ -2211,8 +2344,10 @@ function startGame() {
     lBtn.classList.add('active'); abUi.classList.add('active'); hlUi.classList.add('active');
     updateCanvasSize();
     // Tip: chat toggle
-    addChatMessage({senderName:'SYSTEM', text:'Press C to toggle chat visibility.', color:'#22d3ee', time:''});
-    requestAnimationFrame(gLoop);
+    addChatMessage({senderName:'SYSTEM', text:'Press C to toggle chat. Click ⚙ for settings.', color:'#22d3ee', time:''});
+    // Hide chat by default in-game (use C to bring it back, which also compresses the arena)
+    let cw0 = getEl('chat-wrapper'); if(cw0){ cw0.classList.add('hidden'); document.body.classList.remove('with-chat'); }
+    _scheduleFrame(gLoop);
 }
 
 function applyExpKbk(ex, ey, r) {
@@ -2516,8 +2651,13 @@ window.addEventListener('keydown', e => {
     if(k === 'c') {
         let cw = getEl('chat-wrapper');
         if(cw) {
-            let hidden = cw.style.display === 'none';
-            cw.style.display = hidden ? 'flex' : 'none';
+            // In-game: toggle chat AND compress the game container to make room
+            let nowHidden = cw.classList.toggle('hidden');
+            if(gCon.classList.contains('active')) {
+                document.body.classList.toggle('with-chat', !nowHidden);
+                // Resize canvas after layout settles
+                setTimeout(() => { try { updateCanvasSize(); } catch(_){} }, 200);
+            }
         }
     }
     
@@ -3249,7 +3389,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
         // Release any grabbed
         for(let id in gameState.players){ let t=gameState.players[id]; if(t && t.nitroGrabbedBy===sId){ t.grabbedLocked=false; t.nitroGrabbedBy=null; } }
         // AoE: 54 epicenter -> 30 minimum within radius 110 (visual reuses Stratosphere landing explosion)
-        let ex=e.x, ey=e.y, R=110, vR=220;
+        let ex=e.x, ey=e.y, R=10, vR=20;
         connections.forEach(c=>{ if(c.open) c.send({type:'nitro_explosion_vfx', x:ex, y:ey, radius:vR, palette:'vault'}); });
         spawnNitroExplosion(ex,ey,vR,['Crimson_Red','Napalm_Orange','Electric_Yellow']);
         applyExpKbk(ex,ey,R);
@@ -8079,7 +8219,7 @@ function gLoop(t) {
     let dt = (t - lTime) / 1000; lTime = t; if(dt > 0.1) dt = 0.1;
     
     if(localHitStop > 0) {
-        localHitStop -= dt; requestAnimationFrame(gLoop); return;
+        localHitStop -= dt; _scheduleFrame(gLoop); return;
     }
     
     updateMovement(dt); updateGameState(dt); if(!isHost) interpRemotePlayers(dt); updateHair(dt); tickRoulette(dt); updateUI(t);
@@ -8089,7 +8229,7 @@ function gLoop(t) {
     cam.zoom += (cam.targetZoom - cam.zoom) * 5 * dt;
     
     const pk = Object.keys(gameState.players), ptt = pk.length > 0 ? gameState.players : {[myId]: myPlayer};
-    for(let id in ptt) {
+    if(!window.GFX_LOW) for(let id in ptt) {
         let p = ptt[id]; if(p.isDead) continue;
         let dx = p.x - (p.lastX !== undefined ? p.lastX : p.x), dy = p.y - (p.lastY !== undefined ? p.lastY : p.y);
         p.lastX = p.x; p.lastY = p.y;
@@ -8101,6 +8241,8 @@ function gLoop(t) {
             }
         }
     }
+    // Low graphics: keep the VFX array short to prevent overdraw spikes
+    if(window.GFX_LOW && vfx.length > 60) vfx.splice(0, vfx.length - 60);
     
     let tX = Math.max(0, Math.min(W - can.width / cam.zoom, myPlayer.x - (can.width / 2) / cam.zoom));
     let tY = Math.max(0, Math.min(H - can.height / cam.zoom, myPlayer.y - (can.height / 2) / cam.zoom));
@@ -8150,7 +8292,7 @@ function gLoop(t) {
     ctx.fillText(_txt, 14, 12);
     ctx.restore();
     
-    requestAnimationFrame(gLoop);
+    _scheduleFrame(gLoop);
 }
 
 // Periodic cleanup of stale connections (every 5s)
