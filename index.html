@@ -253,9 +253,10 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
 .ability-slot .name{font-size:0.8rem;font-weight:600;text-align:center}
 .ability-slot .status{font-size:0.7rem;margin-top:0.5vh;color:#a1a1aa}
 .ability-slot .cooldown-overlay{position:absolute;bottom:0;left:0;width:100%;background:rgba(220,38,38,0.5);transition:height 0.1s;height:0%;pointer-events:none}
-#health-ui{display:none;position:absolute;bottom:1vh;left:50%;transform:translateX(-50%);width:22vw;min-width:220px;height:2.5vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:8px;overflow:hidden;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,0.4);backdrop-filter:blur(4px)}
+#health-ui{display:none;position:absolute;bottom:1vh;left:50%;transform:translateX(-50%);width:22vw;min-width:220px;height:2.5vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:8px;overflow:visible;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,0.4);backdrop-filter:blur(4px)}
 #health-ui.active{display:block}
-#health-fill{height:100%;width:100%;background:#22c55e;transition:width 0.2s ease-out,background-color 0.2s}
+#health-fill{height:100%;width:100%;background:#22c55e;transition:width 0.2s ease-out,background-color 0.2s;border-radius:7px 0 0 7px}
+#overshield-fill{position:absolute;top:-1px;left:100%;height:calc(100% + 2px);width:0%;background:linear-gradient(180deg,#60a5fa,#2563eb);box-shadow:0 0 8px #3b82f6;border-radius:0 7px 7px 0;transition:width 0.18s ease-out,opacity 0.25s;pointer-events:none;opacity:0}
 #health-text{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1vw;font-weight:bold;color:white;text-shadow:1px 1px 2px rgba(0,0,0,0.8);pointer-events:none}
 #ult-ui {display:none;position:absolute;bottom:4vh;left:50%;transform:translateX(-50%);width:14vw;min-width:140px;height:1.2vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:6px;overflow:hidden;z-index:40;}
 #ult-fill {width:0%;height:100%;background:#a855f7;transition:width 0.2s ease-out, background-color 0.2s;}
@@ -388,7 +389,7 @@ body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
         <div class="ability-slot" id="ui-esper-cradle"><div class="key">SPACE</div><div class="name">Kinetic Cradle</div><div class="status" id="status-esper-cradle">Ready</div><div class="cooldown-overlay" id="cd-esper-cradle"></div></div>
 
     </div>
-    <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="health-text">150 / 150</div></div>
+    <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="overshield-fill"></div><div id="health-text">150 / 150</div></div>
 </div>
 
 <!-- LOBBY UI -->
@@ -584,7 +585,10 @@ window.PEER_CFG = {
 
 // ===== Settings (FPS, V-Sync, Graphics) + chat panel =====
 window.RIVALS_SETTINGS = (function(){
-    let def = { fpsTarget: 60, unlimitedFps: false, vsync: true, graphics: 'high' };
+    // Defaults updated so the game actually runs above 60fps out of the box.
+    // V-Sync OFF + 120fps target -> setTimeout-driven loop that isn't capped
+    // by the browser's rAF tick (which on a 60Hz display caps at 60).
+    let def = { fpsTarget: 120, unlimitedFps: false, vsync: false, graphics: 'high' };
     try { let s = JSON.parse(localStorage.getItem('rivals_settings')||'null'); if(s) return Object.assign(def, s); } catch(e){}
     return def;
 })();
@@ -828,7 +832,7 @@ const saveCols = () => {
 
 let myPlayer = { 
     id:null, name:getEl('playerName').value, heroClass:"trace", team:"none", color:"#f59e0b", 
-    x:W/2, y:H/2, z:0, jumpTimer:0, jumpDuration:0.4, angle:0, hp:250, maxHp:250, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol,timColors:timCol},
+    x:W/2, y:H/2, z:0, jumpTimer:0, jumpDuration:0.4, angle:0, hp:250, maxHp:250, overShield:0, overShieldMax:0, overShieldDecay:5, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol,timColors:timCol},
     kisakiDeployed:false, kisakiMirrorOn:false, kisakiMirrorAngle:0, blitzWeapon:'handgun', blitzAmmo:8, blitzParryActive:false, blitzParryTimer:0, grabbedLocked:false, flicker:false,
     ultCharge: 0, hasUltAura: false, auraTimer: 0, isJuggernaut: false, aeroDrawing: false, aeroTabType: 1, traceShooting: false, traceNodes:[], traceDashing: false, traceDashNodes:[], traceFreeze: false,
     copycatWeapons: [], portalImmune: 0, speedBoost: 0, riftAmmo: 18,
@@ -1151,7 +1155,7 @@ let localCombat = {
     riftJab: { cd: 0, maxCd: 2.0 },
     riftShift: { charges: 1, maxCharges: 1, cds: [0, 0], maxCd: 2.25 },
     breadShoot:{cd:0,maxCd:0.25,ammo:80,reload:0,reloadDur:1.5,heat:0,firingTm:0},
-    breadShield:{cd:0,maxCd:22.0,active:false,activeTm:0,maxActive:8.0,shieldHp:200,maxShieldHp:200},
+    breadShield:{cd:0,maxCd:22.0,active:false,activeTm:0,maxActive:8.0,shieldHp:500,maxShieldHp:500},
     breadGrapple:{cd:0,maxCd:9.0,phase:'idle',anchor:null,fireTm:0,pullTm:0,curX:0,curY:0,vx:0,vy:0},
     esperGrab:{active:false,heldProjectiles:[],lastMouseX:0,lastMouseY:0,flickVx:0,flickVy:0,flickSpeed:0},
     esperComets:{cd:0,maxCd:6.0,charges:3,maxCharges:3,cds:[0,0,0],fired:[]},
@@ -1174,7 +1178,7 @@ function resetAllCooldowns() {
     myPlayer.blitzAmmo = 8;
     myPlayer.riftAmmo = 18;
     if(localCombat.breadShoot){localCombat.breadShoot.ammo=32;localCombat.breadShoot.reload=0;localCombat.breadShoot.heat=0;localCombat.breadShoot.firingTm=0;}
-    if(localCombat.breadShield){localCombat.breadShield.active=false;localCombat.breadShield.activeTm=0;localCombat.breadShield.shieldHp=200;}
+    if(localCombat.breadShield){localCombat.breadShield.active=false;localCombat.breadShield.activeTm=0;localCombat.breadShield.shieldHp=500;}
     if(localCombat.breadGrapple){localCombat.breadGrapple.phase='idle';localCombat.breadGrapple.anchor=null;}
     if(localCombat.esperGrab){localCombat.esperGrab.active=false;localCombat.esperGrab.heldProjectiles=[];}
     if(localCombat.esperComets){localCombat.esperComets.charges=3;localCombat.esperComets.cds=[0,0,0];localCombat.esperComets.fired=[];}
@@ -2473,6 +2477,7 @@ function sdUp() {
     _sdUpLast = now;
     let minP = {
         id:myPlayer.id, x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, hp:myPlayer.hp, maxHp:myPlayer.maxHp, 
+        overShield:myPlayer.overShield||0, overShieldMax:myPlayer.overShieldMax||0,
         isDead:myPlayer.isDead, heroClass:myPlayer.heroClass, stunTimer:myPlayer.stunTimer, flicker:myPlayer.flicker, 
         grabbedLocked:myPlayer.grabbedLocked, daggers:myPlayer.daggers, kills:myPlayer.kills, deaths:myPlayer.deaths, 
         slashAnimTimer:myPlayer.slashAnimTimer, arrowActive:myPlayer.arrowActive, targetX:myPlayer.targetX, targetY:myPlayer.targetY, 
@@ -2512,6 +2517,13 @@ function dmgTk(t, amt, aId) {
             fA -= absorbed;
             if(sh.hp <= 0) sh.life = 0;
         }
+    }
+    // Bread post-tank overshield: blue overshield absorbs the next chunk of damage
+    if(fA > 0 && (t.overShield||0) > 0){
+        let absorbedOS = Math.min(t.overShield, fA);
+        t.overShield -= absorbedOS;
+        fA -= absorbedOS;
+        if(t.overShield <= 0) t.overShield = 0;
     }
     if(fA <= 0) return 0;
     t.hp -= fA;
@@ -3719,7 +3731,7 @@ function updateMovement(dt) {
         let sp = gameState.players[myId];
         if(!sp.isDead && myPlayer.isDead) { myPlayer.x = sp.x; myPlayer.y = sp.y; }
         myPlayer.hp = sp.hp; myPlayer.isDead = sp.isDead;
-        ['stunTimer','flicker','portalImmune','speedBoost'].forEach(k => { if(sp[k] !== undefined) myPlayer[k] = sp[k]; });
+        ['stunTimer','flicker','portalImmune','speedBoost','overShield','overShieldMax'].forEach(k => { if(sp[k] !== undefined) myPlayer[k] = sp[k]; });
         
         if(sp.grabbedLocked) {
             myPlayer.grabbedLocked = true; myPlayer.x = sp.x; myPlayer.y = sp.y;
@@ -3759,6 +3771,14 @@ function updateMovement(dt) {
         if(bs.reload>0){ bs.reload -= dt; if(bs.reload<=0){ bs.ammo = 32; bs.firingTm=0; } }
         // end tank mode when timer expires or shield is broken
         if(bsh.activeTm<=0 || bsh.shieldHp<=0){
+            // Grant 200 blue overshield (decays over 5s) when tank mode ends *by timer*,
+            // not when the bubble was destroyed by damage.
+            if(bsh.activeTm<=0 && bsh.shieldHp>0){
+                myPlayer.overShield = 200;
+                myPlayer.overShieldMax = 200;
+                myPlayer.overShieldDecay = 5;
+                sdUp();
+            }
             bsh.active=false; bsh.activeTm=0;
             sdEv({type:'bread_shield_end'});
         }
@@ -3828,7 +3848,21 @@ function updateMovement(dt) {
         if(bs.reload>0){ bs.reload -= dt; if(bs.reload<=0){ bs.ammo = 32; bs.firingTm=0; } }
         // shield tick (fallback; main tick happens in tank-mode early-return block above)
         let bsh = localCombat.breadShield;
-        if(bsh.active){ bsh.activeTm -= dt; if(bsh.activeTm<=0 || bsh.shieldHp<=0){ bsh.active=false; bsh.activeTm=0; sdEv({type:'bread_shield_end'}); } }
+        if(bsh.active){
+            bsh.activeTm -= dt;
+            if(bsh.activeTm<=0 || bsh.shieldHp<=0){
+                if(bsh.activeTm<=0 && bsh.shieldHp>0){
+                    myPlayer.overShield = 200; myPlayer.overShieldMax = 200; myPlayer.overShieldDecay = 5;
+                }
+                bsh.active=false; bsh.activeTm=0; sdEv({type:'bread_shield_end'});
+            }
+        }
+        // Overshield drain (decays linearly over overShieldDecay seconds)
+        if((myPlayer.overShield||0) > 0){
+            let rate = (myPlayer.overShieldMax||200) / Math.max(0.1, myPlayer.overShieldDecay||5);
+            myPlayer.overShield = Math.max(0, myPlayer.overShield - rate*dt);
+            if(myPlayer.overShield <= 0){ myPlayer.overShield = 0; myPlayer.overShieldMax = 0; }
+        }
         // grapple update
         let bg = localCombat.breadGrapple;
         if(bg.phase==='firing'){
@@ -5248,6 +5282,19 @@ function updateUI(now = performance.now()) {
     let tHp = myPlayer.hp, tMx = myPlayer.maxHp, hpP = Math.max(0, (tHp / tMx) * 100), hf = getEl('health-fill');
     hf.style.width = `${hpP}%`; getEl('health-text').innerText = `${Math.ceil(tHp)} / ${tMx}`;
     hf.style.background = hpP > 50 ? '#22c55e' : (hpP > 20 ? '#f59e0b' : '#ef4444');
+    // Overshield blue overlay (extends past right edge of health bar)
+    let osEl = getEl('overshield-fill');
+    if(osEl){
+        let os = myPlayer.overShield||0;
+        if(os > 0 && tMx > 0){
+            let osPct = (os / tMx) * 100;
+            osEl.style.width = osPct + '%';
+            osEl.style.opacity = '1';
+        } else {
+            osEl.style.width = '0%';
+            osEl.style.opacity = '0';
+        }
+    }
     
     abUi.style.display = 'flex';
     
