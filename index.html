@@ -1710,7 +1710,7 @@ function _applyHeroState(id, keepRoulette) {
     }
 
     let baseHp = HERO_DATA[id].hp;
-    if (activeServerMode === 'CHAOS') baseHp *= 12;
+    if (activeServerMode === 'CHAOS') baseHp *= 4;
     myPlayer.maxHp = myPlayer.hp = baseHp;
     myPlayer.ultCharge = 0;
 
