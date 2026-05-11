@@ -3383,7 +3383,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
         if(t && !t.isDead && cDm(sId, e.targetId) && !t.invulnerable){
             t.grabbedLocked = true; t.nitroGrabbedBy = sId;
             // small dmg on grab
-            dmgTk(t, 8, sId); sendHitmarker(sId, t, 8); t.lastAttacker=sId; t.lastHitTime=Date.now();
+            dmgTk(t, 35, sId); sendHitmarker(sId, t, 35); t.lastAttacker=sId; t.lastHitTime=Date.now();
         }
     }
     else if(e.type==='nitro_ram_drag'){
@@ -4006,7 +4006,7 @@ function updateMovement(dt) {
                 nc.trailTm -= dt;
                 if(nc.trailTm <= 0){
                     nc.trailTm = 0.05;
-                    sdEv({type:'nitro_glint_drop', x:myPlayer.x-Math.cos(nc.ang)*18, y:myPlayer.y-Math.sin(nc.ang)*18, fuse:0.6, dmg:7, kbk:18});
+                    sdEv({type:'nitro_glint_drop', x:myPlayer.x-Math.cos(nc.ang)*18, y:myPlayer.y-Math.sin(nc.ang)*18, fuse:0.6, dmg:18, kbk:12});
                 }
                 if(nc.boostTm <= 0){
                     // Ran out of boost — release without explosion (and free any grabbed target)
@@ -4096,7 +4096,7 @@ function updateMovement(dt) {
                     myPlayer.invulnerable = false;
                     let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
                     // GIANT IMPACT
-                    spawnNitroExplosion(myPlayer.x, myPlayer.y, 320, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
+                    spawnNitroExplosion(myPlayer.x, myPlayer.y, 40, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
                     // Extra glint shower
                     for(let g=0; g<60; g++){
                         let ang = Math.random()*Math.PI*2;
