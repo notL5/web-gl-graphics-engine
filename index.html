@@ -387,7 +387,10 @@ body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
         <div class="ability-slot" id="ui-esper-comets"><div class="key">L-CLICK</div><div class="name">Aura Comets</div><div class="status" id="status-esper-comets">3/3</div><div class="cooldown-overlay" id="cd-esper-comets"></div></div>
         <div class="ability-slot" id="ui-esper-detonate"><div class="key">E</div><div class="name">Detonation</div><div class="status" id="status-esper-detonate">0 active</div></div>
         <div class="ability-slot" id="ui-esper-cradle"><div class="key">SPACE</div><div class="name">Kinetic Cradle</div><div class="status" id="status-esper-cradle">Ready</div><div class="cooldown-overlay" id="cd-esper-cradle"></div></div>
-
+         <div class="ability-slot" id="ui-excalibur-slash"><div class="key">L-CLICK</div><div class="name">Heavy Crescent</div><div class="status" id="status-excalibur-slash">Ready</div><div class="cooldown-overlay" id="cd-excalibur-slash"></div></div>
+         <div class="ability-slot" id="ui-excalibur-barrier"><div class="key">R-CLICK</div><div class="name">Blade Barrier</div><div class="status" id="status-excalibur-barrier">Ready</div><div class="cooldown-overlay" id="cd-excalibur-barrier"></div></div>
+         <div class="ability-slot" id="ui-excalibur-throw"><div class="key">E</div><div class="name">Phantom Strike</div><div class="status" id="status-excalibur-throw">Ready</div><div class="cooldown-overlay" id="cd-excalibur-throw"></div></div>
+         <div class="ability-slot" id="ui-excalibur-ult"><div class="key">SPACE</div><div class="name">Exalted Phalanx</div><div class="status" id="status-excalibur-ult">0%</div><div class="cooldown-overlay" id="cd-excalibur-ult"></div></div>
     </div>
     <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="overshield-fill"></div><div id="health-text">150 / 150</div></div>
 </div>
@@ -406,7 +409,8 @@ body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
     <div class="row"><span>Graphics</span>
         <select id="graphics-select"><option value="high">High</option><option value="low">Low</option></select>
     </div>
-    <div style="font-size:0.65rem;color:#71717a;margin-top:8px;line-height:1.4;">Scroll over the slider to fine-tune FPS. V-Sync syncs frames to your monitor's refresh rate.</div>
+    <div class="row"><span>Show Hitboxes</span><input type="checkbox" id="hitbox-toggle"></div>
+    <div style="font-size:0.65rem;color:#71717a;margin-top:8px;line-height:1.4;">Scroll over the slider to fine-tune FPS. V-Sync syncs frames to your monitor's refresh rate. Hitboxes draws a red outline around every damageable entity and projectile.</div>
 </div>
 
     <div id="lobby-screen" class="screen">
@@ -458,21 +462,22 @@ body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
                     
                     <div class="roster-grid">
                         
-                        <button id="btn-trace" class="class-list-btn selected" onclick="selectHero('trace')" style="--glow-color: #a855f7; background:url('https://cdn.dribbble.com/userupload/20458852/file/original-68a5cddf4d8bad135c3791b2ebc891df.gif') center/cover;">Trace</button>
-                        <button id="btn-blitz" class="class-list-btn" onclick="selectHero('blitz')" style="--glow-color:#d4d4d8;background:url('https://i.imgur.com/2jH4ZiT.gif') center / 100% 160%; color:#fff;">Blitz</button>
-                        <button id="btn-kendo" class="class-list-btn" onclick="selectHero('kendo')" style="--glow-color:var(--kendoColorGlow, #dc2626); background:var(--kendoColorPrimary, #dc2626);">Kendo</button>
-                        <button id="btn-rift" class="class-list-btn" onclick="selectHero('rift')" style="--glow-color: #3b82f6; background:url('https://i.makeagif.com/media/7-22-2024/QhOTv4.gif') center/cover;">Rift</button>
-                        <button id="btn-misaki" class="class-list-btn" onclick="selectHero('misaki')" style="--glow-color: #fde047; background:url('https://giffiles.alphacoders.com/232/23298.gif') center/100% 160%; color:#fff;">Misaki</button>
-                        <button id="btn-glitch" class="class-list-btn" onclick="selectHero('glitch')" style="--glow-color: #22c55e; background:url('https://media.giphy.com/media/sULKEgDMX8LcI/giphy.gif') center/cover;">Glitch</button>
-                        <button id="btn-aero" class="class-list-btn" onclick="selectHero('aero')" style="--glow-color: #38bdf8; background:url('https://i.pinimg.com/originals/f2/ff/82/f2ff82037fcc5a2305be0ee82d79e893.gif') bottom/cover;">Aero</button>
-                        <button id="btn-jubilee" class="class-list-btn" onclick="selectHero('jubilee')" style="--glow-color: #ec4899; background:url('https://rguanime.wordpress.com/wp-content/uploads/2016/11/more-anime-fireworks-gif.gif');color:#fff;">Jubilee</button>
-                        <button id="btn-corsair" class="class-list-btn" onclick="selectHero('corsair')" style="--glow-color: #ea580c; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyaTA4bjYwdzRmbWFhOG0wc2JweHVwMTg5czM1b3N4MmxxamM4MGU5OCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/7SrHwak3yoO9a/200.gif') center/100% 180%;">Corsair</button>
-                        <button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
-                        <button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://gifdb.com/images/thumbnail/dice-roll-jump-scare-angry-birds-meme-bhr66fsxdyaipbt5.gif') center/100% 500%;">Roulette!</button>
-                             <button id="btn-nitro" class="class-list-btn" onclick="selectHero('nitro')" style="--glow-color: #ff5500; background:url('https://external-preview.redd.it/M9O71AtU29lDwtQJUhp7SDRf4YggDRy1cxBlXyDH6VA.gif?auto=webp&s=19994d15dad85c165f540d9ee0ed9219c7e447ab') center/ 100% 270%;color:#fff;">Nitro</button>
-                             <button id="btn-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
-                             <button id="btn-esper" class="class-list-btn" onclick="selectHero('esper')" style="--glow-color: #ff00ff; background: linear-gradient(135deg, #ff0055, #ffaa00, #55ff00, #00ffaa, #0055ff, #aa00ff); color:#fff;">The Esper</button>
-                           <button id="btn-mystery" class="class-list-btn" onclick="selectHero('mystery')" style="--glow-color: #eab308; background:url('') center/95%;">???</button>  
+                       <button id="btn-aero" class="class-list-btn" onclick="selectHero('aero')" style="--glow-color: #38bdf8; background:url('https://i.pinimg.com/originals/f2/ff/82/f2ff82037fcc5a2305be0ee82d79e893.gif') bottom/cover;">Aero</button>
+<button id="btn-blitz" class="class-list-btn" onclick="selectHero('blitz')" style="--glow-color:#d4d4d8;background:url('https://i.imgur.com/2jH4ZiT.gif') center / 100% 160%; color:#fff;">Blitz</button>
+<button id="btn-corsair" class="class-list-btn" onclick="selectHero('corsair')" style="--glow-color: #ea580c; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyaTA4bjYwdzRmbWFhOG0wc2JweHVwMTg5czM1b3N4MmxxamM4MGU5OCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/7SrHwak3yoO9a/200.gif') center/100% 180%;">Corsair</button>
+<button id="btn-excalibur" class="class-list-btn" onclick="selectHero('excalibur')" style="--glow-color: #fbbf24; background: linear-gradient(135deg, #b45309, #fbbf24, #fde68a); color:#000;">Excalibur</button>
+<button id="btn-glitch" class="class-list-btn" onclick="selectHero('glitch')" style="--glow-color: #22c55e; background:url('https://media.giphy.com/media/sULKEgDMX8LcI/giphy.gif') center/cover;">Glitch</button>
+<button id="btn-jubilee" class="class-list-btn" onclick="selectHero('jubilee')" style="--glow-color: #ec4899; background:url('https://rguanime.wordpress.com/wp-content/uploads/2016/11/more-anime-fireworks-gif.gif');color:#fff;">Jubilee</button>
+<button id="btn-kendo" class="class-list-btn" onclick="selectHero('kendo')" style="--glow-color:var(--kendoColorGlow, #dc2626); background:var(--kendoColorPrimary, #dc2626);">Kendo</button>
+<button id="btn-misaki" class="class-list-btn" onclick="selectHero('misaki')" style="--glow-color: #fde047; background:url('https://giffiles.alphacoders.com/232/23298.gif') center/100% 160%; color:#fff;">Misaki</button>
+<button id="btn-nitro" class="class-list-btn" onclick="selectHero('nitro')" style="--glow-color: #ff5500; background:url('https://external-preview.redd.it/M9O71AtU29lDwtQJUhp7SDRf4YggDRy1cxBlXyDH6VA.gif?auto=webp&s=19994d15dad85c165f540d9ee0ed9219c7e447ab') center/ 100% 270%;color:#fff;">Nitro</button>
+<button id="btn-rift" class="class-list-btn" onclick="selectHero('rift')" style="--glow-color: #3b82f6; background:url('https://i.makeagif.com/media/7-22-2024/QhOTv4.gif') center/cover;">Rift</button>
+<button id="btn-roulette" class="class-list-btn" onclick="selectHero('roulette')" style="--glow-color: #eab308; background:url('https://api.memes.co.in/media/memesvideo/gif/Angry_Birds_Dice_GIF.gif') center/100% 160%;">Roulette!</button>
+<button id="btn-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
+<button id="btn-esper" class="class-list-btn" onclick="selectHero('esper')" style="--glow-color: #ff00ff; background: linear-gradient(135deg, #ff0055, #ffaa00, #55ff00, #00ffaa, #0055ff, #aa00ff); color:#fff;">The Esper</button>
+<button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
+<button id="btn-trace" class="class-list-btn selected" onclick="selectHero('trace')" style="--glow-color: #a855f7; background:url('https://cdn.dribbble.com/userupload/20458852/file/original-68a5cddf4d8bad135c3791b2ebc891df.gif') center/cover;">Trace</button>
+  
                     </div>
 
                 </div>
@@ -511,6 +516,7 @@ body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
                     </div>
                     <div id="corsair-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Trim Color</span><input type="color" id="corsairColorTrim" value="#dc2626"></div></div>
                     <div id="tim-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Skin</span><input type="color" id="timColorSkin"></div><div class="color-row"><span>Antenna</span><input type="color" id="timColorAntenna"></div><div class="color-row"><span>Eyes</span><input type="color" id="timColorEyes"></div><div class="color-row"><span>Cannon Color</span><input type="color" id="timColorCannon"></div><div class="color-row"><span>Beam Color</span><input type="color" id="timColorBeam"></div></div>
+                    <div id="excalibur-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Blade Color</span><input type="color" id="excaliburColorBlade" value="#fbbf24"></div><div class="color-row"><span>Body Color</span><input type="color" id="excaliburColorBody" value="#fbbf24"></div></div>
                     <div id="generic-custom-panel" style="width:100%;text-align:center;font-style:italic;color:#71717a;font-size:0.85rem;">No customizations.</div>
                 </div>
 
@@ -688,7 +694,7 @@ const GlintCache = {
         'Napalm_Orange':   { outer: '#ff4545', mid: '#ffcc00', core: '#ffffff' },
         'Electric_Yellow': { outer: '#ffaa00', mid: '#fffae6', core: '#ffffff' },
         'Crimson_Red':     { outer: '#cc0022', mid: '#ff7733', core: '#ffffff' },
-        'Rainbow_Red':     { outer: '#ff0033', mid: '#ff6677', core: '#ffffff' },
+        'Rainbow_Loop':     { outer: '#ff0033', mid: '#ff6677', core: '#ffffff' },
         'Rainbow_Orange':  { outer: '#ff7700', mid: '#ffaa55', core: '#ffffff' },
         'Rainbow_Yellow':  { outer: '#ffdd00', mid: '#ffff99', core: '#ffffff' },
         'Rainbow_Green':   { outer: '#22dd33', mid: '#88ff99', core: '#ffffff' },
@@ -756,26 +762,53 @@ const GlintCache = {
     },
     pick(palettes){ const k=palettes[Math.floor(Math.random()*palettes.length)]; return this.pickModel(k); },
     getModel(name){ return this.models[name]; }
-};
-GlintCache.init();
+}; 
 
-function spawnNitroExplosion(x,y,radius,palettes){
-    palettes = palettes || ['Napalm_Orange','Electric_Yellow','Crimson_Red'];
-    const isRainbow = palettes === GlintCache.rainbowPalettes || (Array.isArray(palettes) && palettes[0] && palettes[0].indexOf('Rainbow_')===0);
-    const count = 23 + Math.floor(Math.random()*8);
-    for(let i=0;i<count;i++){
-        const ang=Math.random()*6.28, d=Math.random()*radius*0.9;
-        const __pal = palettes[Math.floor(Math.random()*palettes.length)];
-        vfx.push({type:'nitroGlint', x:x+Math.cos(ang)*d, y:y+Math.sin(ang)*d,
-            life:0.18+Math.random()*0.18, maxLife:0.32,
-            delay:Math.random()*0.18, scale:0.4+Math.random()*0.7,
-            sx:0.7+Math.random()*0.6, sy:0.7+Math.random()*0.6,
-            rot:[0,0.785,1.57][Math.floor(Math.random()*3)]+(Math.random()-0.5)*0.2,
-            palette:__pal, _model:GlintCache.pickModel(__pal)});
-    }
-    vfx.push({type:'nitroShockwave', x:x, y:y, radius:radius, life:0.35, maxLife:0.35, rainbow:isRainbow, hueOffset:Math.random()*360});
-}
- 
+GlintCache.init(); 
+
+function spawnNitroExplosion(x, y, radius, palettes) {
+    palettes = palettes || ['Napalm_Orange', 'Electric_Yellow', 'Crimson_Red'];
+    
+    // Check if we are using the loop or a rainbow set
+    const isRainbowEffect = (typeof activePalette !== 'undefined' && activePalette === 'Rainbow_Loop') || 
+                            (Array.isArray(palettes) && palettes[0] && palettes[0].indexOf('Rainbow_') === 0);
+    
+    const count = 23 + Math.floor(Math.random() * 8);
+    
+    for (let i = 0; i < count; i++) {
+        const ang = Math.random() * 6.28;
+        const d = Math.random() * radius * 0.9;
+        const __pal = palettes[Math.floor(Math.random() * palettes.length)];
+        
+        vfx.push({
+            type: 'nitroGlint',
+            x: x + Math.cos(ang) * d,
+            y: y + Math.sin(ang) * d,
+            life: 0.18 + Math.random() * 0.18,
+            maxLife: 0.32,
+            delay: Math.random() * 0.18,
+            scale: 0.4 + Math.random() * 0.7,
+            sx: 0.7 + Math.random() * 0.6,
+            sy: 0.7 + Math.random() * 0.6,
+            rot: [0, 0.785, 1.57][Math.floor(Math.random() * 3)] + (Math.random() - 0.5) * 0.2,
+            palette: __pal,
+            _model: GlintCache.pickModel(__pal)
+        });
+    } // This closes the for loop
+
+    // Spawn the shockwave once per explosion, after the glints
+    vfx.push({ 
+        type: 'nitroShockwave', 
+        x: x, 
+        y: y, 
+        radius: radius, 
+        life: 0.35, 
+        maxLife: 0.35, 
+        rainbow: isRainbowEffect, 
+        hueOffset: Math.random() * 360 
+    });
+} // This closes the function
+
 let cam = {x:0, y:0, zoom:0.6, targetZoom: 0.6};
 let gameState = {isTeamMode:false, players:{}, projectiles:[], pickups:[], walls:[], shields:[], clones:[], healthPacks:[], train:{phase:'idle',timer:2.0}, corsairCannons:[]};
 
@@ -804,11 +837,12 @@ const HERO_DATA = {
 nitro:{name:'Nitro',role:'Explosive Rocket Rider',hp:230,speed:'slow',color:'#ff5500',desc:'Nimble brawler wielding a colossal rocket ram. Charge, boost, scoop, and carpet-bomb glints across the battlefield.',abilities:['Ram-Charge & Pin (Hold L-Click)','Stratosphere Vault (Press Space)']},
     bread:{name:'The Bread-Burner',role:'Heated Tank',hp:280,speed:'Slow',color:'#d97706',desc:'A walking hyper-detailed toaster. Burns bread, deploys a bubble shield, and grapples around with his power cord.',abilities:['Burnt Bread Spitter (L-Click, ramps up)','Tank Mode Bubble Shield (E)','Cord Grapple (SPACE)']},
     esper:{name:'The Esper',role:'Anti-Projectile Brawler',hp:250,speed:'Medium',color:'#ff66ff',desc:'Psychokinetic brawler. Catch enemy projectiles with a gravity well, flick them back, fire homing aura comets, and warp battlefields with the Kinetic Cradle.',abilities:['Spectral Sweep & Flick (Hold R-Click)','Aura Comets (L-Click)','Sequential Detonation (E)','Kinetic Cradle (SPACE)']},
-         mystery:{name:'???',role:'idk',hp:250,speed:'fast',color:'#000',desc:'idk',abilities:[]}
+    excalibur:{name:'Excalibur',role:'Melee Brawler / Skirmisher',hp:200,speed:'Medium',color:'#fbbf24',desc:'A massive sword-wielding brawler. Constant aggression generates Overshield. Slash, deflect, throw-and-teleport, and unleash a phalanx of energy clones.',abilities:['Heavy Crescent (L-Click)','Blade Barrier — Deflect (R-Click)','Phantom Strike — Throw & Teleport (E)','[ULT] Exalted Phalanx — Sword Clones (SPACE)']},
+         mystery:{name:'excalibur',role:'Anti-Projectile Brawler',hp:250,speed:'Medium',color:'#ff66ff',desc:'Psychokinetic brawler. Catch enemy projectiles with a gravity well, flick them back, fire homing aura comets, and warp battlefields with the Kinetic Cradle.',abilities:['Spectral Sweep & Flick (Hold R-Click)','Aura Comets (L-Click)','Sequential Detonation (E)','Kinetic Cradle (SPACE)']},
 };
 
 // Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
-const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift','nitro','bread','esper'];
+const ROULETTE_POOL = ['trace','blitz','kendo','glitch','jubilee','misaki','corsair','aero','tim','rift','nitro','bread','excalibur'];
 
 getEl('playerName').value = localStorage.getItem('rivals_playerName')||"Player";
 let tCol = JSON.parse(localStorage.getItem('rivals_traceColors'))||{bow:'#3b0764',neon:'#a855f7'}; getEl('tColorBow').value=tCol.bow; getEl('tColorNeon').value=tCol.neon;
@@ -819,6 +853,7 @@ getEl('corsairColorTrim').value=crsCol.trim;
 let timCol = JSON.parse(localStorage.getItem('rivals_timColors'))||{skin:'#22c55e',antenna:'#00ff00',eyes:'#000000',cannon:'#fbbf24',beam:'#ff6b6b'};
 getEl('timColorSkin').value=timCol.skin; getEl('timColorAntenna').value=timCol.antenna; getEl('timColorEyes').value=timCol.eyes;
 getEl('timColorCannon').value=timCol.cannon; getEl('timColorBeam').value=timCol.beam;
+let excCol = JSON.parse(localStorage.getItem('rivals_excaliburColors'))||{blade:'#fbbf24',body:'#fbbf24'}; getEl('excaliburColorBlade').value=excCol.blade; getEl('excaliburColorBody').value=excCol.body;
 
 const saveCols = () => {
     tCol={bow:getEl('tColorBow').value, neon:getEl('tColorNeon').value}; localStorage.setItem('rivals_traceColors',JSON.stringify(tCol)); myPlayer.customization.traceColors=tCol;
@@ -826,13 +861,14 @@ const saveCols = () => {
     kndCol={primary:getEl('kendoColorPrimary').value, glow:getEl('kendoColorGlow').value}; localStorage.setItem('rivals_kendoColors',JSON.stringify(kndCol)); myPlayer.customization.kendoColors=kndCol;
     crsCol={trim:getEl('corsairColorTrim').value}; localStorage.setItem('rivals_corsairColors',JSON.stringify(crsCol)); myPlayer.customization.corsairColors=crsCol;
     timCol={skin:getEl('timColorSkin').value, antenna:getEl('timColorAntenna').value, eyes:getEl('timColorEyes').value, cannon:getEl('timColorCannon').value, beam:getEl('timColorBeam').value}; localStorage.setItem('rivals_timColors',JSON.stringify(timCol)); myPlayer.customization.timColors=timCol;
+    excCol={blade:getEl('excaliburColorBlade').value, body:getEl('excaliburColorBody').value}; localStorage.setItem('rivals_excaliburColors',JSON.stringify(excCol)); myPlayer.customization.excaliburColors=excCol;
     updateLobbyState();
 };
-['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim','timColorSkin','timColorAntenna','timColorEyes','timColorCannon','timColorBeam'].forEach(id=>getEl(id).addEventListener('input',saveCols));
+['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim','timColorSkin','timColorAntenna','timColorEyes','timColorCannon','timColorBeam','excaliburColorBlade','excaliburColorBody'].forEach(id=>getEl(id).addEventListener('input',saveCols));
 
 let myPlayer = { 
     id:null, name:getEl('playerName').value, heroClass:"trace", team:"none", color:"#f59e0b", 
-    x:W/2, y:H/2, z:0, jumpTimer:0, jumpDuration:0.4, angle:0, hp:250, maxHp:250, overShield:0, overShieldMax:0, overShieldDecay:5, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol,timColors:timCol},
+    x:W/2, y:H/2, z:0, jumpTimer:0, jumpDuration:0.4, angle:0, hp:250, maxHp:250, overShield:0, overShieldMax:0, overShieldDecay:5, daggers:2, isDead:false, slashAnimTimer:0, arrowActive:false, targetX:W/2, targetY:H/2, isFlying:false, stunTimer:0, kills:0, deaths:0, lastAttacker:null, lastHitTime:0, invulnerable:false, customization:{traceColors:tCol,kisakiColors:kCol,kendoColors:kndCol,corsairColors:crsCol,timColors:timCol,excaliburColors:excCol},
     kisakiDeployed:false, kisakiMirrorOn:false, kisakiMirrorAngle:0, blitzWeapon:'handgun', blitzAmmo:8, blitzParryActive:false, blitzParryTimer:0, grabbedLocked:false, flicker:false,
     ultCharge: 0, hasUltAura: false, auraTimer: 0, isJuggernaut: false, aeroDrawing: false, aeroTabType: 1, traceShooting: false, traceNodes:[], traceDashing: false, traceDashNodes:[], traceFreeze: false,
     copycatWeapons: [], portalImmune: 0, speedBoost: 0, riftAmmo: 18,
@@ -1568,6 +1604,11 @@ function drawPrev() {
             pCtx.fillStyle = `hsla(${(hue+60)%360},100%,70%,0.7)`;
             pCtx.beginPath(); pCtx.arc(s*18, 4, 6, 0, 6.28); pCtx.fill();
         }
+    } else if(heroClass === 'excalibur') {
+        getEl('excalibur-custom-panel').style.display = 'block';
+        getEl('generic-custom-panel').style.display = 'none';
+        pCtx.translate(0, bob);
+        window.__drawExcaliburPreview && window.__drawExcaliburPreview(pCtx, myPlayer);
     }
     
     pCtx.restore();
@@ -3352,6 +3393,7 @@ function rainbowExplosion(x, y, dmgMin, dmgMax, r, oId, kbk){
 }
 
 function processCombatEvent(sId, e) {
+    if(window.__excaliburHandleEvent) { try{ window.__excaliburHandleEvent(sId, e); }catch(err){ console.error('exc handler',err); } }
     if(!isHost) return; 
     let s = gameState.players[sId]; 
     if(!s || s.isDead) return;
@@ -3401,7 +3443,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
         // Release any grabbed
         for(let id in gameState.players){ let t=gameState.players[id]; if(t && t.nitroGrabbedBy===sId){ t.grabbedLocked=false; t.nitroGrabbedBy=null; } }
         // AoE: 54 epicenter -> 30 minimum within radius 110 (visual reuses Stratosphere landing explosion)
-        let ex=e.x, ey=e.y, R=10, vR=20;
+        let ex=e.x, ey=e.y, R=10, vR=220;
         connections.forEach(c=>{ if(c.open) c.send({type:'nitro_explosion_vfx', x:ex, y:ey, radius:vR, palette:'vault'}); });
         spawnNitroExplosion(ex,ey,vR,['Crimson_Red','Napalm_Orange','Electric_Yellow']);
         applyExpKbk(ex,ey,R);
@@ -3415,7 +3457,7 @@ toString(),ownerId:sId,x:s.x,y:s.y,speed:25,angle:s.angle,life:9999,hitCooldowns
     else if(e.type==='nitro_vault_land'){
         // Remove telegraph
         gameState.projectiles = gameState.projectiles.filter(p=>!(p.type==='nitro_vault_telegraph' && p.ownerId===sId));
-        let ex=e.x, ey=e.y, R=220;
+        let ex=e.x, ey=e.y, R=20;
         connections.forEach(c=>{ if(c.open) c.send({type:'nitro_explosion_vfx', x:ex, y:ey, radius:R, palette:'vault'}); });
         spawnNitroExplosion(ex,ey,R, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
         // Strong knockback
@@ -3966,7 +4008,7 @@ function updateMovement(dt) {
                 myPlayer.isFlying = false;
                 if(outOfBounds){ myPlayer.x = Math.max(20, Math.min(W-20, myPlayer.x)); myPlayer.y = Math.max(20, Math.min(H-20, myPlayer.y)); }
                 let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
-                spawnNitroExplosion(myPlayer.x + Math.cos(nc.ang)*40, myPlayer.y + Math.sin(nc.ang)*40, 220, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
+                spawnNitroExplosion(myPlayer.x + Math.cos(nc.ang)*40, myPlayer.y + Math.sin(nc.ang)*40, 110, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
                 // Extra glint shower (matches Stratosphere landing, but more glints)
                 for(let g=0; g<90; g++){
                     let ang = Math.random()*Math.PI*2;
@@ -3974,7 +4016,7 @@ function updateMovement(dt) {
                     let gx = myPlayer.x + Math.cos(nc.ang)*40 + Math.cos(ang)*d;
                     let gy = myPlayer.y + Math.sin(nc.ang)*40 + Math.sin(ang)*d;
                     vfx.push({type:'nitroGlint', x:gx, y:gy,
-                        vx:Math.cos(ang)*(140+Math.random()*260), vy:Math.sin(ang)*(140+Math.random()*260),
+                        vx:Math.cos(ang)*(140+Math.random()*260), vy:Math.sin(ang)*(140+Math.random()*10),
                         life:0.9+Math.random()*0.6, maxLife:1.5, palette:['Crimson_Red','Napalm_Orange','Electric_Yellow'][Math.floor(Math.random()*3)]});
                 }
                 applyShake(22,0.45);
@@ -4096,7 +4138,7 @@ function updateMovement(dt) {
                     myPlayer.invulnerable = false;
                     let s = gnV(myPlayer.x, myPlayer.y); myPlayer.x = s.x; myPlayer.y = s.y;
                     // GIANT IMPACT
-                    spawnNitroExplosion(myPlayer.x, myPlayer.y, 40, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
+                    spawnNitroExplosion(myPlayer.x, myPlayer.y,320, ['Crimson_Red','Napalm_Orange','Electric_Yellow']);
                     // Extra glint shower
                     for(let g=0; g<60; g++){
                         let ang = Math.random()*Math.PI*2;
@@ -5235,13 +5277,12 @@ function updateGameState(dt) {
                         _pj.vx *= 1.6; _pj.vy *= 1.6;
                         _pj.angle = Math.atan2(_pj.vy, _pj.vx);
                     }
-                    if(_pj.speed !== undefined) _pj.speed *= 1.6;
+                    if(_pj.speed !== undefined) _pj.speed *= 10.6;
                     // Homing flags: the target selected when the timer ends is locked in here.
                     _pj._portalHoming = true;
                     _pj._portalHomingTargetId = _q.homingTargetId;
                     _pj._portalHomingIsClone = _q.homingIsClone;
-                    _pj._portalHomingTurnRate = 6.0; // rad/sec
-                    _pj._portalCd = 0.35; // immunity so it doesn't immediately re-enter the same portal
+                    _pj._portalHomingTurnRate = 9.0; // rad/sec
                     gameState.projectiles.push(_pj);
                 }
             }
@@ -5298,10 +5339,15 @@ function updateUI(now = performance.now()) {
     
     abUi.style.display = 'flex';
     
-    if(myPlayer.heroClass === 'blitz') {
-        getEl('ult-ui').style.display = 'block'; let uPct = Math.min(100, (myPlayer.ultCharge || 0));
-        getEl('ult-fill').style.width = uPct + '%'; getEl('ult-fill').style.background = uPct >= 100 ? '#eab308' : '#a855f7';
-        getEl('ult-text').innerText = uPct >= 100 ? 'ULT READY [F]' : `ULT ${Math.floor(uPct)}%`;
+    // Heroes with REAL ultimates: show the ult-ui bar above the health bar
+    const ULT_HEROES = { blitz: {key:'F', color:'#a855f7'}, tim: {key:'Q', color:'#1eff00'}, excalibur: {key:'SPACE', color:'#fbbf24'} };
+    const ultDef = ULT_HEROES[myPlayer.heroClass];
+    if(ultDef) {
+        getEl('ult-ui').style.display = 'block';
+        let uPct = Math.min(100, (myPlayer.ultCharge || 0));
+        getEl('ult-fill').style.width = uPct + '%';
+        getEl('ult-fill').style.background = uPct >= 100 ? '#eab308' : ultDef.color;
+        getEl('ult-text').innerText = uPct >= 100 ? `ULT READY [${ultDef.key}]` : `ULT ${Math.floor(uPct)}%`;
     } else { setVisibleAbilities([]); getEl('ult-ui').style.display = 'none'; }
     
     if(myPlayer.heroClass === 'thorfinn') {
@@ -5536,6 +5582,7 @@ function updateUI(now = performance.now()) {
     });
     if(html !== lastScoreboardHtml) { sb.innerHTML = html; lastScoreboardHtml = html; }
     updateCursorHud();
+    if(window.__excaliburUpdateUI) { try{ window.__excaliburUpdateUI(); }catch(err){} }
 }
 
 // === Cursor-Attached Semicircle Ammo / Cooldown HUD ===
@@ -7550,6 +7597,8 @@ o.timBeamCharge * 9;
                 ctx.beginPath(); ctx.arc(14, s*10, 5, 0, 6.28); ctx.fill();
             }
             ctx.restore();
+        } else if(!iC && o.heroClass === 'excalibur') {
+            window.__drawExcaliburInGame && window.__drawExcaliburInGame(ctx, o, isImpactFlash);
         } else if(!iC && o.heroClass === 'jubilee') {
             // Jubilee body — vibrant pink damage dealer
             ctx.fillStyle = isImpactFlash ? '#000' : '#ec4899';
@@ -8317,7 +8366,7 @@ function gLoop(t) {
     
     // During impact flash, skip drawing the map/grid (white bg already drawn)
     if(impactFlashTimer <= 0) drawGrid();
-    drawAeroTabs(); drawWallsOverlay(); drawShields(); drawCorsairCannons(); drawHPs(); drawEnts(); drawPlayers(); drawAeroContextMenuWorld(ctx); drawAeroGlobalCursor(ctx, cam); drawVFX(); 
+    drawAeroTabs(); drawWallsOverlay(); drawShields(); drawCorsairCannons(); drawHPs(); drawEnts(); drawPlayers(); drawAeroContextMenuWorld(ctx); drawAeroGlobalCursor(ctx, cam); drawVFX(); if(window.__showHitboxes) drawHitboxesDebug(); 
     
     ctx.restore(); if(t - lastMinimapDraw > 90) { drawMinimap(); lastMinimapDraw = t; }
     
@@ -8533,6 +8582,743 @@ function drawAeroContextMenuWorld(ctx2) {
     }
     requestAnimationFrame(tick);
 })();
+
+/* ============================================================
+   EXCALIBUR — Melee Brawler / Skirmisher
+   Self-contained module. Hooks into existing globals.
+   ============================================================ */
+(function(){
+'use strict';
+
+const EXC = {
+    HP: 200,
+    OS_MAX: 100,
+    OS_DECAY_GRACE: 4.0,        // seconds without dealing damage before decay starts
+    OS_DECAY_RATE: 200,         // shield/sec once decay starts
+    SLASH_DMG: 70, SLASH_OS: 20, SLASH_CD: 1.0,
+    SLASH_RANGE: 220, SLASH_ARC_HALF: 0.85,
+    BARRIER_DUR: 1.5, BARRIER_CD: 5.0, BARRIER_RAD: 80, BARRIER_OS: 10,
+    THROW_DMG: 50, THROW_OS: 25, THROW_CD: 7.0, THROW_SPEED: 1100, THROW_RANGE: 1100,
+    ULT_DMG: 45, ULT_OS: 15, ULT_COUNT: 6, ULT_DELAY: 0.5, ULT_SPEED: 1400, ULT_RANGE: 1500,
+    SWORD_LEN: 90,              // base sword length (player ~16px radius); 2.5x hero ≈ 80–90px
+    SWORD_THICK: 30,
+};
+
+// ------- Sword renderer (matches reference: rectangular flat blade, angled tip,
+//          rivets, wrapped grip, dark guard; cel-shaded with bold outline) -------
+function drawSword(ctx, length, thickness, bladeColor, accentColor) {
+    const len = length, t = thickness;
+    const guardW = 18, guardH = t * 1.5;
+    const gripLen = 38, gripW = 10;
+    const pommel = 6;
+    const tipCut = t * 0.55;
+
+    // GRIP (back)
+    ctx.save();
+    ctx.translate(-(gripLen + guardW * 0.5), 0);
+    // pommel
+    ctx.fillStyle = '#1a1a1a';
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(-pommel, 0, pommel, 0, 6.28); ctx.fill(); ctx.stroke();
+    // grip body
+    ctx.fillStyle = accentColor || '#7a1212';
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.rect(0, -gripW/2, gripLen, gripW); ctx.fill(); ctx.stroke();
+    // wrap stripes
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 1.5;
+    for(let i=4; i<gripLen; i+=5){
+        ctx.beginPath(); ctx.moveTo(i, -gripW/2); ctx.lineTo(i + 3, gripW/2); ctx.stroke();
+    }
+    ctx.restore();
+
+    // GUARD/BOLSTER (cross-guard rectangle at base of blade)
+    ctx.save();
+    ctx.translate(-guardW * 0.5, 0);
+    ctx.fillStyle = '#1a1a1a';
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.rect(0, -guardH/2, guardW, guardH); ctx.fill(); ctx.stroke();
+    // two rivets
+    ctx.fillStyle = bladeColor; ctx.shadowBlur = 6; ctx.shadowColor = bladeColor;
+    ctx.beginPath(); ctx.arc(guardW * 0.35, -guardH * 0.18, 2.5, 0, 6.28); ctx.fill();
+    ctx.beginPath(); ctx.arc(guardW * 0.35,  guardH * 0.18, 2.5, 0, 6.28); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    // BLADE — long flat slab with angled tip on top edge
+    ctx.save();
+    ctx.translate(guardW * 0.5, 0);
+    ctx.lineJoin = 'miter'; ctx.lineCap = 'square';
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+    // outline path
+    ctx.beginPath();
+    ctx.moveTo(0,         -t/2);
+    ctx.lineTo(len - t,   -t/2);
+    ctx.lineTo(len,       -t/2 + tipCut);   // angled top of tip
+    ctx.lineTo(len,        t/2);            // bottom flat
+    ctx.lineTo(0,          t/2);
+    ctx.closePath();
+    // base fill
+    ctx.fillStyle = bladeColor;
+    ctx.shadowBlur = 14; ctx.shadowColor = bladeColor;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+
+    // dark inner panel (the dark stripe in reference)
+    const inset = 6;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(inset,         -t/2 + inset);
+    ctx.lineTo(len - t - 4,   -t/2 + inset);
+    ctx.lineTo(len - inset,   -t/2 + tipCut + 2);
+    ctx.lineTo(len - inset,    t/2 - inset);
+    ctx.lineTo(inset,          t/2 - inset);
+    ctx.closePath();
+    ctx.fill();
+
+    // bright top sliver (highlight along upper edge)
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(2,          -t/2 + 2);
+    ctx.lineTo(len - t,    -t/2 + 2);
+    ctx.lineTo(len - 2,    -t/2 + tipCut);
+    ctx.lineTo(len - 2,    -t/2 + tipCut + 4);
+    ctx.lineTo(len - t,    -t/2 + 6);
+    ctx.lineTo(2,          -t/2 + 6);
+    ctx.closePath();
+    ctx.fill();
+
+    // diagonal speed-stroke detail (matches the reference's diagonal hatching)
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1.5;
+    for(let x = 12; x < len - 16; x += 14){
+        ctx.beginPath(); ctx.moveTo(x, -t/2 + inset + 2); ctx.lineTo(x + 18, t/2 - inset - 2); ctx.stroke();
+    }
+
+    // base rivets near guard
+    ctx.fillStyle = '#1a1a1a';
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
+    for(let ry of [-t*0.28, t*0.28]){
+        ctx.beginPath(); ctx.arc(8, ry, 2.6, 0, 6.28); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+}
+
+// ------- Hero body (gold) -------
+function drawExcaliburBody(ctx, bodyColor, isImpactFlash) {
+    const c = isImpactFlash ? '#000' : (bodyColor || '#fbbf24');
+    ctx.fillStyle = c;
+    ctx.shadowBlur = 18; ctx.shadowColor = c;
+    ctx.beginPath(); ctx.arc(0, 0, 16, 0, 6.28); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = isImpactFlash ? '#000' : '#fff7d6'; ctx.lineWidth = 2; ctx.stroke();
+    // crown/glint
+    ctx.fillStyle = isImpactFlash ? '#000' : '#fff';
+    ctx.beginPath(); ctx.arc(-5, -4, 2.2, 0, 6.28); ctx.fill();
+}
+
+// ------- Preview canvas drawer -------
+window.__drawExcaliburPreview = function(pCtx, p) {
+    const blade = (p.customization && p.customization.excaliburColors && p.customization.excaliburColors.blade) || '#fbbf24';
+    const body  = (p.customization && p.customization.excaliburColors && p.customization.excaliburColors.body)  || '#fbbf24';
+    drawExcaliburBody(pCtx, body, false);
+    pCtx.save();
+    pCtx.rotate(-0.35);
+    pCtx.translate(20, -2);
+    drawSword(pCtx, 70, 22, blade, '#7a1212');
+    pCtx.restore();
+};
+
+// ------- In-game drawer (called inside drawPlayers loop) -------
+window.__drawExcaliburInGame = function(ctx, o, isImpactFlash) {
+    const blade = (o.customization && o.customization.excaliburColors && o.customization.excaliburColors.blade) || '#fbbf24';
+    const body  = (o.customization && o.customization.excaliburColors && o.customization.excaliburColors.body)  || '#fbbf24';
+
+    drawExcaliburBody(ctx, body, isImpactFlash);
+
+    // Overshield ring
+    const os = o.overShield || 0;
+    if(os > 0){
+        ctx.save();
+        ctx.strokeStyle = 'rgba(125,211,252,0.95)';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 14; ctx.shadowColor = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(0, 0, 22, -1.57, -1.57 + (os / EXC.OS_MAX) * 6.28);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // Sword (held) — hide when sword is in flight or stuck
+    const swordInFlight = (o.excaliburSwordOut || false);
+    if(!swordInFlight){
+        ctx.save();
+        ctx.rotate(o.angle || 0);
+        // hold sword to the right of the body
+        ctx.translate(28, 6);
+        // slash anim: rotate the sword forward during the swing
+        const slashT = o.excaliburSlashAnim || 0;
+        if(slashT > 0){
+            // 0 -> 0.25s ease: rotate from -1.0 to +1.0 rad
+            const k = 1 - (slashT / 0.25);
+            ctx.rotate(-1.0 + k * 2.0);
+        }
+        drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK, blade, '#7a1212');
+        ctx.restore();
+    }
+
+    // Barrier visual
+    if(o.excaliburBarrierActive){
+        ctx.save();
+        ctx.rotate(o.angle || 0);
+        const w = EXC.BARRIER_RAD * 2, h = 28;
+        ctx.translate(20, 0);
+        ctx.fillStyle = 'rgba(125,211,252,0.18)';
+        ctx.strokeStyle = 'rgba(125,211,252,0.95)';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 18; ctx.shadowColor = '#38bdf8';
+        ctx.beginPath();
+        ctx.rect(-10, -h/2, w, h);
+        ctx.fill(); ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.restore();
+    }
+};
+
+/* ===== State init / hero swap ===== */
+function ensureExcaliburLocalCombat(){
+    if(typeof localCombat === 'undefined' || !localCombat) return;
+    if(!localCombat.excSlash)   localCombat.excSlash   = {cd:0, maxCd:EXC.SLASH_CD};
+    if(!localCombat.excBarrier) localCombat.excBarrier = {cd:0, maxCd:EXC.BARRIER_CD, active:false, activeT:0};
+    if(!localCombat.excThrow)   localCombat.excThrow   = {cd:0, maxCd:EXC.THROW_CD, swordId:null};
+    if(!localCombat.excUlt)     localCombat.excUlt     = {locking:false, lockT:0};
+}
+
+const _origApply = window._applyHeroState;
+if(typeof _origApply === 'function'){
+    window._applyHeroState = function(id, keepRoulette){
+        _origApply(id, keepRoulette);
+        if(id === 'excalibur'){
+            myPlayer.maxHp = EXC.HP;
+            if(activeServerMode === 'CHAOS') myPlayer.maxHp *= 4;
+            myPlayer.hp = myPlayer.maxHp;
+            myPlayer.overShield = 0;
+            myPlayer.overShieldMax = EXC.OS_MAX;
+            myPlayer.excaliburLastDamageTime = 0;
+            myPlayer.excaliburSlashAnim = 0;
+            myPlayer.excaliburSwordOut = false;
+            myPlayer.excaliburBarrierActive = false;
+            myPlayer.excaliburBarrierT = 0;
+            ensureExcaliburLocalCombat();
+            if(localCombat.excSlash)   { localCombat.excSlash.cd = 0; }
+            if(localCombat.excBarrier) { localCombat.excBarrier.cd = 0; localCombat.excBarrier.active = false; localCombat.excBarrier.activeT = 0; }
+            if(localCombat.excThrow)   { localCombat.excThrow.cd = 0; localCombat.excThrow.swordId = null; }
+            // hide other custom panels, show excalibur
+            try{
+                ['trace-custom-panel','kisaki-custom-panel','kendo-custom-panel','aero-custom-panel','corsair-custom-panel','tim-custom-panel','generic-custom-panel'].forEach(pid=>{ const el=getEl(pid); if(el) el.style.display='none'; });
+                getEl('excalibur-custom-panel').style.display='block';
+            }catch(e){}
+        } else {
+            try{ const el=getEl('excalibur-custom-panel'); if(el) el.style.display='none'; }catch(e){}
+        }
+    };
+}
+
+/* ===== Per-frame local tick: cooldowns, overshield decay, ult lock release ===== */
+let _excLastTick = performance.now();
+function excaliburLocalTick(){
+    const now = performance.now();
+    const dt = Math.min(0.1, (now - _excLastTick)/1000);
+    _excLastTick = now;
+    if(myPlayer && myPlayer.heroClass === 'excalibur' && !myPlayer.isDead){
+        ensureExcaliburLocalCombat();
+        if(localCombat.excSlash.cd   > 0) localCombat.excSlash.cd   = Math.max(0, localCombat.excSlash.cd - dt);
+        if(localCombat.excThrow.cd   > 0) localCombat.excThrow.cd   = Math.max(0, localCombat.excThrow.cd - dt);
+        if(localCombat.excBarrier.active){
+            localCombat.excBarrier.activeT -= dt;
+            if(localCombat.excBarrier.activeT <= 0){ localCombat.excBarrier.active = false; myPlayer.excaliburBarrierActive = false; sdEv({type:'excalibur_barrier_end'}); }
+        } else if(localCombat.excBarrier.cd > 0){
+            localCombat.excBarrier.cd = Math.max(0, localCombat.excBarrier.cd - dt);
+        }
+        if(myPlayer.excaliburSlashAnim > 0) myPlayer.excaliburSlashAnim = Math.max(0, myPlayer.excaliburSlashAnim - dt);
+
+        // overshield decay (graceful, after 4s of no damage dealt)
+        const sinceDmg = (Date.now() - (myPlayer.excaliburLastDamageTime || 0)) / 1000;
+        if(sinceDmg > EXC.OS_DECAY_GRACE && (myPlayer.overShield || 0) > 0){
+            myPlayer.overShield = Math.max(0, myPlayer.overShield - EXC.OS_DECAY_RATE * dt);
+        }
+
+        // Ult lock-then-release
+        if(localCombat.excUlt.locking){
+            localCombat.excUlt.lockT -= dt;
+            if(localCombat.excUlt.lockT <= 0){
+                localCombat.excUlt.locking = false;
+                sdEv({type:'excalibur_ult_fire', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle});
+                applyShake(10, 0.3);
+                myPlayer.ultCharge = 0;
+            }
+        }
+    }
+    requestAnimationFrame(excaliburLocalTick);
+}
+requestAnimationFrame(excaliburLocalTick);
+
+/* ===== Local input — own listeners (capture phase so they always run) ===== */
+window.addEventListener('mousedown', (e)=>{
+    if(!myPlayer || myPlayer.heroClass !== 'excalibur' || myPlayer.isDead || myPlayer.stunTimer > 0) return;
+    if(!gCon.classList.contains('active')) return;
+    if(e.button === 0){
+        // L-Click — Heavy Crescent
+        if(localCombat.excSlash.cd <= 0 && !localCombat.excUlt.locking){
+            localCombat.excSlash.cd = (activeServerMode==='CHAOS')?0.05:EXC.SLASH_CD;
+            myPlayer.excaliburSlashAnim = 0.25;
+            applyShake(4, 0.12);
+            vfx.push({type:'excaliburSlashArc', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, life:0.3, maxLife:0.3});
+            sdEv({type:'excalibur_slash', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle});
+        }
+    } else if(e.button === 2){
+        // R-Click — Blade Barrier
+        if(!localCombat.excBarrier.active && localCombat.excBarrier.cd <= 0 && !localCombat.excUlt.locking){
+            localCombat.excBarrier.active = true;
+            localCombat.excBarrier.activeT = EXC.BARRIER_DUR;
+            localCombat.excBarrier.cd = (activeServerMode==='CHAOS')?0.05:EXC.BARRIER_CD;
+            myPlayer.excaliburBarrierActive = true;
+            sdEv({type:'excalibur_barrier_start', angle:myPlayer.angle});
+        }
+    }
+}, true);
+
+window.addEventListener('keydown', (e)=>{
+    if(document.activeElement && document.activeElement.id === 'chat-input') return;
+    if(!myPlayer || myPlayer.heroClass !== 'excalibur' || myPlayer.isDead || myPlayer.stunTimer > 0) return;
+    if(!gCon.classList.contains('active')) return;
+    const k = e.key.toLowerCase();
+    if(k === 'e'){
+        // Phantom Strike — throw or teleport
+        if(localCombat.excThrow.swordId){
+            // teleport
+            sdEv({type:'excalibur_teleport'});
+        } else if(localCombat.excThrow.cd <= 0 && !localCombat.excUlt.locking){
+            const swordId = 'exc_'+Math.random().toString(36).slice(2);
+            localCombat.excThrow.swordId = swordId;
+            myPlayer.excaliburSwordOut = true;
+            sdEv({type:'excalibur_throw', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, swordId:swordId});
+        }
+    } else if(k === ' ' || e.key === ' ' || e.code === 'Space'){
+        // Ult — Exalted Phalanx
+        if((myPlayer.ultCharge||0) >= 100 && !localCombat.excUlt.locking && !myPlayer.excaliburBarrierActive){
+            localCombat.excUlt.locking = true;
+            localCombat.excUlt.lockT = EXC.ULT_DELAY;
+            sdEv({type:'excalibur_ult_start', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle});
+        }
+    }
+}, true);
+
+/* ===== Host: process Excalibur combat events (registered as a hook so the
+   real processCombatEvent dispatches to us regardless of script-binding rules) ===== */
+window.__excaliburHandleEvent = function(sId, e){
+    if(!isHost) return;
+    const s = gameState.players[sId]; if(!s || s.isDead) return;
+
+    if(e.type === 'excalibur_slash'){
+        s.excaliburSlashAnim = 0.25;
+        // notify clients for VFX
+        connections.forEach(c => { if(c.peer !== sId && c.open) c.send({type:'excalibur_slash_vfx', x:e.x, y:e.y, angle:e.angle, ownerId:sId}); });
+        if(sId !== myId) vfx.push({type:'excaliburSlashArc', x:e.x, y:e.y, angle:e.angle, life:0.3, maxLife:0.3});
+        else vfx.push({type:'excaliburSlashArc', x:e.x, y:e.y, angle:e.angle, life:0.3, maxLife:0.3});
+        // damage cone
+        const hits = excaliburConeHit(s, e.angle, EXC.SLASH_RANGE, EXC.SLASH_ARC_HALF, EXC.SLASH_DMG, sId);
+        if(hits > 0) excaliburGainOS(sId, hits * EXC.SLASH_OS);
+    }
+    else if(e.type === 'excalibur_barrier_start'){
+        s.excaliburBarrierActive = true;
+        s.excaliburBarrierT = EXC.BARRIER_DUR;
+    }
+    else if(e.type === 'excalibur_barrier_end'){
+        s.excaliburBarrierActive = false;
+        s.excaliburBarrierT = 0;
+    }
+    else if(e.type === 'excalibur_throw'){
+        s.excaliburSwordOut = true;
+        gameState.projectiles.push({
+            type:'excalibur_thrown_sword', id: e.swordId,
+            ownerId: sId, x: s.x, y: s.y,
+            vx: Math.cos(e.angle) * EXC.THROW_SPEED, vy: Math.sin(e.angle) * EXC.THROW_SPEED,
+            angle: e.angle, life: EXC.THROW_RANGE / EXC.THROW_SPEED,
+            stuck:false, hitIds:{}, dmg: EXC.THROW_DMG,
+            spinPhase: 0, swordId: e.swordId
+        });
+    }
+    else if(e.type === 'excalibur_teleport'){
+        const sw = gameState.projectiles.find(p => p.type==='excalibur_thrown_sword' && p.ownerId===sId);
+        if(sw){
+            s.x = sw.x; s.y = sw.y;
+            // remote players need a position correction
+            connections.forEach(c => { if(c.open) c.send({type:'excalibur_force_pos', id:sId, x:sw.x, y:sw.y}); });
+            gameState.projectiles = gameState.projectiles.filter(p => p !== sw);
+            s.excaliburSwordOut = false;
+            // reset cooldown after teleport
+            if(sId === myId && localCombat.excThrow){ localCombat.excThrow.cd = EXC.THROW_CD; localCombat.excThrow.swordId = null; }
+        }
+    }
+    else if(e.type === 'excalibur_ult_start'){
+        // visual only on host; broadcast for clients
+        connections.forEach(c => { if(c.peer !== sId && c.open) c.send({type:'excalibur_ult_lock_vfx', id:sId, x:e.x, y:e.y, angle:e.angle}); });
+        s.excaliburUltLockT = EXC.ULT_DELAY;
+    }
+    else if(e.type === 'excalibur_ult_fire'){
+        const blade = (s.customization && s.customization.excaliburColors && s.customization.excaliburColors.blade) || '#fbbf24';
+        for(let i = 0; i < EXC.ULT_COUNT; i++){
+            const spread = (i - (EXC.ULT_COUNT-1)/2) * 0.18;
+            const a = e.angle + spread;
+            gameState.projectiles.push({
+                type:'excalibur_ult_sword', id:'ult_'+Math.random().toString(36).slice(2),
+                ownerId: sId, x: s.x, y: s.y,
+                vx: Math.cos(a) * EXC.ULT_SPEED, vy: Math.sin(a) * EXC.ULT_SPEED,
+                angle: a, life: EXC.ULT_RANGE / EXC.ULT_SPEED,
+                hitIds:{}, dmg: EXC.ULT_DMG, blade
+            });
+        }
+    }
+};
+
+function excaliburConeHit(src, angle, range, halfArc, dmg, sId){
+    let hits = 0;
+    const checkOne = (t, isClone) => {
+        if(!t || (t.isDead && !isClone) || t.invulnerable) return false;
+        if(!isClone && !cDm(sId, t.id || (t._id))) return false;
+        const dx = t.x - src.x, dy = t.y - src.y, d = Math.hypot(dx, dy);
+        if(d > range || d < 1) return false;
+        const a = Math.atan2(dy, dx);
+        const diff = Math.abs(Math.atan2(Math.sin(a-angle), Math.cos(a-angle)));
+        if(diff > halfArc) return false;
+        dmgTk(t, dmg, sId);
+        sendHitmarker(sId, t, dmg);
+        if(!isClone){ t.lastAttacker = sId; t.lastHitTime = Date.now(); chD(t, t.id); }
+        hits++;
+        return true;
+    };
+    for(let id in gameState.players){ const t = gameState.players[id]; t.id = id; if(id !== sId) checkOne(t, false); }
+    for(let c of gameState.clones){ if(cDm(sId, c.ownerId)) checkOne(c, true); }
+    return hits;
+}
+
+function excaliburGainOS(sId, amount){
+    const p = gameState.players[sId]; if(!p) return;
+    p.overShield = Math.min(EXC.OS_MAX, (p.overShield||0) + amount);
+    p.excaliburLastDamageTime = Date.now();
+    if(sId === myId){ myPlayer.overShield = p.overShield; myPlayer.excaliburLastDamageTime = p.excaliburLastDamageTime; }
+    // broadcast OS state
+    connections.forEach(c => { if(c.open) c.send({type:'excalibur_os_set', id:sId, os:p.overShield, t:p.excaliburLastDamageTime}); });
+}
+
+/* ===== Client-side network handlers (slash vfx, force pos, OS sync) ===== */
+const _origMsgWrap = (function(){
+    // We can't easily intercept the deep network path; instead, listen on connection messages
+    // by patching peerSetup is too invasive. Use a polling approach: read events from a shared queue.
+    // For minimal-risk approach, the host already pushes vfx for itself. Remote clients need handling.
+    // Patch the host->client message dispatcher by overriding window.handleDataMsg if it exists.
+    if(typeof window.handleDataMsg === 'function'){
+        const orig = window.handleDataMsg;
+        window.handleDataMsg = function(d){
+            if(d && d.type === 'excalibur_slash_vfx'){
+                vfx.push({type:'excaliburSlashArc', x:d.x, y:d.y, angle:d.angle, life:0.3, maxLife:0.3});
+                return;
+            }
+            if(d && d.type === 'excalibur_force_pos'){
+                const p = gameState.players[d.id]; if(p){ p.x = d.x; p.y = d.y; if(d.id === myId){ myPlayer.x = d.x; myPlayer.y = d.y; } }
+                return;
+            }
+            if(d && d.type === 'excalibur_os_set'){
+                const p = gameState.players[d.id]; if(p){ p.overShield = d.os; p.excaliburLastDamageTime = d.t; }
+                if(d.id === myId){ myPlayer.overShield = d.os; myPlayer.excaliburLastDamageTime = d.t; }
+                return;
+            }
+            return orig(d);
+        };
+    }
+})();
+
+/* ===== Host-side per-frame: tick excalibur projectiles, barriers, ult lock ===== */
+let _excHostLast = performance.now();
+function excaliburHostTick(){
+    const now = performance.now();
+    const dt = Math.min(0.1, (now - _excHostLast)/1000);
+    _excHostLast = now;
+
+    if(isHost && gameState && gameState.projectiles){
+        // Barrier countdown for remote players (local handled in localTick)
+        for(let id in gameState.players){
+            const s = gameState.players[id];
+            if(s.excaliburBarrierActive && id !== myId){
+                s.excaliburBarrierT = (s.excaliburBarrierT||0) - dt;
+                if(s.excaliburBarrierT <= 0){ s.excaliburBarrierActive = false; }
+            }
+        }
+
+        // Move + collide thrown swords + ult swords
+        for(let i = gameState.projectiles.length - 1; i >= 0; i--){
+            const p = gameState.projectiles[i];
+            if(p.type === 'excalibur_thrown_sword'){
+                if(!p.stuck){
+                    p.x += p.vx * dt; p.y += p.vy * dt;
+                    p.spinPhase = (p.spinPhase || 0) + dt * 18;
+                    p.life -= dt;
+                    if(iW(p.x, p.y) || p.life <= 0){ p.stuck = true; p.vx = 0; p.vy = 0; }
+                    // pierce all enemies in path
+                    for(let id in gameState.players){
+                        const t = gameState.players[id];
+                        if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && Math.hypot(t.x-p.x, t.y-p.y) < 28){
+                            if(!p.hitIds[id]){
+                                p.hitIds[id] = true;
+                                dmgTk(t, p.dmg, p.ownerId);
+                                sendHitmarker(p.ownerId, t, p.dmg);
+                                t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id);
+                                excaliburGainOS(p.ownerId, EXC.THROW_OS);
+                            }
+                        }
+                    }
+                }
+            } else if(p.type === 'excalibur_ult_sword'){
+                p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+                if(iW(p.x, p.y) || p.life <= 0){ gameState.projectiles.splice(i, 1); continue; }
+                for(let id in gameState.players){
+                    const t = gameState.players[id];
+                    if(!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && Math.hypot(t.x-p.x, t.y-p.y) < 26){
+                        if(!p.hitIds[id]){
+                            p.hitIds[id] = true;
+                            dmgTk(t, p.dmg, p.ownerId);
+                            sendHitmarker(p.ownerId, t, p.dmg);
+                            t.lastAttacker = p.ownerId; t.lastHitTime = Date.now(); chD(t, id);
+                            excaliburGainOS(p.ownerId, EXC.ULT_OS);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Blade Barrier deflect: scan projectiles vs barrier holders
+        for(let id in gameState.players){
+            const holder = gameState.players[id];
+            if(!holder.excaliburBarrierActive) continue;
+            const bx = holder.x + Math.cos(holder.angle||0) * 30;
+            const by = holder.y + Math.sin(holder.angle||0) * 30;
+            for(let p of gameState.projectiles){
+                if(!p || !p.ownerId || p.ownerId === id) continue;
+                if(p.type === 'excalibur_thrown_sword' || p.type === 'excalibur_ult_sword') continue;
+                if(p._excDeflected) continue;
+                if(typeof p.vx !== 'number' || typeof p.vy !== 'number') continue;
+                const d = Math.hypot(p.x - bx, p.y - by);
+                if(d > EXC.BARRIER_RAD) continue;
+                // redirect to crosshair
+                const tx = (holder.targetX != null) ? holder.targetX : holder.x + Math.cos(holder.angle)*500;
+                const ty = (holder.targetY != null) ? holder.targetY : holder.y + Math.sin(holder.angle)*500;
+                const na = Math.atan2(ty - p.y, tx - p.x);
+                const speed = Math.hypot(p.vx, p.vy) || 600;
+                p.vx = Math.cos(na) * speed; p.vy = Math.sin(na) * speed; p.angle = na;
+                p.ownerId = id;                  // flip ownership — now hits former owner's team
+                p.life = (p.life || 1) + 1.0;    // +1s lifespan
+                p.hitIds = {};                   // reset so it can hit
+                p._excDeflected = true;
+                excaliburGainOS(id, EXC.BARRIER_OS);
+            }
+        }
+    }
+
+    requestAnimationFrame(excaliburHostTick);
+}
+requestAnimationFrame(excaliburHostTick);
+
+/* ===== Render hooks: post-drawPlayers draws projectiles + arc VFX in world space ===== */
+const _origDrawPlayers = window.drawPlayers;
+if(typeof _origDrawPlayers === 'function'){
+    window.drawPlayers = function(){
+        _origDrawPlayers.apply(this, arguments);
+        // Draw thrown sword + ult swords + slash arc VFX
+        if(!gameState || !gameState.projectiles) return;
+        for(let p of gameState.projectiles){
+            if(p.type === 'excalibur_thrown_sword'){
+                const owner = gameState.players[p.ownerId];
+                const blade = (owner && owner.customization && owner.customization.excaliburColors && owner.customization.excaliburColors.blade) || '#fbbf24';
+                ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+                if(!p.stuck){
+                    // pseudo-3D drill spin via Y-axis scaling
+                    const sy = Math.cos(p.spinPhase || 0);
+                    ctx.scale(1, Math.max(0.18, Math.abs(sy)) * (sy < 0 ? -1 : 1));
+                }
+                drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK, blade, '#7a1212');
+                ctx.restore();
+            } else if(p.type === 'excalibur_ult_sword'){
+                const owner = gameState.players[p.ownerId];
+                const blade = (owner && owner.customization && owner.customization.excaliburColors && owner.customization.excaliburColors.blade) || '#fbbf24';
+                ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+                ctx.globalAlpha = 0.85;
+                drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK * 0.9, blade, '#7a1212');
+                ctx.restore();
+            }
+        }
+        // Ult lock-in pre-fire ring around local player
+        if(myPlayer && myPlayer.heroClass === 'excalibur' && localCombat.excUlt && localCombat.excUlt.locking){
+            const blade = (myPlayer.customization?.excaliburColors?.blade) || '#fbbf24';
+            const t = localCombat.excUlt.lockT / EXC.ULT_DELAY;
+            ctx.save(); ctx.translate(myPlayer.x, myPlayer.y);
+            for(let i = 0; i < EXC.ULT_COUNT; i++){
+                const spread = (i - (EXC.ULT_COUNT-1)/2) * 0.18;
+                const a = (myPlayer.angle||0) + spread;
+                const r = 60 + (1-t) * 20;
+                ctx.save();
+                ctx.rotate(a);
+                ctx.translate(r, 0);
+                ctx.globalAlpha = 0.8;
+                drawSword(ctx, EXC.SWORD_LEN * 0.9, EXC.SWORD_THICK * 0.85, blade, '#7a1212');
+                ctx.restore();
+            }
+            ctx.restore();
+        }
+        // Slash arc VFX
+        for(let i = vfx.length - 1; i >= 0; i--){
+            const e = vfx[i];
+            if(e.type !== 'excaliburSlashArc') continue;
+            const a = e.life / e.maxLife;
+            ctx.save();
+            ctx.translate(e.x, e.y); ctx.rotate(e.angle);
+            ctx.globalAlpha = a;
+            ctx.strokeStyle = '#ffffff';
+            ctx.shadowBlur = 18; ctx.shadowColor = '#ffffff';
+            ctx.lineWidth = 8 * a + 4;
+            ctx.lineCap = 'round';
+            // Curved arc that follows the blade edge sweep
+            const r = EXC.SLASH_RANGE * 0.85;
+            const sweep = EXC.SLASH_ARC_HALF;
+            ctx.beginPath();
+            ctx.arc(0, 0, r, -sweep, sweep);
+            ctx.stroke();
+            // Inner sharper line
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+            ctx.beginPath();
+            ctx.arc(0, 0, r * 0.92, -sweep * 0.95, sweep * 0.95);
+            ctx.stroke();
+            ctx.restore();
+        }
+    };
+}
+
+/* ===== HUD: ability slot updates for excalibur (registered as a hook) ===== */
+window.__excaliburUpdateUI = function(){
+    if(!myPlayer || myPlayer.heroClass !== 'excalibur') return;
+    try{
+        if(typeof setVisibleAbilities === 'function'){
+            setVisibleAbilities(['excalibur-slash','excalibur-barrier','excalibur-throw']);
+        }
+        ensureExcaliburLocalCombat();
+        const sl = localCombat.excSlash;
+        getEl('cd-excalibur-slash').style.height = (sl.cd>0?(sl.cd/sl.maxCd)*100:0)+'%';
+        getEl('status-excalibur-slash').innerText = sl.cd>0 ? sl.cd.toFixed(1)+'s' : 'Ready';
+
+        const br = localCombat.excBarrier;
+        if(br.active){
+            getEl('status-excalibur-barrier').innerText = 'Active '+br.activeT.toFixed(1)+'s';
+            getEl('cd-excalibur-barrier').style.height = '0%';
+            getEl('ui-excalibur-barrier').style.borderColor = '#7dd3fc';
+        } else {
+            getEl('status-excalibur-barrier').innerText = br.cd>0 ? br.cd.toFixed(1)+'s' : 'Ready';
+            getEl('cd-excalibur-barrier').style.height = (br.cd>0?(br.cd/br.maxCd)*100:0)+'%';
+            getEl('ui-excalibur-barrier').style.borderColor = '#52525b';
+        }
+        const th = localCombat.excThrow;
+        if(th.swordId){
+            getEl('status-excalibur-throw').innerText = 'Recall (E)';
+            getEl('cd-excalibur-throw').style.height = '0%';
+            getEl('ui-excalibur-throw').style.borderColor = '#fbbf24';
+        } else {
+            getEl('status-excalibur-throw').innerText = th.cd>0 ? th.cd.toFixed(1)+'s' : 'Ready';
+            getEl('cd-excalibur-throw').style.height = (th.cd>0?(th.cd/th.maxCd)*100:0)+'%';
+            getEl('ui-excalibur-throw').style.borderColor = '#52525b';
+        }
+        const uc = myPlayer.ultCharge||0;
+        const ultStatus = getEl('status-excalibur-ult');
+        if(ultStatus){
+            ultStatus.innerText = uc>=100 ? 'READY (SPACE)' : Math.floor(uc)+'%';
+            getEl('cd-excalibur-ult').style.height = uc>=100 ? '0%' : (100-uc)+'%';
+            getEl('ui-excalibur-ult').style.borderColor = uc>=100 ? '#fbbf24' : '#52525b';
+        }
+
+        // overshield UI
+        const osFill = getEl('overshield-fill');
+        if(osFill){
+            const pct = (myPlayer.overShield||0) / EXC.OS_MAX * 100;
+            osFill.style.width = pct + '%';
+        }
+    }catch(e){}
+};
+
+/* ===== Sword in-flight cleanup: clear local sword reference if host removes proj ===== */
+setInterval(()=>{
+    if(myPlayer && myPlayer.heroClass==='excalibur' && localCombat.excThrow && localCombat.excThrow.swordId){
+        const sw = (gameState.projectiles||[]).find(p => p && p.type==='excalibur_thrown_sword' && p.id === localCombat.excThrow.swordId);
+        if(!sw){
+            // sword vanished (teleport or expiry); start cooldown if not already counting
+            if(localCombat.excThrow.cd <= 0) localCombat.excThrow.cd = EXC.THROW_CD;
+            localCombat.excThrow.swordId = null;
+            myPlayer.excaliburSwordOut = false;
+        }
+    }
+    // mirror barrier/sword flags for remote rendering on the local copy
+    if(myPlayer){
+        myPlayer.excaliburBarrierActive = !!(localCombat && localCombat.excBarrier && localCombat.excBarrier.active);
+    }
+}, 100);
+
+})();
+
+/* ===== Hitbox debug overlay (toggle in Settings) ===== */
+window.__showHitboxes = localStorage.getItem('rivals_showHitboxes') === '1';
+(function(){
+    function wireToggle(){
+        const cb = document.getElementById('hitbox-toggle');
+        if(!cb) { setTimeout(wireToggle, 200); return; }
+        cb.checked = !!window.__showHitboxes;
+        cb.addEventListener('change', () => {
+            window.__showHitboxes = cb.checked;
+            try{ localStorage.setItem('rivals_showHitboxes', cb.checked ? '1' : '0'); }catch(e){}
+        });
+    }
+    wireToggle();
+})();
+
+function drawHitboxesDebug(){
+    if(typeof gameState === 'undefined' || !gameState) return;
+    try{
+        ctx.save();
+        ctx.strokeStyle = '#ff2d2d';
+        ctx.lineWidth = 1.5 / (cam.zoom || 1);
+        ctx.shadowBlur = 0;
+        // Players
+        const ps = gameState.players || {};
+        for(const id in ps){
+            const p = ps[id]; if(!p || p.isDead) continue;
+            const r = 22;
+            ctx.strokeRect(p.x - r, p.y - r, r*2, r*2);
+            ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2); ctx.stroke();
+        }
+        // Clones
+        const cl = gameState.clones || [];
+        for(const c of cl){ if(!c) continue; const r = 22; ctx.strokeRect(c.x - r, c.y - r, r*2, r*2); }
+        // Projectiles
+        const pr = gameState.projectiles || [];
+        for(const p of pr){
+            if(!p) continue;
+            const x = p.x|0, y = p.y|0;
+            let r = p.radius || p.r || 12;
+            if(p.type==='excalibur_thrown_sword' || p.type==='excalibur_ult_sword') r = 35;
+            ctx.strokeRect(x - r, y - r, r*2, r*2);
+        }
+        // Shields
+        const sh = gameState.shields || [];
+        for(const s of sh){ if(!s) continue; ctx.strokeRect((s.x||0)-30, (s.y||0)-30, 60, 60); }
+        ctx.restore();
+    }catch(e){}
+};
 </script>
 </body>
 </html>
