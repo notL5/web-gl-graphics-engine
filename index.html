@@ -225,7 +225,7 @@ h3.section-header { margin:0 0 1.5vh 0; color:#a1a1aa; font-size:0.8rem; text-tr
 .right-col-box { flex: 1; min-height: 0; overflow-y: auto; }
 
 /* IN-GAME HUD STYLES (Restored from Original File) */
-#game-container{display:none;position:relative;width:95vw;height:85vh;max-width:1400px;max-height:900px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid #27272a;background-color:#000;overflow:hidden;z-index:5}
+#game-container{display:none;position:relative;width:min(95vw, calc(90vh * 16 / 9), 1700px);height:auto;aspect-ratio:16 / 9;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid #27272a;background-color:#000;overflow:hidden;z-index:5;margin-left:auto;margin-right:auto;}
 #game-container.active{display:block}
 canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cursor:crosshair;position:relative;z-index:5}
 #scoreboard{position:absolute;top:0;left:0;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;padding:1vh 1vw;border-radius:0 0 12px 0;min-width:12vw;z-index:40;color:white;display:none;backdrop-filter:blur(4px);font-size:0.85rem}
@@ -234,7 +234,7 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
 #chat-wrapper {position:absolute;left:0;bottom:0;width:18vw;min-width:220px;height:25vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:0 8px 0 0;display:flex;flex-direction:column;z-index:100;backdrop-filter:blur(4px);pointer-events:none;opacity:0.6;transition:opacity 0.2s}
 #chat-wrapper:hover,#chat-wrapper:focus-within{opacity:1}
 #chat-input{pointer-events:auto;}
-#chat-messages {flex-grow:1;overflow-y:auto;padding:1vh;color:white;font-size:0.85rem;display:flex;flex-direction:column;gap:5px;}
+#chat-messages {flex-grow:1;overflow-y:auto;padding:1vh;color:white;font-size:0.85rem;display:flex;flex-direction:column-reverse;gap:5px;}
 #chat-input {border:none;border-top:1px solid #3f3f46;background:rgba(0,0,0,0.5);color:white;padding:1vh;font-size:0.85rem;border-radius:0 0 8px 8px;}
 #chat-input:focus {outline:none;background:rgba(0,0,0,0.8);}
 #minimap-wrapper {position:absolute;top:5vh;right:2vw;width:12vw;height:12vw;min-width:120px;min-height:120px;max-width:170px;max-height:170px;background:rgba(24,24,27,0.65);border:2px solid #3f3f46;border-radius:8px;z-index:40;display:none;backdrop-filter:blur(4px);box-shadow:0 2px 10px rgba(0,0,0,0.4);overflow:hidden;}
@@ -253,10 +253,10 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
 .ability-slot .name{font-size:0.8rem;font-weight:600;text-align:center}
 .ability-slot .status{font-size:0.7rem;margin-top:0.5vh;color:#a1a1aa}
 .ability-slot .cooldown-overlay{position:absolute;bottom:0;left:0;width:100%;background:rgba(220,38,38,0.5);transition:height 0.1s;height:0%;pointer-events:none}
-#health-ui{display:none;position:absolute;bottom:1vh;left:50%;transform:translateX(-50%);width:22vw;min-width:220px;height:2.5vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:8px;overflow:visible;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,0.4);backdrop-filter:blur(4px)}
+#health-ui{display:none;position:absolute;bottom:1vh;left:50%;transform:translateX(-50%);width:22vw;min-width:220px;height:2.5vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:999px;overflow:visible;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,0.4);backdrop-filter:blur(4px)}
 #health-ui.active{display:block}
-#health-fill{height:100%;width:100%;background:#22c55e;transition:width 0.2s ease-out,background-color 0.2s;border-radius:7px 0 0 7px}
-#overshield-fill{position:absolute;top:-1px;left:100%;height:calc(100% + 2px);width:0%;background:linear-gradient(180deg,#60a5fa,#2563eb);box-shadow:0 0 8px #3b82f6;border-radius:0 7px 7px 0;transition:width 0.18s ease-out,opacity 0.25s;pointer-events:none;opacity:0}
+#health-fill{height:100%;width:100%;background:#22c55e;transition:width 0.2s ease-out,background-color 0.2s;border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.25)}
+#overshield-fill{position:absolute;top:-1px;left:calc(100% + 10px);height:calc(100% + 2px);width:0%;background:linear-gradient(180deg,#7dd3fc,#2563eb);border:1px solid #93c5fd;box-shadow:0 0 10px #3b82f6,inset 0 1px 0 rgba(255,255,255,0.28);border-radius:999px;transition:width 0.18s ease-out,opacity 0.25s;pointer-events:none;opacity:0}
 #health-text{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1vw;font-weight:bold;color:white;text-shadow:1px 1px 2px rgba(0,0,0,0.8);pointer-events:none}
 #ult-ui {display:none;position:absolute;bottom:4vh;left:50%;transform:translateX(-50%);width:14vw;min-width:140px;height:1.2vh;background:rgba(24,24,27,0.65);border:1px solid #3f3f46;border-radius:6px;overflow:hidden;z-index:40;}
 #ult-fill {width:0%;height:100%;background:#a855f7;transition:width 0.2s ease-out, background-color 0.2s;}
@@ -291,16 +291,39 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
 body.gfx-low *{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
 body.gfx-low #screen-wrapper{animation:none !important;background:#3f3f46 !important;}
 
-/* Move chat to body level so it shows on start screen AND in-game.
-   Override the in-game-only positioning from rule above. */
-#chat-wrapper{position:fixed !important;left:14px;bottom:14px;top:auto;width:300px;height:34vh;min-width:260px;background:rgba(15,15,20,0.92);border:1px solid #3f3f46;border-radius:10px;z-index:9990;pointer-events:auto !important;opacity:1 !important;-webkit-mask-image:none !important;mask-image:none !important;backdrop-filter:blur(8px);}
-#chat-wrapper #chat-messages{font-family:-apple-system,sans-serif;}
-#chat-wrapper #chat-input{font-family:-apple-system,sans-serif;border-radius:0 0 10px 10px;}
-#chat-wrapper.hidden{display:none !important;}
+/* Chat — always full screen height, on the left.
+   3 states on the start screen: normal / expanded (swipe-left) / hidden (swipe-right).
+   In-game: hidden by default, toggle with C. */
+#chat-wrapper{position:fixed !important;left:0;top:0;bottom:0;height:100vh !important;width:320px;min-width:260px;background:rgba(15,15,20,0.92);border:1px solid #3f3f46;border-right:1px solid #3f3f46;border-radius:0 12px 12px 0;z-index:9990;pointer-events:auto !important;opacity:1 !important;-webkit-mask-image:none !important;mask-image:none !important;backdrop-filter:blur(8px);display:flex !important;flex-direction:column;transition:transform 0.25s ease, width 0.25s ease;will-change:transform,width;touch-action:pan-y;user-select:none;}
+#chat-wrapper.expanded{width:520px;}
+#chat-wrapper.chat-hidden{transform:translateX(-105%);}
+#chat-wrapper #chat-messages{font-family:-apple-system,sans-serif;flex:1 1 auto;}
+#chat-wrapper #chat-input{font-family:-apple-system,sans-serif;border-radius:0;}
+#chat-wrapper.hidden{display:flex !important;}
 
-/* Compress game container to make room for chat on the left */
-body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
-#game-container{transition:width 0.18s ease,max-width 0.18s ease;}
+body.with-chat{padding-left:340px;transition:padding-left 0.25s ease;}
+body.with-chat-expanded{padding-left:540px;}
+body.chat-off{padding-left:0;}
+#game-container{transition:width 0.18s ease;}
+
+/* Keep chat from overlapping the start screen / in-game canvas.
+   Game container uses aspect-ratio so width drives height — clamp width to the
+   space remaining beside the chat panel, never stretch beyond a 4:3 ratio. */
+body.with-chat .screen-wrapper { max-width: calc(95vw - 360px) !important; }
+body.with-chat-expanded .screen-wrapper { max-width: calc(95vw - 560px) !important; }
+body.with-chat #game-container { width: min(calc(95vw - 360px), calc(90vh * 16 / 9), 1700px) !important; }
+body.with-chat-expanded #game-container { width: min(calc(95vw - 560px), calc(90vh * 16 / 9), 1700px) !important; }
+body.chat-off .screen-wrapper { max-width: 1700px !important; margin-left:auto; margin-right:auto; }
+body.chat-off #game-container { width: min(95vw, calc(90vh * 16 / 9), 1700px) !important; margin-left:auto; margin-right:auto; }
+
+/* Ult-orb in-game notification (iPhone-style) */
+#ult-orb-notice{position:absolute;top:6vh;left:50%;transform:translate(-50%,-12px);background:rgba(20,18,30,0.92);color:#fde68a;border:1px solid rgba(234,179,8,0.55);box-shadow:0 8px 24px rgba(0,0,0,0.55),0 0 18px rgba(234,179,8,0.35);padding:8px 14px;border-radius:14px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.4px;z-index:80;pointer-events:none;opacity:0;transition:opacity 0.28s ease, transform 0.28s ease;backdrop-filter:blur(8px);}
+#ult-orb-notice.show{opacity:1;transform:translate(-50%,0);}
+#ult-orb-notice .uon-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#eab308;margin-right:8px;vertical-align:middle;box-shadow:0 0 8px #eab308;}
+
+/* Lobby horizontal scroll capability */
+#lobby-screen{overflow-x:auto;}
+.lobby-container{min-width:0;}
 </style>
 </head>
 <body>
@@ -393,6 +416,7 @@ body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
          <div class="ability-slot" id="ui-excalibur-ult"><div class="key">SPACE</div><div class="name">Exalted Phalanx</div><div class="status" id="status-excalibur-ult">0%</div><div class="cooldown-overlay" id="cd-excalibur-ult"></div></div>
     </div>
     <div id="health-ui" class="cursor-stealth"><div id="health-fill"></div><div id="overshield-fill"></div><div id="health-text">150 / 150</div></div>
+    <div id="ult-orb-notice"><span class="uon-dot"></span><span id="ult-orb-notice-text">Ultimate Orb appeared</span></div>
 </div>
 
 <!-- LOBBY UI -->
@@ -410,6 +434,7 @@ body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
         <select id="graphics-select"><option value="high">High</option><option value="low">Low</option></select>
     </div>
     <div class="row"><span>Show Hitboxes</span><input type="checkbox" id="hitbox-toggle"></div>
+    <div class="row"><span>Allow Right-Click Menu</span><input type="checkbox" id="rclick-menu-toggle"></div>
     <div style="font-size:0.65rem;color:#71717a;margin-top:8px;line-height:1.4;">Scroll over the slider to fine-tune FPS. V-Sync syncs frames to your monitor's refresh rate. Hitboxes draws a red outline around every damageable entity and projectile.</div>
 </div>
 
@@ -516,7 +541,7 @@ body.with-chat{padding-left:320px;transition:padding-left 0.18s ease;}
                     </div>
                     <div id="corsair-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Trim Color</span><input type="color" id="corsairColorTrim" value="#dc2626"></div></div>
                     <div id="tim-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Skin</span><input type="color" id="timColorSkin"></div><div class="color-row"><span>Antenna</span><input type="color" id="timColorAntenna"></div><div class="color-row"><span>Eyes</span><input type="color" id="timColorEyes"></div><div class="color-row"><span>Cannon Color</span><input type="color" id="timColorCannon"></div><div class="color-row"><span>Beam Color</span><input type="color" id="timColorBeam"></div></div>
-                    <div id="excalibur-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Blade Color</span><input type="color" id="excaliburColorBlade" value="#fbbf24"></div><div class="color-row"><span>Body Color</span><input type="color" id="excaliburColorBody" value="#fbbf24"></div></div>
+                    <div id="excalibur-custom-panel" style="display:none;width:100%;"><div class="color-row"><span>Blade Color</span><input type="color" id="excaliburColorBlade" value="#fbbf24"></div><div class="color-row"><span>Body Color</span><input type="color" id="excaliburColorBody" value="#fbbf24"></div><div class="color-row"><span>Handle Color</span><input type="color" id="excaliburColorHandle" value="#7a1212"></div></div>
                     <div id="generic-custom-panel" style="width:100%;text-align:center;font-style:italic;color:#71717a;font-size:0.85rem;">No customizations.</div>
                 </div>
 
@@ -611,6 +636,23 @@ function _wireSettings(){
     // lobby/start screen (its hidden ancestor would otherwise hide it).
     const cw = document.getElementById('chat-wrapper');
     if(cw && cw.parentNode && cw.parentNode.id === 'game-container') document.body.appendChild(cw);
+    if(cw) cw.classList.remove('hidden');
+    document.body.classList.add('with-chat');
+
+    // ===== Chat state helper (no swipe gestures — toggle only via 'C' in-game) =====
+    if(cw){
+        const setChatState = (state) => {
+            // state: 'normal' | 'expanded' | 'off'
+            cw.classList.remove('expanded','chat-hidden');
+            document.body.classList.remove('with-chat-expanded','chat-off');
+            if(state === 'expanded'){ cw.classList.add('expanded'); document.body.classList.add('with-chat-expanded'); }
+            else if(state === 'off'){ cw.classList.add('chat-hidden'); document.body.classList.add('chat-off'); }
+            window.__chatState = state;
+        };
+        window.__setChatState = setChatState;
+        window.__chatState = 'normal';
+    }
+
     const slider = document.getElementById('fps-slider');
     const disp = document.getElementById('fps-display');
     const unl = document.getElementById('fps-unlimited');
@@ -853,7 +895,9 @@ getEl('corsairColorTrim').value=crsCol.trim;
 let timCol = JSON.parse(localStorage.getItem('rivals_timColors'))||{skin:'#22c55e',antenna:'#00ff00',eyes:'#000000',cannon:'#fbbf24',beam:'#ff6b6b'};
 getEl('timColorSkin').value=timCol.skin; getEl('timColorAntenna').value=timCol.antenna; getEl('timColorEyes').value=timCol.eyes;
 getEl('timColorCannon').value=timCol.cannon; getEl('timColorBeam').value=timCol.beam;
-let excCol = JSON.parse(localStorage.getItem('rivals_excaliburColors'))||{blade:'#fbbf24',body:'#fbbf24'}; getEl('excaliburColorBlade').value=excCol.blade; getEl('excaliburColorBody').value=excCol.body;
+let excCol = JSON.parse(localStorage.getItem('rivals_excaliburColors'))||{blade:'#fbbf24',body:'#fbbf24',handle:'#7a1212'};
+if(!excCol.handle) excCol.handle = '#7a1212';
+getEl('excaliburColorBlade').value=excCol.blade; getEl('excaliburColorBody').value=excCol.body; getEl('excaliburColorHandle').value=excCol.handle;
 
 const saveCols = () => {
     tCol={bow:getEl('tColorBow').value, neon:getEl('tColorNeon').value}; localStorage.setItem('rivals_traceColors',JSON.stringify(tCol)); myPlayer.customization.traceColors=tCol;
@@ -861,10 +905,10 @@ const saveCols = () => {
     kndCol={primary:getEl('kendoColorPrimary').value, glow:getEl('kendoColorGlow').value}; localStorage.setItem('rivals_kendoColors',JSON.stringify(kndCol)); myPlayer.customization.kendoColors=kndCol;
     crsCol={trim:getEl('corsairColorTrim').value}; localStorage.setItem('rivals_corsairColors',JSON.stringify(crsCol)); myPlayer.customization.corsairColors=crsCol;
     timCol={skin:getEl('timColorSkin').value, antenna:getEl('timColorAntenna').value, eyes:getEl('timColorEyes').value, cannon:getEl('timColorCannon').value, beam:getEl('timColorBeam').value}; localStorage.setItem('rivals_timColors',JSON.stringify(timCol)); myPlayer.customization.timColors=timCol;
-    excCol={blade:getEl('excaliburColorBlade').value, body:getEl('excaliburColorBody').value}; localStorage.setItem('rivals_excaliburColors',JSON.stringify(excCol)); myPlayer.customization.excaliburColors=excCol;
+    excCol={blade:getEl('excaliburColorBlade').value, body:getEl('excaliburColorBody').value, handle:getEl('excaliburColorHandle').value}; localStorage.setItem('rivals_excaliburColors',JSON.stringify(excCol)); myPlayer.customization.excaliburColors=excCol;
     updateLobbyState();
 };
-['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim','timColorSkin','timColorAntenna','timColorEyes','timColorCannon','timColorBeam','excaliburColorBlade','excaliburColorBody'].forEach(id=>getEl(id).addEventListener('input',saveCols));
+['tColorBow','tColorNeon','kColorBody','kColorW2','kColorW3','kendoColorPrimary','kendoColorGlow','corsairColorTrim','timColorSkin','timColorAntenna','timColorEyes','timColorCannon','timColorBeam','excaliburColorBlade','excaliburColorBody','excaliburColorHandle'].forEach(id=>getEl(id).addEventListener('input',saveCols));
 
 let myPlayer = { 
     id:null, name:getEl('playerName').value, heroClass:"trace", team:"none", color:"#f59e0b", 
@@ -1925,6 +1969,47 @@ function addToKillFeed(d) {
 
 const chatInput = getEl('chat-input');
 const chatMsgs = getEl('chat-messages');
+const CHAT_STORAGE_KEY = 'rivals_chat_history_v3';
+let chatHistory = [];
+function escChat(v){
+    return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function loadChatHistory(){
+    try { chatHistory = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]'); if(!Array.isArray(chatHistory)) chatHistory = []; }
+    catch(e){ chatHistory = []; }
+    // One-time wipe of legacy stores so the user's old messages are gone.
+    try { localStorage.removeItem('rivals_chat_history_v2'); localStorage.removeItem('rivals_chat_history'); } catch(e){}
+}
+function saveChatHistory(){
+    try { localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
+}
+function normalizeChat(c){
+    return {
+        type:'chat',
+        text:String(c?.text ?? '').slice(0, 240),
+        senderName:String(c?.senderName ?? 'Player').slice(0, 32),
+        time:String(c?.time ?? ''),
+        color:String(c?.color ?? '#ffffff')
+    };
+}
+function chatKey(c){ return (c.senderName||'')+'|'+(c.time||'')+'|'+(c.text||''); }
+function renderChatHistory(history){
+    if(!chatMsgs) return;
+    // UNIFIED chat: never replace local history with remote — merge & dedupe.
+    const incoming = (Array.isArray(history) ? history : []).map(normalizeChat);
+    const seen = new Set(chatHistory.map(chatKey));
+    const merged = chatHistory.slice();
+    for(const c of incoming){ const k = chatKey(c); if(!seen.has(k)){ seen.add(k); merged.push(c); } }
+    chatHistory = merged;
+    chatMsgs.innerHTML = '';
+    chatHistory.forEach(c => addChatMessage(c, {save:false}));
+    saveChatHistory();
+    // Newest-first view: with column-reverse, scrollTop=0 shows the newest.
+    chatMsgs.scrollTop = 0;
+}
+
+loadChatHistory();
+renderChatHistory(chatHistory);
 
 chatInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
@@ -1932,26 +2017,44 @@ chatInput.addEventListener('keydown', e => {
         if (msg) {
             let d = new Date(); let ts = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
             let pCol = myPlayer.color; if (myPlayer.heroClass==='trace') pCol = myPlayer.customization?.traceColors?.neon || '#a855f7';
-            let cObj = {type: 'chat', text: msg, senderName: myPlayer.name, time: ts, color: pCol};
+            let cObj = normalizeChat({text: msg, senderName: myPlayer.name, time: ts, color: pCol});
             if (isHost) broadcastChat(cObj); else if (hostConnection && hostConnection.open) hostConnection.send(cObj); else addChatMessage(cObj);
         }
         chatInput.value = ''; chatInput.blur();
     }
 });
 
-function addChatMessage(c) {
+function addChatMessage(c, opts) {
+    c = normalizeChat(c); opts = opts || {save:true};
+    // Dedupe on save path so server-relayed copies don't double up.
+    if(opts.save !== false){
+        const k = chatKey(c);
+        if(chatHistory.some(h => chatKey(h) === k)) return;
+    }
     let div = document.createElement('div'); div.style.marginBottom = '4px'; div.style.wordWrap = 'break-word';
-    if(c.senderName === 'SYSTEM') div.innerHTML = `<span style="color:#71717a;font-size:0.75rem;">[!]</span> <strong style="color:${c.color};">${c.text}</strong>`;
-    else div.innerHTML = `<span style="color:#71717a;font-size:0.75rem;">[${c.time}]</span> <strong style="color:${c.color};">${c.senderName}:</strong> <span>${c.text}</span>`;
-    chatMsgs.appendChild(div); 
-    if(chatMsgs.children.length > 50) chatMsgs.removeChild(chatMsgs.firstChild); 
-    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+    if(c.senderName === 'SYSTEM') div.innerHTML = `<span style="color:#71717a;font-size:0.75rem;">[!]</span> <strong style="color:${escChat(c.color)};">${escChat(c.text)}</strong>`;
+    else div.innerHTML = `<span style="color:#71717a;font-size:0.75rem;">[${escChat(c.time)}]</span> <strong style="color:${escChat(c.color)};">${escChat(c.senderName)}:</strong> <span>${escChat(c.text)}</span>`;
+    chatMsgs.appendChild(div);
+    if(opts.save !== false){ chatHistory.push(c); saveChatHistory(); }
+    // Newest-first: with column-reverse layout, scrollTop=0 keeps the newest in view.
+    chatMsgs.scrollTop = 0;
 }
 
-function broadcastChat(c) { 
-    addChatMessage(c); 
-    connections.forEach(cx => { if (cx.open) cx.send(c); }); 
+function broadcastChat(c) {
+    c = normalizeChat(c);
+    addChatMessage(c, {save:true});
+    connections.forEach(cx => { if (cx.open) cx.send(c); });
 }
+
+// ===== Ult-orb in-game notification (small iPhone-style banner, ~5s) =====
+function showUltOrbNotice(text){
+    const el = getEl('ult-orb-notice'); if(!el) return;
+    const t = getEl('ult-orb-notice-text'); if(t) t.innerText = text || 'Ultimate Orb appeared';
+    el.classList.add('show');
+    clearTimeout(window.__ultOrbNoticeT);
+    window.__ultOrbNoticeT = setTimeout(()=>{ el.classList.remove('show'); }, 5000);
+}
+window.showUltOrbNotice = showUltOrbNotice;
 
 let connectingTimeout = null;
 
@@ -2016,7 +2119,7 @@ function handleHostGone() {
         });
         peer.on('connection', c => {
             connections.push(c);
-            c.on('open', () => { if(c.open) c.send({type:'state', state:getCompactState(true), migrationOrder:migrationOrder, hostPeerId: myId}); });
+            c.on('open', () => { if(c.open){ c.send({type:'state', state:getCompactState(true), migrationOrder:migrationOrder, hostPeerId: myId}); c.send({type:'chat_history', history:chatHistory}); } });
             c.on('data', d => {
                 if(d.type === 'player_leaving') {
                     delete gameState.players[d.id]; delete lobbyPlayers[d.id]; gameState.corsairCannons=(gameState.corsairCannons||[]).filter(c=>c.ownerId!==d.id);
@@ -2055,6 +2158,7 @@ function handleHostGone() {
                 }
                 else if(d.type === 'event') processCombatEvent(d.senderId, d.event);
                 else if(d.type === 'chat') broadcastChat(d);
+                else if(d.type === 'chat_history') renderChatHistory(d.history || []); else if(d.type === 'ult_orb_notice') { if(typeof showUltOrbNotice==='function') showUltOrbNotice(d.text||'Ultimate Orb appeared'); } else if(d.type === 'excalibur_barrier_broken') { if(typeof localCombat !== 'undefined' && localCombat.excBarrier){ localCombat.excBarrier.active = false; localCombat.excBarrier.cd = d.cd || 5.0; } if(typeof myPlayer !== 'undefined'){ myPlayer.excaliburBarrierActive = false; myPlayer.excaliburBarrierDmg = 0; } }
                 else processVFX(d);
             });
             c.on('close', () => {
@@ -2167,6 +2271,7 @@ function connectToServer(mode, explicitHostId) {
             else if (d.type === 'killfeed') addToKillFeed(d);
             else if (d.type === 'hitmarker') spawnHitmarker(d.x, d.y, d.damage);
             else if (d.type === 'chat') addChatMessage(d);
+            else if (d.type === 'chat_history') renderChatHistory(d.history || []); else if(d.type === 'ult_orb_notice') { if(typeof showUltOrbNotice==='function') showUltOrbNotice(d.text||'Ultimate Orb appeared'); } else if(d.type === 'excalibur_barrier_broken') { if(typeof localCombat !== 'undefined' && localCombat.excBarrier){ localCombat.excBarrier.active = false; localCombat.excBarrier.cd = d.cd || 5.0; } if(typeof myPlayer !== 'undefined'){ myPlayer.excaliburBarrierActive = false; myPlayer.excaliburBarrierDmg = 0; } }
             else if (d.type === 'orb_claimed') { myPlayer.ultCharge = 100; resetAllCooldowns(); applyShake(15, 0.4); }
             else processVFX(d);
         });
@@ -2284,6 +2389,7 @@ function becomeHost(mode, srvId, opts) {
             } 
             else if(d.type === 'event') processCombatEvent(d.senderId, d.event); 
             else if(d.type === 'chat') broadcastChat(d);
+            else if(d.type === 'chat_history') renderChatHistory(d.history || []); else if(d.type === 'ult_orb_notice') { if(typeof showUltOrbNotice==='function') showUltOrbNotice(d.text||'Ultimate Orb appeared'); } else if(d.type === 'excalibur_barrier_broken') { if(typeof localCombat !== 'undefined' && localCombat.excBarrier){ localCombat.excBarrier.active = false; localCombat.excBarrier.cd = d.cd || 5.0; } if(typeof myPlayer !== 'undefined'){ myPlayer.excaliburBarrierActive = false; myPlayer.excaliburBarrierDmg = 0; } }
             else processVFX(d);
         });
         c.on('close', () => { 
@@ -2361,6 +2467,26 @@ function processVFX(d) {
         vfx.push({type:'blitzTransmission', x:d.sx, y:d.sy, life:0.3, maxLife:0.3, color: '#c084fc'});
         vfx.push({type:'blitzTransmission', x:d.ex, y:d.ey, life:0.3, maxLife:0.3, color: '#c084fc'});
     }
+    else if(d.type==='excalibur_slash_vfx') {
+        const p = gameState.players[d.ownerId];
+        if(p){ p.excaliburSlashAnim = 0.45; p.excaliburComboSide = (d.side === 1) ? 1 : -1; }
+    }
+    else if(d.type==='excalibur_throw_confirm') {
+        const p = gameState.players[d.ownerId]; if(p) p.excaliburSwordOut = true;
+        if(d.ownerId === myId && localCombat.excThrow){ localCombat.excThrow.swordId = d.swordId; localCombat.excThrow.swordSeenAt = performance.now(); myPlayer.excaliburSwordOut = true; }
+    }
+    else if(d.type==='excalibur_throw_clear') {
+        const p = gameState.players[d.ownerId]; if(p) p.excaliburSwordOut = false;
+        if(d.ownerId === myId && localCombat.excThrow){ localCombat.excThrow.swordId = null; localCombat.excThrow.swordSeenAt = 0; localCombat.excThrow.thrownAt = 0; localCombat.excThrow.cd = d.cooldown ? 7.0 : localCombat.excThrow.cd; myPlayer.excaliburSwordOut = false; }
+    }
+    else if(d.type==='excalibur_force_pos') {
+        const p = gameState.players[d.id]; if(p){ p.x = d.x; p.y = d.y; }
+        if(d.id === myId){ myPlayer.x = d.x; myPlayer.y = d.y; localCombat.dash.v.x = 0; localCombat.dash.v.y = 0; }
+    }
+    else if(d.type==='excalibur_os_set') {
+        const p = gameState.players[d.id]; if(p){ p.overShield = d.os; p.excaliburLastDamageTime = d.t; p.overShieldMax = Math.max(p.overShieldMax||0, 100); }
+        if(d.id === myId){ myPlayer.overShield = d.os; myPlayer.overShieldMax = Math.max(myPlayer.overShieldMax||0, 100); myPlayer.excaliburLastDamageTime = d.t; }
+    }
 }
 
 function sendHitmarker(aId, t, d) {
@@ -2388,10 +2514,10 @@ function startGame() {
     gCon.classList.add('active'); getEl('scoreboard').style.display = 'block'; getEl('minimap-wrapper').style.display = 'block';
     lBtn.classList.add('active'); abUi.classList.add('active'); hlUi.classList.add('active');
     updateCanvasSize();
-    // Tip: chat toggle
-    addChatMessage({senderName:'SYSTEM', text:'Press C to toggle chat. Click ⚙ for settings.', color:'#22d3ee', time:''});
-    // Hide chat by default in-game (use C to bring it back, which also compresses the arena)
-    let cw0 = getEl('chat-wrapper'); if(cw0){ cw0.classList.add('hidden'); document.body.classList.remove('with-chat'); }
+    addChatMessage({senderName:'SYSTEM', text:'Chat stays open on the left. Click ⚙ for settings.', color:'#22d3ee', time:''}, {save:false});
+    // Chat starts toggled OFF in-game (player can press C to toggle on/off).
+    let cw0 = getEl('chat-wrapper'); if(cw0){ cw0.classList.remove('hidden'); }
+    if(window.__setChatState) window.__setChatState('off'); else { document.body.classList.add('chat-off'); if(cw0) cw0.classList.add('chat-hidden'); }
     _scheduleFrame(gLoop);
 }
 
@@ -2425,6 +2551,7 @@ function syncGS(s) {
             myPlayer.hp = s.players[id].hp; myPlayer.daggers = s.players[id].daggers;
             myPlayer.stunTimer = s.players[id].stunTimer || 0; myPlayer.kills = s.players[id].kills || 0;
             myPlayer.deaths = s.players[id].deaths || 0; myPlayer.flicker = s.players[id].flicker || false;
+            ['excaliburSlashAnim','excaliburComboSide','excaliburSwordOut','excaliburBarrierActive','excaliburBarrierT','excaliburLastDamageTime','overShield','overShieldMax'].forEach(k => { if(s.players[id][k] !== undefined) myPlayer[k] = s.players[id][k]; });
             
             if(s.players[id].isDead && !myPlayer.isDead) myPlayer.arrowActive = false;
             if(!s.players[id].isDead && myPlayer.isDead) { myPlayer.x = s.players[id].x; myPlayer.y = s.players[id].y; }
@@ -2546,6 +2673,24 @@ function sdEv(e) {
 function dmgTk(t, amt, aId) {
     if (t.invulnerable) return 0;
     let fA = amt;
+    // Excalibur Blade Barrier: shield fully absorbs damage until break threshold.
+    if(t.heroClass === 'excalibur' && t.excaliburBarrierActive){
+        t.excaliburBarrierDmg = (t.excaliburBarrierDmg || 0) + fA;
+        if(t.excaliburBarrierDmg >= 250){
+            t.excaliburBarrierActive = false;
+            t.excaliburBarrierT = 0;
+            t.excaliburBarrierDmg = 0;
+            // notify owner (and self-host) to start a 5s cooldown
+            if(t.id === myId && typeof localCombat !== 'undefined' && localCombat.excBarrier){
+                localCombat.excBarrier.active = false;
+                localCombat.excBarrier.cd = 5.0;
+                if(typeof myPlayer !== 'undefined'){ myPlayer.excaliburBarrierActive = false; myPlayer.excaliburBarrierDmg = 0; }
+            } else if(typeof connections !== 'undefined' && t.id){
+                connections.forEach(c => { if(c.peer === t.id && c.open) c.send({type:'excalibur_barrier_broken', cd:5.0}); });
+            }
+        }
+        return 0; // fully absorbed
+    }
     if (t.heroClass === 'blitz' && t.blitzParryActive) { fA *= 0.5; }
     if(t.heroClass === 'corsair' && t.corsairStance === 'cannon') fA *= 0.7; // 30% damage reduction in cannon mode
     if (activeServerMode === 'JUGG' && aId === gameState.juggernautId) fA *= 2;
@@ -2700,16 +2845,18 @@ window.addEventListener('keydown', e => {
         if(myPlayer.heroClass === 'thorfinn') trThr();
     }
     
-    // Toggle chat visibility with C
     if(k === 'c') {
-        let cw = getEl('chat-wrapper');
-        if(cw) {
-            // In-game: toggle chat AND compress the game container to make room
-            let nowHidden = cw.classList.toggle('hidden');
-            if(gCon.classList.contains('active')) {
-                document.body.classList.toggle('with-chat', !nowHidden);
-                // Resize canvas after layout settles
-                setTimeout(() => { try { updateCanvasSize(); } catch(_){} }, 200);
+        // Chat toggle ONLY in-game; on start screen chat is always shown.
+        if(gCon && gCon.classList.contains('active')){
+            const cw = getEl('chat-wrapper');
+            if(cw){
+                const next = (window.__chatState === 'off') ? 'normal' : 'off';
+                if(window.__setChatState) window.__setChatState(next);
+                else {
+                    if(next === 'off'){ cw.classList.add('chat-hidden'); document.body.classList.add('chat-off'); }
+                    else { cw.classList.remove('chat-hidden'); document.body.classList.remove('chat-off'); }
+                    window.__chatState = next;
+                }
             }
         }
     }
@@ -4281,6 +4428,7 @@ function updateMovement(dt) {
                     }
                 }
                 if(myPlayer.heroClass === 'thorfinn' && myPlayer.daggers === 0) bs = 8.0;
+                // (Excalibur speed restored to baseline — no /2.2 slowdown.)
                 if(localCombat.dash.rec > 0) bs = 3.0;
                 
                 if(myPlayer.speedBoost > 0) bs *= 1.3;
@@ -4493,9 +4641,10 @@ function updateGameState(dt) {
             orb.timer -= dt;
             if(orb.timer <= 0) {
                 orb.state = 'chasing'; orb.x = W/2; orb.y = 200; orb.targetX = W/2; orb.targetY = H/2; orb.timer = 10.0;
-                let msg = {type:'chat', text:'AN ULTIMATE ORB HAS APPEARED!', senderName:'SYSTEM', time:'', color:'#eab308'};
-                connections.forEach(c => { if(c.open) c.send(msg); });
-                addChatMessage(msg);
+                // Small in-game notification (NOT chat). Broadcast to clients.
+                const note = {type:'ult_orb_notice', text:'Ultimate Orb appeared'};
+                connections.forEach(c => { if(c.open) c.send(note); });
+                if(typeof showUltOrbNotice === 'function') showUltOrbNotice(note.text);
             }
         } else if(orb.state === 'chasing') {
             if(Math.random() < 0.05) { orb.targetX = 200 + Math.random()*(W-400); orb.targetY = 200 + Math.random()*(H-400); }
@@ -7782,6 +7931,30 @@ o.timBeamCharge * 9;
         ctx.fillStyle = '#fff'; ctx.font = '11px "Dela Gothic One", sans-serif'; ctx.textAlign = 'center';
         ctx.fillText(o.name, e.x, e.y - (yO - 12));
 
+        // Small overshield bar — sits just BELOW the nametag, mirrors HUD visuals.
+        // Aligned with the small HP bar above the player (which is at y = -35 from body).
+        if((o.overShield || 0) > 0){
+            const osMax = o.overShieldMax || 100;
+            const osFrac = Math.max(0, Math.min(1, (o.overShield || 0) / osMax));
+            const obx = e.x - 20;          // matches small HP bar x range (-20..+20)
+            const oby = e.y - (yO - 12) + 6; // just below the nametag row
+            ctx.save();
+            // bg track
+            ctx.fillStyle = 'rgba(15,23,42,0.85)';
+            ctx.fillRect(obx, oby, 40, 4);
+            // gradient fill (matches HUD overshield: light->blue)
+            const g = ctx.createLinearGradient(obx, oby, obx, oby + 4);
+            g.addColorStop(0, '#7dd3fc'); g.addColorStop(1, '#2563eb');
+            ctx.fillStyle = g;
+            ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 6;
+            ctx.fillRect(obx, oby, 40 * osFrac, 4);
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(147,197,253,0.9)';
+            ctx.lineWidth = 0.7;
+            ctx.strokeRect(obx, oby, 40, 4);
+            ctx.restore();
+        }
+
         // === ROULETTE: One-Armed Bandit slot UI overhead ===
         if(!iC && o.isRoulette && (o.rouletteSpinActive || (o.rouletteLockGlow && o.rouletteLockGlow > 0))) {
             drawRouletteSlotUI(e.x, e.y - yO - 14, o);
@@ -8416,9 +8589,20 @@ setTimeout(() => {
 let aeroCtxEl = document.getElementById('aero-context-menu');
 let aeroCtxCopyBtn = document.getElementById('ctx-copy-btn');
 
-can.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
-window.addEventListener('contextmenu', e => { e.preventDefault(); return false; }, { capture: true });
-document.addEventListener('contextmenu', e => { e.preventDefault(); return false; }, { capture: true });
+window.__allowRClickMenu = (localStorage.getItem('rivals_allowRClickMenu') === '1');
+function _excCtxBlocked(e){ if(window.__allowRClickMenu) return false; e.preventDefault(); return true; }
+can.addEventListener('contextmenu', e => { _excCtxBlocked(e); return false; });
+window.addEventListener('contextmenu', e => { if(_excCtxBlocked(e)) return false; }, { capture: true });
+document.addEventListener('contextmenu', e => { if(_excCtxBlocked(e)) return false; }, { capture: true });
+document.addEventListener('DOMContentLoaded', () => {
+  const cb = document.getElementById('rclick-menu-toggle');
+  if(!cb) return;
+  cb.checked = !!window.__allowRClickMenu;
+  cb.addEventListener('change', () => {
+    window.__allowRClickMenu = !!cb.checked;
+    try{ localStorage.setItem('rivals_allowRClickMenu', cb.checked?'1':'0'); }catch(_){}
+  });
+});
 
 can.addEventListener('mousedown', e => {
     // Esper Spectral Sweep — hold right click to grab projectiles
@@ -8593,20 +8777,71 @@ function drawAeroContextMenuWorld(ctx2) {
 const EXC = {
     HP: 200,
     OS_MAX: 100,
-    OS_DECAY_GRACE: 4.0,        // seconds without dealing damage before decay starts
-    OS_DECAY_RATE: 200,         // shield/sec once decay starts
+    OS_DECAY_GRACE: 4.0,
+    OS_DECAY_RATE: 200,
+    // === Heavy Crescent (L-Click) — sword IS the hitbox ===
     SLASH_DMG: 70, SLASH_OS: 20, SLASH_CD: 1.0,
-    SLASH_RANGE: 220, SLASH_ARC_HALF: 0.85,
-    BARRIER_DUR: 1.5, BARRIER_CD: 5.0, BARRIER_RAD: 80, BARRIER_OS: 10,
+    SLASH_ARC_HALF: Math.PI / 2,
+    // Clean Magik-style swing — blade visible the entire time, ~120° forward arc.
+    SWING_DUR:       0.45,
+    SWING_WINDUP:    0.08,   // tiny pull-back (snappy)
+    SWING_ARC:       0.18,   // main swing across the front
+    SWING_RECOVERY:  0.19,   // ease-out settle
+    SWING_LUNGE:     10.5,   // small forward body shove every Heavy Crescent
+    // How far the grip sits from player center (pommel slightly overlaps the circle edge).
+    SWORD_ANCHOR: 18,
+    // Idle pose — sword trails ~135° behind the shoulder on the active side.
+    IDLE_ANG_REL: 2.35,
+    BARRIER_DUR: 1.5, BARRIER_CD: 0, BARRIER_RAD: 80, BARRIER_OS: 10, BARRIER_BREAK_DMG: 250, BARRIER_BROKEN_CD: 5.0,
     THROW_DMG: 50, THROW_OS: 25, THROW_CD: 7.0, THROW_SPEED: 1100, THROW_RANGE: 1100,
     ULT_DMG: 45, ULT_OS: 15, ULT_COUNT: 6, ULT_DELAY: 0.5, ULT_SPEED: 1400, ULT_RANGE: 1500,
-    SWORD_LEN: 90,              // base sword length (player ~16px radius); 2.5x hero ≈ 80–90px
-    SWORD_THICK: 30,
+    // === Sword model — 1.5x smaller than v11 (90→60, 30→20) ===
+    SWORD_LEN: 60,
+    SWORD_THICK: 20,
+
+    /* ============================================================
+       === INSERT YOUR CUSTOM SWORD MODEL HERE (BASE64) ===========
+       Paste a full data-URI string between the quotes, e.g.:
+         SWORD_BASE64: "data:image/png;base64,iVBORw0KGgoAAA...",
+       Image is drawn with grip at the player's hand and blade
+       pointing along +x. Width is normalized to (gripLen + SWORD_LEN),
+       height to SWORD_THICK * (img.height/img.width). Leave empty
+       to use the built-in vector sword.
+       ============================================================ */
+    SWORD_BASE64: "",
+    // Optional manual aspect override (height/width). 0 = auto from image.
+    SWORD_BASE64_ASPECT: 0,
 };
+// Auto-derived range: sword reach = grip(38) + guard(18) + blade len + player radius
+EXC.SLASH_RANGE = 38 + 18 + EXC.SWORD_LEN + 22;
+
+// ---- Base64 sword image preloader ----
+const _excSwordImg = new Image();
+let   _excSwordReady = false;
+function _excEnsureSwordImg(){
+    if(EXC.SWORD_BASE64 && !_excSwordImg.src){
+        _excSwordImg.onload  = () => { _excSwordReady = true; };
+        _excSwordImg.onerror = () => { _excSwordReady = false; console.warn('Excalibur: failed to load SWORD_BASE64 image'); };
+        _excSwordImg.src = EXC.SWORD_BASE64;
+    }
+}
 
 // ------- Sword renderer (matches reference: rectangular flat blade, angled tip,
 //          rivets, wrapped grip, dark guard; cel-shaded with bold outline) -------
 function drawSword(ctx, length, thickness, bladeColor, accentColor) {
+    // === Custom base64 model branch ===
+    _excEnsureSwordImg();
+    if(EXC.SWORD_BASE64 && _excSwordReady){
+        // Draw image with grip pivot at (0,0), blade extending toward +x
+        const gripLen = 38, guardW = 18;
+        const totalW = gripLen + guardW + length;
+        const aspect = EXC.SWORD_BASE64_ASPECT > 0
+            ? EXC.SWORD_BASE64_ASPECT
+            : (_excSwordImg.height / _excSwordImg.width) || (thickness / length);
+        const drawH = totalW * aspect;
+        ctx.drawImage(_excSwordImg, -(gripLen + guardW * 0.5), -drawH / 2, totalW, drawH);
+        return;
+    }
     const len = length, t = thickness;
     const guardW = 18, guardH = t * 1.5;
     const gripLen = 38, gripW = 10;
@@ -8724,7 +8959,7 @@ window.__drawExcaliburPreview = function(pCtx, p) {
     pCtx.save();
     pCtx.rotate(-0.35);
     pCtx.translate(20, -2);
-    drawSword(pCtx, 70, 22, blade, '#7a1212');
+    drawSword(pCtx, 47, 15, blade, (p.customization?.excaliburColors?.handle)||'#7a1212');
     pCtx.restore();
 };
 
@@ -8733,52 +8968,148 @@ window.__drawExcaliburInGame = function(ctx, o, isImpactFlash) {
     const blade = (o.customization && o.customization.excaliburColors && o.customization.excaliburColors.blade) || '#fbbf24';
     const body  = (o.customization && o.customization.excaliburColors && o.customization.excaliburColors.body)  || '#fbbf24';
 
+    // Offset the body slightly opposite to facing — simulates the player
+    // physically holding the sword out front (sword anchors on the right).
+    // NOTE: outer drawPlayers() has already rotated ctx by o.angle, so we work
+    // in the player-local frame (x = forward / facing direction).
+    ctx.save();
+    ctx.translate(-7, 0);
     drawExcaliburBody(ctx, body, isImpactFlash);
+    ctx.restore();
 
-    // Overshield ring
-    const os = o.overShield || 0;
-    if(os > 0){
-        ctx.save();
-        ctx.strokeStyle = 'rgba(125,211,252,0.95)';
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 14; ctx.shadowColor = '#38bdf8';
-        ctx.beginPath();
-        ctx.arc(0, 0, 22, -1.57, -1.57 + (os / EXC.OS_MAX) * 6.28);
-        ctx.stroke();
-        ctx.restore();
-    }
+    // (Overshield is shown via the HUD bar + small bar over the player nametag,
+    //  NOT as an in-world aura around the body.)
 
-    // Sword (held) — hide when sword is in flight or stuck
+    // === Sword (held) — clean two-part combo swing (Magik-style) ===
+    // Hidden while in flight (Phantom Strike).
+    const handleCol = (o.customization && o.customization.excaliburColors && o.customization.excaliburColors.handle) || '#7a1212';
     const swordInFlight = (o.excaliburSwordOut || false);
     if(!swordInFlight){
-        ctx.save();
-        ctx.rotate(o.angle || 0);
-        // hold sword to the right of the body
-        ctx.translate(28, 6);
-        // slash anim: rotate the sword forward during the swing
-        const slashT = o.excaliburSlashAnim || 0;
-        if(slashT > 0){
-            // 0 -> 0.25s ease: rotate from -1.0 to +1.0 rad
-            const k = 1 - (slashT / 0.25);
-            ctx.rotate(-1.0 + k * 2.0);
+        const swingT  = o.excaliburSlashAnim || 0;       // counts down from SWING_DUR
+        const swingOn = swingT > 0;
+        const elapsed = swingOn ? (EXC.SWING_DUR - swingT) : 0;
+        // Combo side: -1 = right-to-left arc, +1 = left-to-right arc.
+        const side    = (o.excaliburComboSide === 1) ? 1 : -1;
+
+        // Phase thresholds
+        const T1 = EXC.SWING_WINDUP;
+        const T2 = T1 + EXC.SWING_ARC;
+        const T3 = T2 + EXC.SWING_RECOVERY;
+
+        // Angles (relative to facing). Sword sweeps a clean ~120° arc in front.
+        // Idle trails ~135° behind the active shoulder (heavy, grounded look).
+        const restAng    =  side * EXC.IDLE_ANG_REL;
+        const idleAng    = -side * EXC.IDLE_ANG_REL;
+        const windUpAng  = -side * (EXC.IDLE_ANG_REL + 0.25);
+        const endAng     =  side * 0.6;
+        // After the swing, blade eases onto the opposite shoulder and stays there.
+        const settleAng  =  side * EXC.IDLE_ANG_REL;
+
+        let swingAng = restAng;
+        let phase    = 'idle';
+        if(swingOn){
+            if(elapsed < T1){
+                const k = elapsed / T1;
+                swingAng = idleAng + (windUpAng - idleAng) * (k*k);
+                phase = 'windup';
+            } else if(elapsed < T2){
+                const k = (elapsed - T1) / EXC.SWING_ARC;
+                const eased = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+                swingAng = windUpAng + (endAng - windUpAng) * eased;
+                phase = 'swing';
+            } else {
+                const k = Math.min(1, (elapsed - T2) / EXC.SWING_RECOVERY);
+                const eased = 1 - Math.pow(1 - k, 3);
+                swingAng = endAng + (settleAng - endAng) * eased;
+                phase = 'recovery';
+            }
         }
-        drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK, blade, '#7a1212');
+
+        // While Blade Barrier is active, lock the blade pointing forward
+        // (aligned horizontally with the crosshair / facing direction).
+        if(o.excaliburBarrierActive){
+            // Hold the blade rotated 90° (perpendicular to the crosshair) as a guard.
+            swingAng = Math.PI / 2;
+            phase = 'guard';
+        }
+
+        // ----- Draw the blade (always visible) -----
+        // ctx is already rotated by o.angle (player facing) in drawPlayers(),
+        // so we only apply the local swing rotation here. Otherwise the blade
+        // double-rotates and breaks for facings other than +x.
+        ctx.save();
+        ctx.rotate(swingAng);
+        // Anchor the grip so the pommel slightly overlaps the player circle edge.
+        ctx.translate(EXC.SWORD_ANCHOR, 0);
+        drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK, blade, handleCol);
         ctx.restore();
+
+        // ----- Tip trail (thin ribbon, brightest at the tip) -----
+        // Stored in player-LOCAL coords (ctx is rotated by o.angle outside),
+        // so we use only swingAng for the tip position.
+        if(!o._excTipTrail) o._excTipTrail = [];
+        const trail = o._excTipTrail;
+        const tipR = EXC.SWORD_ANCHOR + 9 + EXC.SWORD_LEN;
+        const localAng = swingAng;
+        const now = (typeof performance !== 'undefined') ? performance.now() : Date.now();
+
+        if(phase === 'swing'){
+            trail.push({
+                x: Math.cos(localAng) * tipR,
+                y: Math.sin(localAng) * tipR,
+                born: now,
+            });
+            if(trail.length > 14) trail.shift();
+        }
+        const TRAIL_LIFE = 180; // ms
+        for(let i = trail.length - 1; i >= 0; i--){
+            if(now - trail[i].born > TRAIL_LIFE) trail.splice(i, 1);
+        }
+
+        if(trail.length >= 2){
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = blade;
+            for(let i = 1; i < trail.length; i++){
+                const p0 = trail[i-1], p1 = trail[i];
+                const tNorm = i / (trail.length - 1);
+                const ageK  = 1 - Math.min(1, (now - p1.born) / TRAIL_LIFE);
+                const w     = (0.6 + tNorm * 4.2) * ageK;
+                const a     = (0.15 + tNorm * 0.85) * ageK;
+                if(w <= 0.05 || a <= 0.02) continue;
+                ctx.lineWidth   = w;
+                ctx.strokeStyle = blade;
+                ctx.globalAlpha = a;
+                ctx.beginPath();
+                ctx.moveTo(p0.x, p0.y);
+                ctx.lineTo(p1.x, p1.y);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
     }
 
-    // Barrier visual
+
+    // Barrier visual — subtle blade-color glow aura (no rectangle).
     if(o.excaliburBarrierActive){
         ctx.save();
-        ctx.rotate(o.angle || 0);
-        const w = EXC.BARRIER_RAD * 2, h = 28;
-        ctx.translate(20, 0);
-        ctx.fillStyle = 'rgba(125,211,252,0.18)';
-        ctx.strokeStyle = 'rgba(125,211,252,0.95)';
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 18; ctx.shadowColor = '#38bdf8';
-        ctx.beginPath();
-        ctx.rect(-10, -h/2, w, h);
-        ctx.fill(); ctx.stroke();
+        const t = (typeof performance!=='undefined'?performance.now():Date.now()) * 0.004;
+        const pulse = 0.55 + 0.18 * Math.sin(t);
+        const r1 = 26, r2 = 46;
+        const grad = ctx.createRadialGradient(0, 0, r1*0.4, 0, 0, r2);
+        grad.addColorStop(0, blade);
+        grad.addColorStop(0.55, blade);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = 0.18 * pulse;
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(0, 0, r2, 0, 6.28); ctx.fill();
+        ctx.globalAlpha = 0.55 * pulse;
+        ctx.strokeStyle = blade;
+        ctx.lineWidth = 1.4;
+        ctx.shadowBlur = 14; ctx.shadowColor = blade;
+        ctx.beginPath(); ctx.arc(0, 0, r1 + 4, 0, 6.28); ctx.stroke();
         ctx.shadowBlur = 0;
         ctx.restore();
     }
@@ -8835,7 +9166,7 @@ function excaliburLocalTick(){
         if(localCombat.excThrow.cd   > 0) localCombat.excThrow.cd   = Math.max(0, localCombat.excThrow.cd - dt);
         if(localCombat.excBarrier.active){
             localCombat.excBarrier.activeT -= dt;
-            if(localCombat.excBarrier.activeT <= 0){ localCombat.excBarrier.active = false; myPlayer.excaliburBarrierActive = false; sdEv({type:'excalibur_barrier_end'}); }
+            if(localCombat.excBarrier.activeT <= 0){ localCombat.excBarrier.active = false; myPlayer.excaliburBarrierActive = false; myPlayer.excaliburBarrierDmg = 0; sdEv({type:'excalibur_barrier_end'}); }
         } else if(localCombat.excBarrier.cd > 0){
             localCombat.excBarrier.cd = Math.max(0, localCombat.excBarrier.cd - dt);
         }
@@ -8866,24 +9197,48 @@ requestAnimationFrame(excaliburLocalTick);
 window.addEventListener('mousedown', (e)=>{
     if(!myPlayer || myPlayer.heroClass !== 'excalibur' || myPlayer.isDead || myPlayer.stunTimer > 0) return;
     if(!gCon.classList.contains('active')) return;
-    if(e.button === 0){
-        // L-Click — Heavy Crescent
-        if(localCombat.excSlash.cd <= 0 && !localCombat.excUlt.locking){
-            localCombat.excSlash.cd = (activeServerMode==='CHAOS')?0.05:EXC.SLASH_CD;
-            myPlayer.excaliburSlashAnim = 0.25;
-            applyShake(4, 0.12);
-            vfx.push({type:'excaliburSlashArc', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, life:0.3, maxLife:0.3});
-            sdEv({type:'excalibur_slash', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle});
-        }
-    } else if(e.button === 2){
-        // R-Click — Blade Barrier
+    if(e.button === 2){
+        // Blade Barrier (shield) — HOLD to use, RELEASE to drop.
+        ensureExcaliburLocalCombat();
         if(!localCombat.excBarrier.active && localCombat.excBarrier.cd <= 0 && !localCombat.excUlt.locking){
             localCombat.excBarrier.active = true;
-            localCombat.excBarrier.activeT = EXC.BARRIER_DUR;
-            localCombat.excBarrier.cd = (activeServerMode==='CHAOS')?0.05:EXC.BARRIER_CD;
+            localCombat.excBarrier.activeT = 9999;
             myPlayer.excaliburBarrierActive = true;
-            sdEv({type:'excalibur_barrier_start', angle:myPlayer.angle});
+            myPlayer.excaliburBarrierT = 9999;
+            myPlayer.excaliburBarrierDmg = 0;
+            sdEv({type:'excalibur_barrier_start'});
         }
+        return;
+    }
+    if(e.button === 0){
+        // L-Click - Heavy Crescent (heavy combo: cycle R->L then L->R)
+        if(localCombat.excSlash.cd <= 0 && !localCombat.excUlt.locking){
+            localCombat.excSlash.cd = (activeServerMode==='CHAOS')?0.05:EXC.SLASH_CD;
+            // Toggle combo side BEFORE this swing so each click alternates direction
+            myPlayer.excaliburComboSide = (myPlayer.excaliburComboSide === 1) ? -1 : 1;
+            myPlayer.excaliburSlashAnim = EXC.SWING_DUR;
+            localCombat.dash.v.x += Math.cos(myPlayer.angle || 0) * EXC.SWING_LUNGE;
+            localCombat.dash.v.y += Math.sin(myPlayer.angle || 0) * EXC.SWING_LUNGE;
+            localCombat.dash.rec = 0.12;
+            applyShake(5, 0.14);
+            // No external slash-arc VFX - the SWORD ITSELF is the hitbox & visual.
+            sdEv({type:'excalibur_slash', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, side: myPlayer.excaliburComboSide});
+        }
+    }
+}, true);
+
+// Release Blade Barrier on mouseup (hold-to-use behavior).
+window.addEventListener('mouseup', (e)=>{
+    if(e.button !== 2) return;
+    if(!myPlayer || myPlayer.heroClass !== 'excalibur') return;
+    if(typeof localCombat === 'undefined' || !localCombat.excBarrier) return;
+    if(localCombat.excBarrier.active){
+        localCombat.excBarrier.active = false;
+        localCombat.excBarrier.activeT = 0;
+        myPlayer.excaliburBarrierActive = false;
+        myPlayer.excaliburBarrierT = 0;
+        myPlayer.excaliburBarrierDmg = 0;
+        sdEv({type:'excalibur_barrier_end'});
     }
 }, true);
 
@@ -8891,20 +9246,41 @@ window.addEventListener('keydown', (e)=>{
     if(document.activeElement && document.activeElement.id === 'chat-input') return;
     if(!myPlayer || myPlayer.heroClass !== 'excalibur' || myPlayer.isDead || myPlayer.stunTimer > 0) return;
     if(!gCon.classList.contains('active')) return;
+    // ---- Debounce: ignore OS auto-repeat for the E key so a held key never
+    //      registers as two presses. Also enforce a 120ms manual lockout.
+    if(e.repeat) return;
     const k = e.key.toLowerCase();
     if(k === 'e'){
-        // Phantom Strike — throw or teleport
+        const now = performance.now();
+        if(now - (window.__excEKeyLast || 0) < 120) return;
+        window.__excEKeyLast = now;
+
+        // Phantom Strike: 1st press = throw, 2nd press = teleport.
+        // Cooldown ONLY starts after the 2nd press completes (or sword expires).
         if(localCombat.excThrow.swordId){
-            // teleport
-            sdEv({type:'excalibur_teleport'});
+            const sw = (gameState.projectiles||[]).find(p => p && p.type==='excalibur_thrown_sword' && p.id === localCombat.excThrow.swordId);
+            if(sw){ myPlayer.x = sw.x; myPlayer.y = sw.y; gameState.projectiles = gameState.projectiles.filter(p => p !== sw); }
+            sdEv({type:'excalibur_teleport', swordId:localCombat.excThrow.swordId});
+            localCombat.excThrow.swordId = null;
+            localCombat.excThrow.swordSeenAt = 0;
+            localCombat.excThrow.thrownAt = 0;
+            localCombat.excThrow.cd = EXC.THROW_CD;
+            myPlayer.excaliburSwordOut = false;
         } else if(localCombat.excThrow.cd <= 0 && !localCombat.excUlt.locking){
             const swordId = 'exc_'+Math.random().toString(36).slice(2);
-            localCombat.excThrow.swordId = swordId;
-            myPlayer.excaliburSwordOut = true;
-            sdEv({type:'excalibur_throw', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, swordId:swordId});
+            const tx = (sMx/cam.zoom) + cam.x, ty = (sMy/cam.zoom) + cam.y;
+            const throwAng = Math.atan2(ty - myPlayer.y, tx - myPlayer.x);
+            localCombat.excThrow.swordId      = swordId;
+            localCombat.excThrow.swordSeenAt  = now;
+            localCombat.excThrow.thrownAt     = now;
+            myPlayer.excaliburSwordOut        = true;
+            if(!isHost){
+                gameState.projectiles.push({type:'excalibur_thrown_sword', id:swordId, ownerId:myId, x:myPlayer.x, y:myPlayer.y, lastX:myPlayer.x, lastY:myPlayer.y, vx:Math.cos(throwAng)*EXC.THROW_SPEED, vy:Math.sin(throwAng)*EXC.THROW_SPEED, angle:throwAng, life:8, stuck:false, hitIds:{}, dmg:EXC.THROW_DMG, spinPhase:0, swordId:swordId, predicted:true});
+            }
+            sdEv({type:'excalibur_throw', x:myPlayer.x, y:myPlayer.y, angle:throwAng, swordId:swordId});
         }
     } else if(k === ' ' || e.key === ' ' || e.code === 'Space'){
-        // Ult — Exalted Phalanx
+        // Ult - Exalted Phalanx
         if((myPlayer.ultCharge||0) >= 100 && !localCombat.excUlt.locking && !myPlayer.excaliburBarrierActive){
             localCombat.excUlt.locking = true;
             localCombat.excUlt.lockT = EXC.ULT_DELAY;
@@ -8920,12 +9296,12 @@ window.__excaliburHandleEvent = function(sId, e){
     const s = gameState.players[sId]; if(!s || s.isDead) return;
 
     if(e.type === 'excalibur_slash'){
-        s.excaliburSlashAnim = 0.25;
-        // notify clients for VFX
-        connections.forEach(c => { if(c.peer !== sId && c.open) c.send({type:'excalibur_slash_vfx', x:e.x, y:e.y, angle:e.angle, ownerId:sId}); });
-        if(sId !== myId) vfx.push({type:'excaliburSlashArc', x:e.x, y:e.y, angle:e.angle, life:0.3, maxLife:0.3});
-        else vfx.push({type:'excaliburSlashArc', x:e.x, y:e.y, angle:e.angle, life:0.3, maxLife:0.3});
-        // damage cone
+        // Drive the host's animation copy + remember combo side for remote rendering
+        s.excaliburSlashAnim = EXC.SWING_DUR;
+        s.excaliburComboSide = (e.side === 1) ? 1 : -1;
+        // Notify clients so remote viewers run the same swing animation (no arc VFX).
+        connections.forEach(c => { if(c.peer !== sId && c.open) c.send({type:'excalibur_slash_vfx', x:e.x, y:e.y, angle:e.angle, side:s.excaliburComboSide, ownerId:sId}); });
+        // Damage hitbox = the SWORD itself (range = full reach, arc = 180° smear)
         const hits = excaliburConeHit(s, e.angle, EXC.SLASH_RANGE, EXC.SLASH_ARC_HALF, EXC.SLASH_DMG, sId);
         if(hits > 0) excaliburGainOS(sId, hits * EXC.SLASH_OS);
     }
@@ -8939,25 +9315,25 @@ window.__excaliburHandleEvent = function(sId, e){
     }
     else if(e.type === 'excalibur_throw'){
         s.excaliburSwordOut = true;
+        gameState.projectiles = gameState.projectiles.filter(p => !(p.type==='excalibur_thrown_sword' && p.ownerId===sId));
         gameState.projectiles.push({
             type:'excalibur_thrown_sword', id: e.swordId,
-            ownerId: sId, x: s.x, y: s.y,
+            ownerId: sId, x: s.x, y: s.y, lastX:s.x, lastY:s.y,
             vx: Math.cos(e.angle) * EXC.THROW_SPEED, vy: Math.sin(e.angle) * EXC.THROW_SPEED,
-            angle: e.angle, life: EXC.THROW_RANGE / EXC.THROW_SPEED,
+            angle: e.angle, life: 8.0,
             stuck:false, hitIds:{}, dmg: EXC.THROW_DMG,
             spinPhase: 0, swordId: e.swordId
         });
+        connections.forEach(c => { if(c.open) c.send({type:'excalibur_throw_confirm', ownerId:sId, swordId:e.swordId}); });
     }
     else if(e.type === 'excalibur_teleport'){
-        const sw = gameState.projectiles.find(p => p.type==='excalibur_thrown_sword' && p.ownerId===sId);
+        const sw = gameState.projectiles.find(p => p.type==='excalibur_thrown_sword' && p.ownerId===sId && (!e.swordId || p.id===e.swordId));
         if(sw){
             s.x = sw.x; s.y = sw.y;
-            // remote players need a position correction
-            connections.forEach(c => { if(c.open) c.send({type:'excalibur_force_pos', id:sId, x:sw.x, y:sw.y}); });
+            connections.forEach(c => { if(c.open) { c.send({type:'excalibur_force_pos', id:sId, x:sw.x, y:sw.y}); c.send({type:'excalibur_throw_clear', ownerId:sId, cooldown:true}); } });
             gameState.projectiles = gameState.projectiles.filter(p => p !== sw);
             s.excaliburSwordOut = false;
-            // reset cooldown after teleport
-            if(sId === myId && localCombat.excThrow){ localCombat.excThrow.cd = EXC.THROW_CD; localCombat.excThrow.swordId = null; }
+            if(sId === myId && localCombat.excThrow){ localCombat.excThrow.cd = EXC.THROW_CD; localCombat.excThrow.swordId = null; localCombat.excThrow.swordSeenAt = 0; localCombat.excThrow.thrownAt = 0; myPlayer.x = sw.x; myPlayer.y = sw.y; myPlayer.excaliburSwordOut = false; }
         }
     }
     else if(e.type === 'excalibur_ult_start'){
@@ -9021,7 +9397,12 @@ const _origMsgWrap = (function(){
         const orig = window.handleDataMsg;
         window.handleDataMsg = function(d){
             if(d && d.type === 'excalibur_slash_vfx'){
-                vfx.push({type:'excaliburSlashArc', x:d.x, y:d.y, angle:d.angle, life:0.3, maxLife:0.3});
+                // Mirror the host-driven swing on the remote viewer's copy of the player
+                const p = gameState.players[d.ownerId];
+                if(p){
+                    p.excaliburSlashAnim = EXC.SWING_DUR;
+                    p.excaliburComboSide = (d.side === 1) ? 1 : -1;
+                }
                 return;
             }
             if(d && d.type === 'excalibur_force_pos'){
@@ -9060,10 +9441,14 @@ function excaliburHostTick(){
             const p = gameState.projectiles[i];
             if(p.type === 'excalibur_thrown_sword'){
                 if(!p.stuck){
+                    p.lastX = p.x; p.lastY = p.y;
                     p.x += p.vx * dt; p.y += p.vy * dt;
-                    p.spinPhase = (p.spinPhase || 0) + dt * 18;
+                    p.spinPhase = (p.spinPhase || 0) + dt * 22;
                     p.life -= dt;
-                    if(iW(p.x, p.y) || p.life <= 0){ p.stuck = true; p.vx = 0; p.vy = 0; }
+                    if(iW(p.x, p.y) || p.x < 20 || p.x > W-20 || p.y < 20 || p.y > H-20 || p.life <= 0){
+                        const safe = gnV(Math.max(20, Math.min(W-20, p.x)), Math.max(20, Math.min(H-20, p.y)));
+                        p.x = safe.x; p.y = safe.y; p.stuck = true; p.vx = 0; p.vy = 0;
+                    }
                     // pierce all enemies in path
                     for(let id in gameState.players){
                         const t = gameState.players[id];
@@ -9139,20 +9524,26 @@ if(typeof _origDrawPlayers === 'function'){
             if(p.type === 'excalibur_thrown_sword'){
                 const owner = gameState.players[p.ownerId];
                 const blade = (owner && owner.customization && owner.customization.excaliburColors && owner.customization.excaliburColors.blade) || '#fbbf24';
+                if(!p.stuck && p.lastX !== undefined){
+                    ctx.save();
+                    ctx.strokeStyle = blade; ctx.globalAlpha = 0.45; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.shadowBlur = 16; ctx.shadowColor = blade;
+                    ctx.beginPath(); ctx.moveTo(p.lastX, p.lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
+                    ctx.globalAlpha = 0.9; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.lastX, p.lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
+                    ctx.restore();
+                }
                 ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
                 if(!p.stuck){
-                    // pseudo-3D drill spin via Y-axis scaling
                     const sy = Math.cos(p.spinPhase || 0);
-                    ctx.scale(1, Math.max(0.18, Math.abs(sy)) * (sy < 0 ? -1 : 1));
+                    ctx.scale(1, (0.16 + Math.abs(sy) * 0.84) * (sy < 0 ? -1 : 1));
                 }
-                drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK, blade, '#7a1212');
+                drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK, blade, (owner&&owner.customization&&owner.customization.excaliburColors&&owner.customization.excaliburColors.handle)||'#7a1212');
                 ctx.restore();
             } else if(p.type === 'excalibur_ult_sword'){
                 const owner = gameState.players[p.ownerId];
                 const blade = (owner && owner.customization && owner.customization.excaliburColors && owner.customization.excaliburColors.blade) || '#fbbf24';
                 ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
                 ctx.globalAlpha = 0.85;
-                drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK * 0.9, blade, '#7a1212');
+                drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK * 0.9, blade, (owner&&owner.customization&&owner.customization.excaliburColors&&owner.customization.excaliburColors.handle)||'#7a1212');
                 ctx.restore();
             }
         }
@@ -9169,37 +9560,12 @@ if(typeof _origDrawPlayers === 'function'){
                 ctx.rotate(a);
                 ctx.translate(r, 0);
                 ctx.globalAlpha = 0.8;
-                drawSword(ctx, EXC.SWORD_LEN * 0.9, EXC.SWORD_THICK * 0.85, blade, '#7a1212');
+                drawSword(ctx, EXC.SWORD_LEN * 0.9, EXC.SWORD_THICK * 0.85, blade, (myPlayer.customization?.excaliburColors?.handle)||'#7a1212');
                 ctx.restore();
             }
             ctx.restore();
         }
-        // Slash arc VFX
-        for(let i = vfx.length - 1; i >= 0; i--){
-            const e = vfx[i];
-            if(e.type !== 'excaliburSlashArc') continue;
-            const a = e.life / e.maxLife;
-            ctx.save();
-            ctx.translate(e.x, e.y); ctx.rotate(e.angle);
-            ctx.globalAlpha = a;
-            ctx.strokeStyle = '#ffffff';
-            ctx.shadowBlur = 18; ctx.shadowColor = '#ffffff';
-            ctx.lineWidth = 8 * a + 4;
-            ctx.lineCap = 'round';
-            // Curved arc that follows the blade edge sweep
-            const r = EXC.SLASH_RANGE * 0.85;
-            const sweep = EXC.SLASH_ARC_HALF;
-            ctx.beginPath();
-            ctx.arc(0, 0, r, -sweep, sweep);
-            ctx.stroke();
-            // Inner sharper line
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-            ctx.beginPath();
-            ctx.arc(0, 0, r * 0.92, -sweep * 0.95, sweep * 0.95);
-            ctx.stroke();
-            ctx.restore();
-        }
+        // (Old external slash-arc VFX removed — the sword model itself is the visual.)
     };
 }
 
@@ -9248,22 +9614,37 @@ window.__excaliburUpdateUI = function(){
         if(osFill){
             const pct = (myPlayer.overShield||0) / EXC.OS_MAX * 100;
             osFill.style.width = pct + '%';
+            osFill.style.opacity = pct > 0 ? '1' : '0';
         }
     }catch(e){}
 };
 
-/* ===== Sword in-flight cleanup: clear local sword reference if host removes proj ===== */
+/* ===== Sword in-flight cleanup =====
+   Fixes the v11 flicker bug: don't reset swordOut just because the host
+   projectile hasn't synced yet. Wait until either (a) we've confirmed the
+   projectile existed at least once, OR (b) a 600ms grace period elapsed
+   without any sync. Cooldown is ONLY started here when the sword expires
+   without a teleport (teleport itself sets cd in the host handler). */
 setInterval(()=>{
     if(myPlayer && myPlayer.heroClass==='excalibur' && localCombat.excThrow && localCombat.excThrow.swordId){
         const sw = (gameState.projectiles||[]).find(p => p && p.type==='excalibur_thrown_sword' && p.id === localCombat.excThrow.swordId);
-        if(!sw){
-            // sword vanished (teleport or expiry); start cooldown if not already counting
-            if(localCombat.excThrow.cd <= 0) localCombat.excThrow.cd = EXC.THROW_CD;
-            localCombat.excThrow.swordId = null;
-            myPlayer.excaliburSwordOut = false;
+        if(sw){
+            localCombat.excThrow.swordSeenAt = performance.now();
+        } else {
+            const seen     = localCombat.excThrow.swordSeenAt || 0;
+            const thrownAt = localCombat.excThrow.thrownAt    || performance.now();
+            const now      = performance.now();
+            const lost     = (seen > 0 && now - seen > 1500) || (!seen && now - thrownAt > 1500);
+            if(lost){
+                if(localCombat.excThrow.cd <= 0) localCombat.excThrow.cd = EXC.THROW_CD;
+                localCombat.excThrow.swordId     = null;
+                localCombat.excThrow.swordSeenAt = 0;
+                localCombat.excThrow.thrownAt    = 0;
+                myPlayer.excaliburSwordOut = false;
+            }
         }
     }
-    // mirror barrier/sword flags for remote rendering on the local copy
+    // mirror barrier flag for remote rendering on the local copy
     if(myPlayer){
         myPlayer.excaliburBarrierActive = !!(localCombat && localCombat.excBarrier && localCombat.excBarrier.active);
     }
