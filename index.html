@@ -2551,7 +2551,13 @@ function syncGS(s) {
             myPlayer.hp = s.players[id].hp; myPlayer.daggers = s.players[id].daggers;
             myPlayer.stunTimer = s.players[id].stunTimer || 0; myPlayer.kills = s.players[id].kills || 0;
             myPlayer.deaths = s.players[id].deaths || 0; myPlayer.flicker = s.players[id].flicker || false;
-            ['excaliburSlashAnim','excaliburComboSide','excaliburSwordOut','excaliburBarrierActive','excaliburBarrierT','excaliburLastDamageTime','overShield','overShieldMax'].forEach(k => { if(s.players[id][k] !== undefined) myPlayer[k] = s.players[id][k]; });
+            ['excaliburComboSide','excaliburSwordOut','excaliburBarrierActive','excaliburBarrierT','excaliburLastDamageTime','overShield','overShieldMax'].forEach(k => { if(s.players[id][k] !== undefined) myPlayer[k] = s.players[id][k]; });
+            // excaliburSlashAnim is locally ticked — only accept snapshot value if it's higher
+            // (i.e., a new swing started server-side) to avoid host snapshots clobbering
+            // a swing the client already started locally.
+            if(s.players[id].excaliburSlashAnim !== undefined && s.players[id].excaliburSlashAnim > (myPlayer.excaliburSlashAnim||0)) {
+                myPlayer.excaliburSlashAnim = s.players[id].excaliburSlashAnim;
+            }
             
             if(s.players[id].isDead && !myPlayer.isDead) myPlayer.arrowActive = false;
             if(!s.players[id].isDead && myPlayer.isDead) { myPlayer.x = s.players[id].x; myPlayer.y = s.players[id].y; }
@@ -2569,10 +2575,18 @@ function syncGS(s) {
                 gameState.players[id] = {...s.players[id]};
             } else {
                 let curX = gameState.players[id].x, curY = gameState.players[id].y, curA = gameState.players[id].angle || 0;
+                // Preserve locally-ticked excalibur swing/trail state so snapshots
+                // don't snap a smoothly-progressing animation backwards.
+                let curSlash = gameState.players[id].excaliburSlashAnim;
                 Object.assign(gameState.players[id], s.players[id]);
                 gameState.players[id].x = curX;
                 gameState.players[id].y = curY;
                 gameState.players[id].angle = curA;
+                // Only let snapshot RAISE the swing timer (new swing started),
+                // never lower it past what the local tick has already produced.
+                if(typeof curSlash === 'number' && curSlash > (gameState.players[id].excaliburSlashAnim||0)){
+                    gameState.players[id].excaliburSlashAnim = curSlash;
+                }
             }
         }
     }
@@ -6856,7 +6870,7 @@ function drawPlayers() {
             let smearFactor = Math.min(speed / 600, 5.0);
             let squashFactor = 10 / (10 + (smearFactor - 1) * 0.6);
             ctx.rotate(moveAngle);
-            ctx.scale(100 + (smearFactor - 1) * 0.85, squashFactor);
+            ctx.scale(1 + (smearFactor - 1) * 0.85, squashFactor);
             ctx.rotate(-moveAngle);
             
             // Draw elongated motion ghost trail (smear echo)
@@ -9025,38 +9039,58 @@ window.__drawExcaliburInGame = function(ctx, o, isImpactFlash) {
             }
         }
 
-        // While Blade Barrier is active, lock the blade pointing forward
-        // (aligned horizontally with the crosshair / facing direction).
+        // While Blade Barrier is active, lock the blade pointing perpendicular
+        // (rotated 90° from the crosshair) as a guard.
+        let targetAng = swingAng;
         if(o.excaliburBarrierActive){
             // Hold the blade rotated 90° (perpendicular to the crosshair) as a guard.
-            swingAng = Math.PI / 2;
+            targetAng = side * (Math.PI / 2);
             phase = 'guard';
         }
+
+        // Smoothly ease the displayed swing angle toward the target so the
+        // transition into / out of Blade Barrier (and any abrupt phase change)
+        // is animated rather than snapping. Stored per-player so each remote
+        // viewer maintains their own smoothing state.
+        if(typeof o._excDispSwingAng !== 'number') o._excDispSwingAng = targetAng;
+        const _nowMs = (typeof performance !== 'undefined') ? performance.now() : Date.now();
+        const _dtMs  = Math.min(64, _nowMs - (o._excDispSwingAngT || _nowMs));
+        o._excDispSwingAngT = _nowMs;
+        // Shortest-arc delta toward target.
+        let _delta = Math.atan2(Math.sin(targetAng - o._excDispSwingAng), Math.cos(targetAng - o._excDispSwingAng));
+        // Snappier during active swing phases, smoother into/out of guard.
+        const _lerpRate = (phase === 'swing' || phase === 'windup') ? 0.045 : 0.012;
+        const _k = 1 - Math.exp(-_lerpRate * _dtMs);
+        o._excDispSwingAng = o._excDispSwingAng + _delta * _k;
+        const drawAng = o._excDispSwingAng;
 
         // ----- Draw the blade (always visible) -----
         // ctx is already rotated by o.angle (player facing) in drawPlayers(),
         // so we only apply the local swing rotation here. Otherwise the blade
         // double-rotates and breaks for facings other than +x.
         ctx.save();
-        ctx.rotate(swingAng);
+        ctx.rotate(drawAng);
         // Anchor the grip so the pommel slightly overlaps the player circle edge.
         ctx.translate(EXC.SWORD_ANCHOR, 0);
         drawSword(ctx, EXC.SWORD_LEN, EXC.SWORD_THICK, blade, handleCol);
         ctx.restore();
 
         // ----- Tip trail (thin ribbon, brightest at the tip) -----
-        // Stored in player-LOCAL coords (ctx is rotated by o.angle outside),
-        // so we use only swingAng for the tip position.
+        // Stored in WORLD coordinates so when the player rotates or moves, prior
+        // trail points stay where they were drawn in the world (instead of being
+        // dragged around with the player frame, which produced a "blob" attached
+        // to the player on remote viewers).
         if(!o._excTipTrail) o._excTipTrail = [];
         const trail = o._excTipTrail;
         const tipR = EXC.SWORD_ANCHOR + 9 + EXC.SWORD_LEN;
-        const localAng = swingAng;
+        const facing = o.angle || 0;
+        const worldAng = facing + drawAng;
         const now = (typeof performance !== 'undefined') ? performance.now() : Date.now();
 
         if(phase === 'swing'){
             trail.push({
-                x: Math.cos(localAng) * tipR,
-                y: Math.sin(localAng) * tipR,
+                wx: o.x + Math.cos(worldAng) * tipR,
+                wy: o.y + Math.sin(worldAng) * tipR,
                 born: now,
             });
             if(trail.length > 14) trail.shift();
@@ -9068,12 +9102,30 @@ window.__drawExcaliburInGame = function(ctx, o, isImpactFlash) {
 
         if(trail.length >= 2){
             ctx.save();
+            // Draw in world space — undo the outer translate(o.x,o.y) + rotate(o.angle).
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            // Re-apply the same world transform that drawPlayers uses (camera/shake).
+            // The outer ctx already had cam transform applied before translate/rotate;
+            // we approximate by translating from the player world pos using the inverse.
+            // Simpler approach: rotate/translate back into the player-local frame and
+            // convert each world point to local coords ourselves.
+            ctx.restore();
+            ctx.save();
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.shadowBlur = 12;
             ctx.shadowColor = blade;
+            const cosF = Math.cos(-facing), sinF = Math.sin(-facing);
             for(let i = 1; i < trail.length; i++){
                 const p0 = trail[i-1], p1 = trail[i];
+                // Convert world coords back into the current player-local frame
+                // (ctx is already translated to o.x,o.y and rotated by o.angle).
+                const dx0 = p0.wx - o.x, dy0 = p0.wy - o.y;
+                const dx1 = p1.wx - o.x, dy1 = p1.wy - o.y;
+                const lx0 = dx0 * cosF - dy0 * sinF;
+                const ly0 = dx0 * sinF + dy0 * cosF;
+                const lx1 = dx1 * cosF - dy1 * sinF;
+                const ly1 = dx1 * sinF + dy1 * cosF;
                 const tNorm = i / (trail.length - 1);
                 const ageK  = 1 - Math.min(1, (now - p1.born) / TRAIL_LIFE);
                 const w     = (0.6 + tNorm * 4.2) * ageK;
@@ -9083,8 +9135,8 @@ window.__drawExcaliburInGame = function(ctx, o, isImpactFlash) {
                 ctx.strokeStyle = blade;
                 ctx.globalAlpha = a;
                 ctx.beginPath();
-                ctx.moveTo(p0.x, p0.y);
-                ctx.lineTo(p1.x, p1.y);
+                ctx.moveTo(lx0, ly0);
+                ctx.lineTo(lx1, ly1);
                 ctx.stroke();
             }
             ctx.restore();
@@ -9186,6 +9238,19 @@ function excaliburLocalTick(){
                 sdEv({type:'excalibur_ult_fire', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle});
                 applyShake(10, 0.3);
                 myPlayer.ultCharge = 0;
+            }
+        }
+    }
+    // For non-host clients: also tick down REMOTE excalibur players' swing timers
+    // locally so the animation progresses smoothly between host snapshots (otherwise
+    // remote viewers see a stuck/twitchy pose every time a snapshot reasserts the
+    // value). Host already ticks these in excaliburHostTick.
+    if(!isHost && gameState && gameState.players){
+        for(let id in gameState.players){
+            if(id === myId) continue;
+            const p = gameState.players[id];
+            if(p && p.heroClass === 'excalibur' && p.excaliburSlashAnim && p.excaliburSlashAnim > 0){
+                p.excaliburSlashAnim = Math.max(0, p.excaliburSlashAnim - dt);
             }
         }
     }
@@ -9427,9 +9492,15 @@ function excaliburHostTick(){
     _excHostLast = now;
 
     if(isHost && gameState && gameState.projectiles){
-        // Barrier countdown for remote players (local handled in localTick)
+        // Tick swing animation timer + barrier countdown for ALL players (incl. remote
+        // clients). Without this, gameState.players[*].excaliburSlashAnim would stay
+        // pinned at SWING_DUR on the host, and every snapshot would lock remote viewers
+        // (and the source client) into a frozen "windup" pose.
         for(let id in gameState.players){
             const s = gameState.players[id];
+            if(id !== myId && s.excaliburSlashAnim && s.excaliburSlashAnim > 0){
+                s.excaliburSlashAnim = Math.max(0, s.excaliburSlashAnim - dt);
+            }
             if(s.excaliburBarrierActive && id !== myId){
                 s.excaliburBarrierT = (s.excaliburBarrierT||0) - dt;
                 if(s.excaliburBarrierT <= 0){ s.excaliburBarrierActive = false; }
