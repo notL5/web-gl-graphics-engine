@@ -411,7 +411,7 @@ body.chat-off #game-container { width: min(95vw, calc(90vh * 16 / 9), 1700px) !i
         <div class="ability-slot" id="ui-esper-detonate"><div class="key">E</div><div class="name">Detonation</div><div class="status" id="status-esper-detonate">0 active</div></div>
         <div class="ability-slot" id="ui-esper-cradle"><div class="key">SPACE</div><div class="name">Kinetic Cradle</div><div class="status" id="status-esper-cradle">Ready</div><div class="cooldown-overlay" id="cd-esper-cradle"></div></div>
          <div class="ability-slot" id="ui-excalibur-slash"><div class="key">L-CLICK</div><div class="name">Heavy Crescent</div><div class="status" id="status-excalibur-slash">Ready</div><div class="cooldown-overlay" id="cd-excalibur-slash"></div></div>
-         <div class="ability-slot" id="ui-excalibur-barrier"><div class="key">R-CLICK / SHIFT</div><div class="name">Blade Barrier</div><div class="status" id="status-excalibur-barrier">Ready</div><div class="cooldown-overlay" id="cd-excalibur-barrier"></div></div>
+         <div class="ability-slot" id="ui-excalibur-barrier"><div class="key">SHIFT</div><div class="name">Blade Barrier</div><div class="status" id="status-excalibur-barrier">Ready</div><div class="cooldown-overlay" id="cd-excalibur-barrier"></div></div>
          <div class="ability-slot" id="ui-excalibur-throw"><div class="key">E</div><div class="name">Phantom Strike</div><div class="status" id="status-excalibur-throw">Ready</div><div class="cooldown-overlay" id="cd-excalibur-throw"></div></div>
          <div class="ability-slot" id="ui-excalibur-ult"><div class="key">SPACE</div><div class="name">Exalted Phalanx</div><div class="status" id="status-excalibur-ult">0%</div><div class="cooldown-overlay" id="cd-excalibur-ult"></div></div>
     </div>
@@ -9725,16 +9725,7 @@ window.addEventListener('mousedown', (e)=>{
     if(!myPlayer || myPlayer.heroClass !== 'excalibur' || myPlayer.isDead || myPlayer.stunTimer > 0) return;
     if(!gCon.classList.contains('active')) return;
     if(e.button === 2){
-        // Blade Barrier (shield) — HOLD to use, RELEASE to drop.
-        ensureExcaliburLocalCombat();
-        if(!localCombat.excBarrier.active && localCombat.excBarrier.cd <= 0 && !localCombat.excUlt.locking){
-            localCombat.excBarrier.active = true;
-            localCombat.excBarrier.activeT = 9999;
-            myPlayer.excaliburBarrierActive = true;
-            myPlayer.excaliburBarrierT = 9999;
-            myPlayer.excaliburBarrierDmg = 0;
-            sdEv({type:'excalibur_barrier_start'});
-        }
+        // Blade Barrier moved to SHIFT only — right-click disabled.
         return;
     }
     if(e.button === 0){
@@ -9751,21 +9742,6 @@ window.addEventListener('mousedown', (e)=>{
             // No external slash-arc VFX - the SWORD ITSELF is the hitbox & visual.
             sdEv({type:'excalibur_slash', x:myPlayer.x, y:myPlayer.y, angle:myPlayer.angle, side: myPlayer.excaliburComboSide});
         }
-    }
-}, true);
-
-// Release Blade Barrier on mouseup (hold-to-use behavior).
-window.addEventListener('mouseup', (e)=>{
-    if(e.button !== 2) return;
-    if(!myPlayer || myPlayer.heroClass !== 'excalibur') return;
-    if(typeof localCombat === 'undefined' || !localCombat.excBarrier) return;
-    if(localCombat.excBarrier.active){
-        localCombat.excBarrier.active = false;
-        localCombat.excBarrier.activeT = 0;
-        myPlayer.excaliburBarrierActive = false;
-        myPlayer.excaliburBarrierT = 0;
-        myPlayer.excaliburBarrierDmg = 0;
-        sdEv({type:'excalibur_barrier_end'});
     }
 }, true);
 
