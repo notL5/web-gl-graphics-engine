@@ -288,8 +288,11 @@ canvas#gameCanvas{display:block;width:100%;height:100%;background:transparent;cu
 #fps-display{min-width:55px;text-align:right;color:#22d3ee;font-weight:bold;}
 
 /* Graphics-low: drop blurs / heavy effects for performance */
-body.gfx-low *{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+body.gfx-low *{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important;text-shadow:none !important;filter:none !important;}
 body.gfx-low #screen-wrapper{animation:none !important;background:#3f3f46 !important;}
+body.gfx-low{background-image:none !important;background-color:#0a0a0a !important;}
+body.gfx-low *{transition:none !important;animation:none !important;}
+body.gfx-low #gameCanvas{image-rendering:pixelated;image-rendering:crisp-edges;}
 
 /* Chat — always full screen height, on the left.
    3 states on the start screen: normal / expanded (swipe-left) / hidden (swipe-right).
@@ -427,15 +430,27 @@ body.chat-off #game-container { width: min(95vw, calc(90vh * 16 / 9), 1700px) !i
 <div id="settings-panel">
     <h4>SETTINGS</h4>
     <div class="row"><span>FPS Limit</span><span id="fps-display">60</span></div>
-    <div class="row"><input type="range" id="fps-slider" min="60" max="160" step="1" value="60"></div>
+    <div class="row"><input type="range" id="fps-slider" min="30" max="360" step="5" value="60"></div>
     <div class="row"><span>Unlimited FPS</span><input type="checkbox" id="fps-unlimited"></div>
     <div class="row"><span>V-Sync</span><input type="checkbox" id="vsync-toggle" checked></div>
-    <div class="row"><span>Graphics</span>
-        <select id="graphics-select"><option value="high">High</option><option value="low">Low</option></select>
+    <div class="row"><span>Graphics Preset</span>
+        <select id="graphics-select"><option value="high">High</option><option value="low">Low (Chromebook / Weak Laptop)</option></select>
     </div>
+    <div class="row"><span>Shadows / Glow</span>
+        <select id="shadows-select"><option value="off">Off (Fastest)</option><option value="low">Low</option><option value="high">High</option></select>
+    </div>
+    <div class="row"><span>Particles</span>
+        <select id="particles-select"><option value="off">Off</option><option value="low">Low</option><option value="high">High</option></select>
+    </div>
+    <div class="row"><span>Map Style</span>
+        <select id="mapstyle-select"><option value="default">Default (Detailed)</option><option value="flat">Flat Color (Fastest)</option></select>
+    </div>
+    <div class="row"><span>Map Background</span><input type="color" id="mapbg-color" value="#1a1025" style="width:40px;height:22px;padding:0;border:1px solid #52525b;background:transparent;cursor:pointer;border-radius:4px;"></div>
+    <div class="row"><button id="mapbg-reset" style="flex:1;background:#27272a;color:#fff;border:1px solid #52525b;padding:3px 6px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.65rem;">Reset map background</button></div>
+    <div class="row"><span>Vignette</span><input type="checkbox" id="vignette-toggle"></div>
     <div class="row"><span>Show Hitboxes</span><input type="checkbox" id="hitbox-toggle"></div>
     <div class="row"><span>Allow Right-Click Menu</span><input type="checkbox" id="rclick-menu-toggle"></div>
-    <div style="font-size:0.65rem;color:#71717a;margin-top:8px;line-height:1.4;">Scroll over the slider to fine-tune FPS. V-Sync syncs frames to your monitor's refresh rate. Hitboxes draws a red outline around every damageable entity and projectile.</div>
+    <div style="font-size:0.65rem;color:#71717a;margin-top:8px;line-height:1.4;">Scroll the FPS slider to fine-tune (30-360). V-Sync caps at your monitor refresh rate. Unlimited uses a high-resolution scheduler that can exceed the refresh rate. The Low preset forces every option to its cheapest value — you can still re-enable individual ones afterwards. Map Style "Flat Color" replaces the detailed map with a solid color for a huge perf boost.</div>
     <h4 style="margin-top:14px;">ZONE COLORS</h4>
     <div style="font-size:0.65rem;color:#71717a;margin-bottom:6px;line-height:1.4;">Per-hero territory color. Paste a hex (#ff00aa) or a base64/data URL (data:image/png;base64,...) to use an image as a tiled pattern. Leave blank for the default.</div>
     <div id="zone-color-list" style="display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto;"></div>
@@ -620,33 +635,107 @@ window.PEER_CFG = {
 
 // ===== Settings (FPS, V-Sync, Graphics) + chat panel =====
 window.RIVALS_SETTINGS = (function(){
-    // Defaults updated so the game actually runs above 60fps out of the box.
-    // V-Sync OFF + 120fps target -> setTimeout-driven loop that isn't capped
-    // by the browser's rAF tick (which on a 60Hz display caps at 60).
-    let def = { fpsTarget: 120, unlimitedFps: false, vsync: false, graphics: 'high' };
+    let def = {
+        fpsTarget: 120,
+        unlimitedFps: false,
+        vsync: false,
+        graphics: 'high',     // 'high' | 'low'  (preset toggle for all the granular options)
+        shadows: 'high',      // 'off' | 'low' | 'high'
+        vignette: true,       // dark vignette overlay around the screen edges
+        particles: 'high',    // 'off' | 'low' | 'high'
+        mapStyle: 'default',  // 'default' (full art) | 'flat' (huge perf win)
+        mapBgColor: '#1a1025' // used in flat mode AND as a tint multiplier in default mode (if not '')
+    };
     try { let s = JSON.parse(localStorage.getItem('rivals_settings')||'null'); if(s) return Object.assign(def, s); } catch(e){}
     return def;
 })();
 function saveSettings(){ try { localStorage.setItem('rivals_settings', JSON.stringify(window.RIVALS_SETTINGS)); } catch(e){} }
-function applyGraphicsMode(){
-    if(window.RIVALS_SETTINGS.graphics === 'low') document.body.classList.add('gfx-low');
-    else document.body.classList.remove('gfx-low');
-    window.GFX_LOW = (window.RIVALS_SETTINGS.graphics === 'low');
+
+// Map shadow setting to a multiplier the patched ctx.shadowBlur uses.
+function _shadowMult(){
+    const s = window.RIVALS_SETTINGS.shadows;
+    if(s === 'off') return 0;
+    if(s === 'low') return 0.4;
+    return 1;
 }
+
+// Patch the 2D canvas prototype ONCE so every shadowBlur / filter assignment
+// is gated by the current shadow setting. This avoids touching hundreds of call sites.
+(function patchCtx(){
+    if(window.__gfxCtxPatched) return;
+    window.__gfxCtxPatched = true;
+    const P = CanvasRenderingContext2D.prototype;
+    const origBlur = Object.getOwnPropertyDescriptor(P, 'shadowBlur');
+    const origFilter = Object.getOwnPropertyDescriptor(P, 'filter');
+    if(origBlur && origBlur.set){
+        Object.defineProperty(P, 'shadowBlur', {
+            configurable: true,
+            get(){ return origBlur.get.call(this); },
+            set(v){
+                const m = window.__SHADOW_MULT;
+                if(m === 0) v = 0;
+                else if(m !== 1) v = v * m;
+                origBlur.set.call(this, v);
+            }
+        });
+    }
+    if(origFilter && origFilter.set){
+        Object.defineProperty(P, 'filter', {
+            configurable: true,
+            get(){ return origFilter.get.call(this); },
+            set(v){ if(window.GFX_LOW && v && v !== 'none') v = 'none'; origFilter.set.call(this, v); }
+        });
+    }
+})();
+
+function applyGraphicsMode(){
+    const s = window.RIVALS_SETTINGS;
+    const low = (s.graphics === 'low');
+    if(low) document.body.classList.add('gfx-low');
+    else document.body.classList.remove('gfx-low');
+    window.GFX_LOW = low;
+    window.__SHADOW_MULT = _shadowMult();
+    // Particle cap exposed to gLoop / drawVFX
+    window.__PARTICLE_CAP = (s.particles === 'off') ? 0 : (s.particles === 'low') ? 25 : 200;
+    if(typeof updateCanvasSize === 'function') updateCanvasSize();
+}
+
+// When user picks the Low PRESET, force every sub-option to its cheapest value.
+function applyGraphicsPreset(){
+    const s = window.RIVALS_SETTINGS;
+    if(s.graphics === 'low'){
+        s.shadows = 'off';
+        s.vignette = false;
+        s.particles = 'off';
+        s.mapStyle = 'flat';
+    } else {
+        // High preset = nice defaults (unless the user already customized)
+        s.shadows = 'high';
+        s.vignette = true;
+        s.particles = 'high';
+        s.mapStyle = 'default';
+    }
+    applyGraphicsMode();
+    // Refresh UI to reflect preset
+    const $ = id => document.getElementById(id);
+    if($('shadows-select')) $('shadows-select').value = s.shadows;
+    if($('vignette-toggle')) $('vignette-toggle').checked = s.vignette;
+    if($('particles-select')) $('particles-select').value = s.particles;
+    if($('mapstyle-select')) $('mapstyle-select').value = s.mapStyle;
+    saveSettings();
+}
+
 function toggleSettingsPanel(){ document.getElementById('settings-panel').classList.toggle('open'); }
+
 function _wireSettings(){
     const s = window.RIVALS_SETTINGS;
-    // Hoist chat panel out of #game-container so it remains visible on the
-    // lobby/start screen (its hidden ancestor would otherwise hide it).
     const cw = document.getElementById('chat-wrapper');
     if(cw && cw.parentNode && cw.parentNode.id === 'game-container') document.body.appendChild(cw);
     if(cw) cw.classList.remove('hidden');
     document.body.classList.add('with-chat');
 
-    // ===== Chat state helper (no swipe gestures — toggle only via 'C' in-game) =====
     if(cw){
         const setChatState = (state) => {
-            // state: 'normal' | 'expanded' | 'off'
             cw.classList.remove('expanded','chat-hidden');
             document.body.classList.remove('with-chat-expanded','chat-off');
             if(state === 'expanded'){ cw.classList.add('expanded'); document.body.classList.add('with-chat-expanded'); }
@@ -657,31 +746,71 @@ function _wireSettings(){
         window.__chatState = 'normal';
     }
 
-    const slider = document.getElementById('fps-slider');
-    const disp = document.getElementById('fps-display');
-    const unl = document.getElementById('fps-unlimited');
-    const vs = document.getElementById('vsync-toggle');
-    const gfx = document.getElementById('graphics-select');
+    const $ = id => document.getElementById(id);
+    const slider = $('fps-slider'), disp = $('fps-display'), unl = $('fps-unlimited'),
+          vs = $('vsync-toggle'), gfx = $('graphics-select');
     if(!slider) return;
+
+    s.fpsTarget = Math.max(30, Math.min(360, s.fpsTarget||60));
     slider.value = s.fpsTarget; unl.checked = s.unlimitedFps; vs.checked = s.vsync; gfx.value = s.graphics;
     const refreshDisp = ()=>{ disp.textContent = s.unlimitedFps ? '∞' : (s.vsync ? 'V-Sync' : s.fpsTarget); };
     refreshDisp();
     slider.addEventListener('input', e => { s.fpsTarget = +e.target.value; refreshDisp(); saveSettings(); });
-    // Scroll wheel on slider adjusts FPS in 5-step increments
     slider.addEventListener('wheel', e => {
         e.preventDefault();
-        let cur = s.fpsTarget;
-        cur += (e.deltaY < 0 ? 5 : -5);
-        cur = Math.max(60, Math.min(160, cur));
+        let cur = s.fpsTarget + (e.deltaY < 0 ? 5 : -5);
+        cur = Math.max(30, Math.min(360, cur));
         s.fpsTarget = cur; slider.value = cur; refreshDisp(); saveSettings();
     }, { passive:false });
-    unl.addEventListener('change', e => { s.unlimitedFps = e.target.checked; refreshDisp(); saveSettings(); });
-    vs.addEventListener('change', e => { s.vsync = e.target.checked; refreshDisp(); saveSettings(); });
-    gfx.addEventListener('change', e => { s.graphics = e.target.value; applyGraphicsMode(); saveSettings(); });
+    unl.addEventListener('change', e => {
+        s.unlimitedFps = e.target.checked;
+        if(s.unlimitedFps && s.vsync){ s.vsync = false; vs.checked = false; }
+        refreshDisp(); saveSettings();
+    });
+    vs.addEventListener('change', e => {
+        s.vsync = e.target.checked;
+        if(s.vsync && s.unlimitedFps){ s.unlimitedFps = false; unl.checked = false; }
+        refreshDisp(); saveSettings();
+    });
+    gfx.addEventListener('change', e => { s.graphics = e.target.value; applyGraphicsPreset(); });
+
+    // New granular options
+    const sh = $('shadows-select'), vg = $('vignette-toggle'), pa = $('particles-select'),
+          ms = $('mapstyle-select'), mc = $('mapbg-color'), mcr = $('mapbg-reset');
+    if(sh){
+        sh.value = s.shadows;
+        sh.addEventListener('change', e => { s.shadows = e.target.value; window.__SHADOW_MULT = _shadowMult(); saveSettings(); });
+    }
+    if(vg){
+        vg.checked = s.vignette;
+        vg.addEventListener('change', e => { s.vignette = e.target.checked; saveSettings(); });
+    }
+    if(pa){
+        pa.value = s.particles;
+        pa.addEventListener('change', e => {
+            s.particles = e.target.value;
+            window.__PARTICLE_CAP = (s.particles === 'off') ? 0 : (s.particles === 'low') ? 25 : 200;
+            saveSettings();
+        });
+    }
+    if(ms){
+        ms.value = s.mapStyle;
+        ms.addEventListener('change', e => { s.mapStyle = e.target.value; saveSettings(); });
+    }
+    if(mc){
+        mc.value = s.mapBgColor || '#1a1025';
+        mc.addEventListener('input', e => { s.mapBgColor = e.target.value; saveSettings(); });
+    }
+    if(mcr){
+        mcr.addEventListener('click', () => {
+            s.mapBgColor = '#1a1025';
+            if(mc) mc.value = s.mapBgColor;
+            saveSettings();
+        });
+    }
     applyGraphicsMode();
 }
 document.addEventListener('DOMContentLoaded', _wireSettings);
-// Close settings panel when clicking outside
 document.addEventListener('click', e => {
     let p = document.getElementById('settings-panel');
     let b = document.getElementById('settings-btn');
@@ -689,18 +818,71 @@ document.addEventListener('click', e => {
         p.classList.remove('open');
 });
 
-// Frame scheduler honoring V-Sync / FPS-cap / Unlimited
-window._lastFrameSched = 0;
+// ===== Frame scheduler (rewritten for stability + true uncapped FPS) =====
+// Modes:
+//   V-Sync ON   -> requestAnimationFrame.  FPS limited to monitor refresh.
+//   Unlimited   -> MessageChannel postMessage loop. Runs as fast as the event
+//                  loop will dispatch tasks (typically several thousand fps on
+//                  desktops). NOT clamped to 4ms like setTimeout, and NOT
+//                  aligned to the compositor like rAF — this is what actually
+//                  lets the game exceed the monitor's refresh rate.
+//   FPS cap N   -> Fixed-step accumulator using performance.now() with a
+//                  message-loop spin. For caps above the refresh rate we busy
+//                  re-post via MessageChannel; for caps below we use setTimeout.
+//                  Drift-corrected so the long-run average is exactly N fps.
+(function(){
+    const mc = new MessageChannel();
+    // Use a small queue so reentrant _scheduleFrame calls during onmessage
+    // (gLoop -> _scheduleFrame -> postMessage) are never dropped.
+    const q = [];
+    mc.port1.onmessage = () => {
+        const fn = q.shift();
+        if(fn) fn(performance.now());
+    };
+    window.__postSched = (fn) => { q.push(fn); mc.port2.postMessage(0); };
+})();
+
+// Target-aligned scheduling state
+window.__schedNextTime = 0;
 function _scheduleFrame(loopFn){
     const s = window.RIVALS_SETTINGS;
-    if(s.vsync) return requestAnimationFrame(loopFn);
-    if(s.unlimitedFps) return setTimeout(() => loopFn(performance.now()), 0);
-    const interval = 1000 / Math.max(30, s.fpsTarget);
+
+    if(s.vsync){
+        window.__schedNextTime = 0;
+        return requestAnimationFrame(loopFn);
+    }
+
+    if(s.unlimitedFps){
+        window.__schedNextTime = 0;
+        return window.__postSched(loopFn);
+    }
+
+    const fps = Math.max(30, Math.min(360, s.fpsTarget|0));
+    const interval = 1000 / fps;
     const now = performance.now();
-    const wait = Math.max(0, interval - (now - window._lastFrameSched));
-    window._lastFrameSched = now + wait;
-    return setTimeout(() => loopFn(performance.now()), wait);
+    if(!window.__schedNextTime || now - window.__schedNextTime > 250){
+        // First call OR fell way behind (tab unfocused, hitstop) -> resync.
+        window.__schedNextTime = now;
+    }
+    window.__schedNextTime += interval;
+    const wait = window.__schedNextTime - now;
+
+    if(wait <= 0){
+        // We're already past the target tick — fire immediately via postMessage
+        // (no 4ms clamp). This is the path that lets caps above the refresh
+        // rate (e.g. 240fps on a 60Hz panel) actually hit their target.
+        return window.__postSched(loopFn);
+    }
+    if(wait < 4){
+        // Sub-4ms wait: setTimeout would round up to 4ms and cap us at ~250fps.
+        // Spin via postMessage instead (still yields to the browser between frames).
+        return window.__postSched(loopFn);
+    }
+    return setTimeout(() => window.__postSched(loopFn), wait - 1);
 }
+
+
+
 
 // =====================================================================
 // BALANCE CONFIG - Easy to tweak hero numbers here
@@ -708,7 +890,7 @@ function _scheduleFrame(loopFn){
 const BALANCE = {
     tim: {
         coreBeamMinDps: 100,    // DPS at 0 charge
-        coreBeamMaxDps: 420,   // DPS at full (4.0) charge
+        coreBeamMaxDps: 300,   // DPS at full (4.0) charge
     },
     blitz: {
         handgunCooldown: 0.2,    // seconds between shots (auto-fire)
@@ -1477,7 +1659,30 @@ const abilitySlotEls=Array.from(document.querySelectorAll('.ability-slot'));
 const nameWidthCache=new Map(), aeroBgImageCache=new Map(), speedTrailCooldowns={};
 let lastTraceDashTrailSent=0,lastUiRefresh=0,lastMinimapDraw=0,lastScoreboardHtml='';
 const MAX_VFX=320;
-function updateCanvasSize(){if(!gCon.classList.contains('active'))return;const nextW=Math.max(1,gCon.clientWidth|0),nextH=Math.max(1,gCon.clientHeight|0);if(can.width!==nextW||can.height!==nextH){can.width=nextW;can.height=nextH;}let mw=getEl('minimap-wrapper');if(mw){const mini=getEl('minimapCanvas'),miniW=Math.max(1,mw.clientWidth|0),miniH=Math.max(1,mw.clientHeight|0);if(mini.width!==miniW||mini.height!==miniH){mini.width=miniW;mini.height=miniH;}}}
+function updateCanvasSize(){
+    if(!gCon.classList.contains('active')) return;
+    // Low graphics: downscale the canvas backing store (CSS-scaled up by the browser)
+    // — fewer pixels to shade is the single biggest win on integrated GPUs / Chromebooks.
+    const scale = window.GFX_LOW ? 0.65 : 1;
+    const cssW = Math.max(1, gCon.clientWidth|0), cssH = Math.max(1, gCon.clientHeight|0);
+    const nextW = Math.max(1, (cssW * scale)|0), nextH = Math.max(1, (cssH * scale)|0);
+    if(can.width !== nextW || can.height !== nextH){
+        can.width = nextW; can.height = nextH;
+        can.style.width = cssW + 'px'; can.style.height = cssH + 'px';
+        // Disable smoothing on the upscale for low mode (faster + crisper)
+        if(window.GFX_LOW){ ctx.imageSmoothingEnabled = false; }
+    }
+    let mw = getEl('minimap-wrapper');
+    if(mw){
+        const mini = getEl('minimapCanvas');
+        const miniScale = window.GFX_LOW ? 0.5 : 1;
+        const miniW = Math.max(1, (mw.clientWidth * miniScale)|0), miniH = Math.max(1, (mw.clientHeight * miniScale)|0);
+        if(mini.width !== miniW || mini.height !== miniH){
+            mini.width = miniW; mini.height = miniH;
+            mini.style.width = mw.clientWidth + 'px'; mini.style.height = mw.clientHeight + 'px';
+        }
+    }
+}
 function getCachedAeroImage(ownerId,src){if(!src)return null;const key=`${ownerId}:${src.length}:${src.slice(0,32)}`;let img=aeroBgImageCache.get(key);if(!img){img=new Image();img.src=src;aeroBgImageCache.set(key,img);}return img;}
 function getNameWidth(name){const key=name||'Player';if(nameWidthCache.has(key))return nameWidthCache.get(key);ctx.save();ctx.font='11px "Dela Gothic One", sans-serif';const width=ctx.measureText(key).width;ctx.restore();nameWidthCache.set(key,width);return width;}
 function setVisibleAbilities(ids){const visible=new Set(ids.map(id=>`ui-${id}`));abilitySlotEls.forEach(el=>{const shouldShow=visible.has(el.id);if(el.dataset.visible!==(shouldShow?'1':'0')){el.style.display=shouldShow?'flex':'none';el.dataset.visible=shouldShow?'1':'0';}});}
@@ -6567,8 +6772,25 @@ function drawZones(){
 
 
 function drawGrid() {
-    // Dark walls are now baked into mapCanvas (rounded corners, flat outline, no glow).
-    ctx.drawImage(mapCanvas, 0, 0);
+    const s = window.RIVALS_SETTINGS;
+    // Flat color mode skips the expensive baked map blit entirely — biggest win
+    // for weak laptops. Just fills a solid color across the whole world.
+    if(s && s.mapStyle === 'flat'){
+        ctx.fillStyle = s.mapBgColor || '#1a1025';
+        ctx.fillRect(0, 0, W, H);
+    } else {
+        // Dark walls are now baked into mapCanvas (rounded corners, flat outline, no glow).
+        ctx.drawImage(mapCanvas, 0, 0);
+        // Optional color tint over the detailed map (player preference).
+        if(s && s.mapBgColor && s.mapBgColor !== '#1a1025'){
+            ctx.save();
+            ctx.globalAlpha = 0.35;
+            ctx.globalCompositeOperation = 'multiply';
+            ctx.fillStyle = s.mapBgColor;
+            ctx.fillRect(0, 0, W, H);
+            ctx.restore();
+        }
+    }
     drawZones();
 
     if(gameState.koth && activeServerMode === 'KOTH') {
@@ -9012,7 +9234,9 @@ function gLoop(t) {
     cam.zoom += (cam.targetZoom - cam.zoom) * 5 * dt;
     
     const pk = Object.keys(gameState.players), ptt = pk.length > 0 ? gameState.players : {[myId]: myPlayer};
-    if(!window.GFX_LOW) for(let id in ptt) {
+    const _particles = window.RIVALS_SETTINGS && window.RIVALS_SETTINGS.particles;
+    const _spawnSpeedLines = (_particles === 'high'); // only spawn speed-line particles on High
+    if(_spawnSpeedLines) for(let id in ptt) {
         let p = ptt[id]; if(p.isDead) continue;
         let dx = p.x - (p.lastX !== undefined ? p.lastX : p.x), dy = p.y - (p.lastY !== undefined ? p.lastY : p.y);
         p.lastX = p.x; p.lastY = p.y;
@@ -9024,38 +9248,58 @@ function gLoop(t) {
             }
         }
     }
-    // Low graphics: keep the VFX array short to prevent overdraw spikes
-    if(window.GFX_LOW && vfx.length > 60) vfx.splice(0, vfx.length - 60);
+    // Hard particle cap from settings (Off=0, Low=25, High=200).
+    const _pCap = window.__PARTICLE_CAP !== undefined ? window.__PARTICLE_CAP : 200;
+    if(vfx.length > _pCap) vfx.splice(0, vfx.length - _pCap);
     
     let tX = Math.max(0, Math.min(W - can.width / cam.zoom, myPlayer.x - (can.width / 2) / cam.zoom));
     let tY = Math.max(0, Math.min(H - can.height / cam.zoom, myPlayer.y - (can.height / 2) / cam.zoom));
     cam.x += (tX - cam.x) * 10 * dt;
     cam.y += (tY - cam.y) * 10 * dt;
     
-    // Decrement impact flash timer
+    // Decrement impact flash timer (skipped entirely in low gfx)
     if(impactFlashTimer > 0) impactFlashTimer -= dt;
+    if(window.GFX_LOW) impactFlashTimer = 0;
     
     ctx.clearRect(0, 0, can.width, can.height); ctx.save();
     
-    // Impact flash: white background for the flash frame
     if(impactFlashTimer > 0) {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, can.width, can.height);
     }
     
-    if(sShake.timer > 0) {
+    if(sShake.timer > 0 && !window.GFX_LOW) {
         let m = sShake.mag * (sShake.timer / sShake.maxTimer);
         ctx.translate((Math.random() - 0.5) * m, (Math.random() - 0.5) * m);
+        sShake.timer -= dt;
+    } else if(sShake.timer > 0) {
         sShake.timer -= dt;
     }
     
     ctx.scale(cam.zoom, cam.zoom); ctx.translate(-cam.x, -cam.y);
     
-    // During impact flash, skip drawing the map/grid (white bg already drawn)
     if(impactFlashTimer <= 0) drawGrid();
     drawAeroTabs(); drawWallsOverlay(); drawShields(); drawCorsairCannons(); drawHPs(); drawEnts(); drawPlayers(); drawAeroContextMenuWorld(ctx); drawAeroGlobalCursor(ctx, cam); drawVFX(); if(window.__showHitboxes) drawHitboxesDebug(); 
     
-    ctx.restore(); if(t - lastMinimapDraw > 90) { drawMinimap(); lastMinimapDraw = t; }
+    const minimapInterval = window.GFX_LOW ? 200 : 90;
+    ctx.restore();
+    
+    // Vignette overlay (after restore -> screen space). Cached radial gradient
+    // so we don't rebuild it every frame.
+    if(window.RIVALS_SETTINGS && window.RIVALS_SETTINGS.vignette){
+        if(!window.__vignetteGrad || window.__vignetteGradW !== can.width || window.__vignetteGradH !== can.height){
+            const g = ctx.createRadialGradient(can.width/2, can.height/2, Math.min(can.width,can.height)*0.35, can.width/2, can.height/2, Math.max(can.width,can.height)*0.75);
+            g.addColorStop(0, 'rgba(0,0,0,0)');
+            g.addColorStop(1, 'rgba(0,0,0,0.55)');
+            window.__vignetteGrad = g;
+            window.__vignetteGradW = can.width;
+            window.__vignetteGradH = can.height;
+        }
+        ctx.fillStyle = window.__vignetteGrad;
+        ctx.fillRect(0, 0, can.width, can.height);
+    }
+    
+    if(t - lastMinimapDraw > minimapInterval) { drawMinimap(); lastMinimapDraw = t; }
     
     if(myPlayer.isDead) {
         ctx.fillStyle = 'rgba(9,9,11,0.8)'; ctx.fillRect(0, 0, can.width, can.height);
