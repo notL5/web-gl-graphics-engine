@@ -1485,6 +1485,10 @@ function isSpawnPointSafe(spawn,playerId,team='none'){if(!spawn)return false;con
 function getSafeSpawn(playerId,team='none'){const scored=SPAWN_POINTS.map(spawn=>{const fixed=gnV(spawn.x,spawn.y);let nearestEnemy=Infinity;for(let id in gameState.players){if(id===playerId)continue;const p=gameState.players[id];if(!p||p.isDead||(gameState.isTeamMode&&p.team===team))continue;nearestEnemy=Math.min(nearestEnemy,Math.hypot(p.x-fixed.x,p.y-fixed.y));}return {spawn:fixed,safe:isSpawnPointSafe(fixed,playerId,team),nearestEnemy};}).sort((a,b)=>Number(b.safe)-Number(a.safe)||b.nearestEnemy-a.nearestEnemy);return (scored[0]&&scored[0].spawn)||gnV(W/2,H/2);}
 function clampVfxPool(){if(vfx.length>MAX_VFX)vfx.splice(0,vfx.length-MAX_VFX);}
 function getCompactState(includeWalls=false){return {players:gameState.players,projectiles:gameState.projectiles,pickups:gameState.pickups,walls:includeWalls?gameState.walls:undefined,shields:gameState.shields||[],clones:gameState.clones||[],isTeamMode:gameState.isTeamMode,healthPacks:gameState.healthPacks||[],train:gameState.train||{phase:'idle',timer:2},koth:gameState.koth,ultOrb:gameState.ultOrb,juggernautId:gameState.juggernautId??null,corsairCannons:gameState.corsairCannons||[]};}
+// PERF: hot snapshot = data that changes every frame (players + projectiles). Sent at high rate.
+function getHotState(){return {players:gameState.players,projectiles:gameState.projectiles};}
+// PERF: cold snapshot = everything else, only changes occasionally. Sent at low rate.
+function getColdState(includeWalls=false){return {pickups:gameState.pickups,walls:includeWalls?gameState.walls:undefined,shields:gameState.shields||[],clones:gameState.clones||[],isTeamMode:gameState.isTeamMode,healthPacks:gameState.healthPacks||[],train:gameState.train||{phase:'idle',timer:2},koth:gameState.koth,ultOrb:gameState.ultOrb,juggernautId:gameState.juggernautId??null,corsairCannons:gameState.corsairCannons||[]};}
 function getStatePacket(includeWalls=false){return {type:'state', state:getCompactState(includeWalls), migrationOrder:migrationOrder, hostPeerId: myId};}
 
 const pCan=getEl('previewCanvas'), pCtx=pCan.getContext('2d');
@@ -2429,7 +2433,7 @@ function connectToServer(mode, explicitHostId) {
     myPeer.on('open', id => {
         if(attemptDone || peer !== myPeer) return;
         myId = id; myPlayer.id = id;
-        hostConnection = myPeer.connect(srvId, { reliable: true });
+        hostConnection = myPeer.connect(srvId, { reliable: true, serialization: 'binary' });
 
         // Safety net: if neither 'open' nor an error has fired in time, fall back.
         connectingTimeout = setTimeout(() => {
@@ -2473,6 +2477,12 @@ function connectToServer(mode, explicitHostId) {
                 if (d.hostPeerId) currentHostPeerId = d.hostPeerId;
                 syncGS(d.state);
             }
+            else if (d.type === 'state_hot') {
+                if (d.migrationOrder) migrationOrder = d.migrationOrder;
+                if (d.hostPeerId) currentHostPeerId = d.hostPeerId;
+                syncGS(d.state, true);
+            }
+            else if (d.type === 'state_cold') { syncGSCold(d.state); }
             else if (d.type === 'killfeed') addToKillFeed(d);
             else if (d.type === 'hitmarker') spawnHitmarker(d.x, d.y, d.damage);
             else if (d.type === 'chat') addChatMessage(d);
@@ -2738,14 +2748,35 @@ function applyExpKbk(ex, ey, r) {
 }
 
 let _interpTargets = {}; // store target positions for lerp
-function syncGS(s) {
-    gameState.projectiles = s.projectiles || []; gameState.pickups = s.pickups || []; if(s.walls) gameState.walls = s.walls;
-    gameState.shields = s.shields || []; gameState.clones = s.clones || []; gameState.isTeamMode = s.isTeamMode;
-    gameState.healthPacks = s.healthPacks || []; gameState.train = s.train || {phase:'idle', timer:2};
+function syncGSCold(s){
+    if(!s) return;
+    if(s.pickups) gameState.pickups = s.pickups;
+    if(s.walls) gameState.walls = s.walls;
+    if(s.shields) gameState.shields = s.shields;
+    if(s.clones) gameState.clones = s.clones;
+    if(s.isTeamMode !== undefined) gameState.isTeamMode = s.isTeamMode;
+    if(s.healthPacks) gameState.healthPacks = s.healthPacks;
+    if(s.train) gameState.train = s.train;
     if(s.koth) gameState.koth = s.koth;
     if(s.ultOrb) gameState.ultOrb = s.ultOrb;
     if('juggernautId' in s) gameState.juggernautId = s.juggernautId;
     if(s.corsairCannons) gameState.corsairCannons = s.corsairCannons;
+}
+function syncGS(s, hotOnly) {
+    gameState.projectiles = s.projectiles || [];
+    if(!hotOnly){
+        if(s.pickups) gameState.pickups = s.pickups;
+        if(s.walls) gameState.walls = s.walls;
+        if(s.shields) gameState.shields = s.shields;
+        if(s.clones) gameState.clones = s.clones;
+        if(s.isTeamMode !== undefined) gameState.isTeamMode = s.isTeamMode;
+        if(s.healthPacks) gameState.healthPacks = s.healthPacks;
+        if(s.train) gameState.train = s.train;
+        if(s.koth) gameState.koth = s.koth;
+        if(s.ultOrb) gameState.ultOrb = s.ultOrb;
+        if('juggernautId' in s) gameState.juggernautId = s.juggernautId;
+        if(s.corsairCannons) gameState.corsairCannons = s.corsairCannons;
+    }
     
     for(let id in gameState.players) { if(!s.players[id] && id !== myId) { delete gameState.players[id]; delete _interpTargets[id]; } }
     for(let id in _interpTargets) { if(!s.players[id]) delete _interpTargets[id]; }
@@ -2845,16 +2876,23 @@ function updateHair(dt) {
     }
 }
 
-let _bdStLast = 0, _bdStInterval = 1000/24, _bdStFullStateLast = 0;
+let _bdStLast = 0, _bdStInterval = 1000/30, _bdStFullStateLast = 0, _bdColdLast = 0, _bdColdInterval = 200;
 function bdSt() {
     if(!isHost) return;
     let now = performance.now();
     if(now - _bdStLast < _bdStInterval) return;
     _bdStLast = now;
-    const includeWalls = now - _bdStFullStateLast > 3000;
-    if(includeWalls) _bdStFullStateLast = now;
-    const snapshot = getCompactState(includeWalls);
-    connections.forEach(c => { if(c.open) c.send({type:'state', state:snapshot, migrationOrder:migrationOrder, hostPeerId: myId}); });
+    // PERF: hot state every tick (~30Hz) - small, players + projectiles only
+    const hot = getHotState();
+    connections.forEach(c => { if(c.open) c.send({type:'state_hot', state:hot, migrationOrder:migrationOrder, hostPeerId: myId}); });
+    // PERF: cold state every 200ms (5Hz), full walls every 5s
+    if(now - _bdColdLast >= _bdColdInterval){
+        _bdColdLast = now;
+        const includeWalls = now - _bdStFullStateLast > 5000;
+        if(includeWalls) _bdStFullStateLast = now;
+        const cold = getColdState(includeWalls);
+        connections.forEach(c => { if(c.open) c.send({type:'state_cold', state:cold}); });
+    }
 }
 
 let _sdUpLast = 0, _sdUpInterval = 1000/30; // throttle to 30hz
