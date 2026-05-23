@@ -1239,6 +1239,12 @@
                     <div class="status" id="status-trace-dash">Ready</div>
                     <div class="cooldown-overlay" id="cd-trace-dash"></div>
                 </div>
+                <div class="ability-slot" id="ui-trace-eh">
+                    <div class="key">Q</div>
+                    <div class="name">Event Horizon</div>
+                    <div class="status" id="status-trace-eh">Ready</div>
+                    <div class="cooldown-overlay" id="cd-trace-eh"></div>
+                </div>
                 <div class="ability-slot" id="ui-aero-tab">
                     <div class="key">L-CLICK</div>
                     <div class="name">Draw Tab</div>
@@ -1318,8 +1324,9 @@
                 </div>
                 <div class="ability-slot" id="ui-kendo-arrow">
                     <div class="key">L-CLICK</div>
-                    <div class="name">Y-Arrow</div>
+                    <div class="name">Y-Snap</div>
                     <div class="status" id="status-kendo-arrow">Ready</div>
+                    <div class="cooldown-overlay" id="cd-kendo-arrow"></div>
                 </div>
                 <div class="ability-slot" id="ui-kendo-ride">
                     <div class="key">SPACE</div>
@@ -1350,6 +1357,12 @@
                     <div class="name">Swap</div>
                     <div class="status" id="status-glitch-swap">Ready</div>
                     <div class="cooldown-overlay" id="cd-glitch-swap"></div>
+                </div>
+                <div class="ability-slot" id="ui-glitch-zone">
+                    <div class="key">R-DRAG + 1-5</div>
+                    <div class="name">Hacker Zone</div>
+                    <div class="status" id="status-glitch-zone">Ready</div>
+                    <div class="cooldown-overlay" id="cd-glitch-zone"></div>
                 </div>
                 <div class="ability-slot" id="ui-nitro-charge">
                     <div class="key">HOLD L-CLICK</div>
@@ -1561,7 +1574,7 @@
                 </div>
                 <div class="row">
                     <span>Map Background</span>
-                    <input type="color" id="mapbg-color" value="#1a1025" style="width:40px;height:22px;padding:0;border:1px solid #52525b;background:transparent;cursor:pointer;border-radius:4px;">
+                    <input type="color" id="mapbg-color" value="#000000" style="width:40px;height:22px;padding:0;border:1px solid #52525b;background:transparent;cursor:pointer;border-radius:4px;">
                 </div>
                 <div class="row">
                     <button id="mapbg-reset" style="flex:1;background:#27272a;color:#fff;border:1px solid #52525b;padding:3px 6px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.65rem;">Reset map background</button>
@@ -1590,7 +1603,12 @@
                     <input type="checkbox" id="rclick-menu-toggle">
                 </div>
                 <div style="font-size:0.65rem;color:#71717a;margin-top:8px;line-height:1.4;">Scroll the FPS slider to fine-tune (30-360). V-Sync syncs to your monitor refresh. Unlimited removes all pacing — the FPS counter will exceed your refresh rate even though the screen can't show every frame. Resolution Scale: 0% = blurriest + fastest, 100% = default, 200% = supersampled (sharper, slower). Map Style "Flat Color" replaces the detailed map with a solid color for a huge perf boost.</div>
-                <!-- Zone color customization removed from settings — overrides live in code (see HARDCODED_ZONE_COLORS at end of file). -->
+                <div class="row">
+                    <span>Hero Zone</span>
+                    <input type="checkbox" id="nozone-toggle">
+                </div>
+                <!-- Hero Zone: ON => floor uses YOUR hero color (each player sees their own). OFF => plain grey floor. -->
+
             </div>
             <div id="lobby-screen" class="screen">
                 <h1 class="lobby-title">RIVALS</h1>
@@ -1647,6 +1665,8 @@
                                 <!-- The Esper removed -->
                                 <button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
                                 <button id="btn-trace" class="class-list-btn selected" onclick="selectHero('trace')" style="--glow-color: #a855f7; background:url('https://cdn.dribbble.com/userupload/20458852/file/original-68a5cddf4d8bad135c3791b2ebc891df.gif') center/cover;">Trace</button>
+                                <button id="btn-spectator" class="class-list-btn" onclick="selectHero('spectator')" style="--glow-color: #94a3b8; background:linear-gradient(135deg,#1f2937,#475569,#94a3b8);color:#fff;">Spectator</button>
+
                             </div>
                         </div>
                     </div>
@@ -1913,7 +1933,9 @@
                     // default SOLID BLACK per project spec
                     renderScale: 85,
                     // default 85% per project spec
-                    showHeroBg: false // hero background images OFF by default for performance
+                    showHeroBg: false, // hero background images OFF by default for performance
+                    heroZone: true // ON => floor tinted with your hero color; OFF => grey. Zones (other-player floor colors / transition lines) are ALWAYS hidden.
+
                 };
                 try {
                     let s = JSON.parse(localStorage.getItem('rivals_settings_v2') || 'null');
@@ -1993,6 +2015,11 @@
                 window.__PARTICLE_CAP = (s.particles === 'off') ? 0 : (s.particles === 'low') ? 25 : 200;
                 if (typeof updateCanvasSize === 'function')
                     updateCanvasSize();
+                // Re-bake baked map if graphics mode changed (so walls switch between rounded and square).
+                if (window.__lastBakedGfxLow !== low && typeof bakeMap === 'function') {
+                    try { bakeMap(); } catch (e) {}
+                    window.__lastBakedGfxLow = low;
+                }
             }
 
             // When user picks the Low PRESET, force every sub-option to its cheapest value.
@@ -2186,7 +2213,7 @@
                     );
                 }
                 if (mc) {
-                    mc.value = s.mapBgColor || '#1a1025';
+                    mc.value = s.mapBgColor || '#000000';
                     mc.addEventListener('input', e => {
                         s.mapBgColor = e.target.value;
                         saveSettings();
@@ -2195,13 +2222,22 @@
                 }
                 if (mcr) {
                     mcr.addEventListener('click', () => {
-                        s.mapBgColor = '#1a1025';
+                        s.mapBgColor = '#000000';
                         if (mc)
                             mc.value = s.mapBgColor;
                         saveSettings();
                     }
                     );
                 }
+                const nz = $('nozone-toggle');
+                if (nz) {
+                    nz.checked = s.heroZone !== false;
+                    nz.addEventListener('change', e => {
+                        s.heroZone = e.target.checked;
+                        saveSettings();
+                    });
+                }
+
                 // Resolution Scale slider (0–200%)
                 const rs = $('rscale-slider')
                   , rsd = $('rscale-display');
@@ -2369,6 +2405,11 @@
                     beamDmgFast2Clone: 13,
                     maxClones: 3.0,
                     // max clones (player + this many)
+                    zoneCooldown: 20.0,
+                    zoneMaxCells: 10,
+                    zoneDurations: { overclock: 1200, packetLoss: 70, arrayWrap: 1000, forceVector: 120, noclip: 80 },
+                    zoneSpeedMul: { overclock: 5.0, packetLoss: 0.9 },
+                    zoneForceStrength:1000,
                 }
             };
             // =====================================================================
@@ -2611,7 +2652,8 @@
                     phase: 'idle',
                     timer: 2.0
                 },
-                corsairCannons: []
+                corsairCannons: [],
+                hackerZones: []
             };
 
             let localHitStop = 0;
@@ -2815,7 +2857,17 @@
                     desc: 'Psychokinetic brawler. Catch enemy projectiles with a gravity well, flick them back, fire homing aura comets, and warp battlefields with the Kinetic Cradle.',
                     abilities: ['Spectral Sweep & Flick (Hold R-Click)', 'Aura Comets (L-Click)', 'Sequential Detonation (E)', 'Kinetic Cradle (SPACE)']
                 },
+                spectator: {
+                    name: 'Spectator',
+                    role: 'Observer (Invisible Free-Fly)',
+                    hp: 9999,
+                    speed: 'Fast',
+                    color: '#94a3b8',
+                    desc: 'Invisible free-fly observer. Fly anywhere, ignore walls, watch the match. Press [ or ] to follow another player. Press \\ to return to free camera.',
+                    abilities: ['WASD: Fast Free-Fly', '[ / ]: Cycle POV (follow a player)', '\\: Free Camera', 'Invisible to all players']
+                },
             };
+
 
             // Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
             const ROULETTE_POOL = ['trace', 'blitz', 'kendo', 'glitch', 'jubilee', 'misaki', 'corsair', 'aero', 'tim', 'rift', 'nitro', 'bread', 'excalibur'];
@@ -2844,6 +2896,8 @@
             };
             getEl('kendoColorPrimary').value = kndCol.primary;
             getEl('kendoColorGlow').value = kndCol.glow;
+            document.documentElement.style.setProperty('--kendoColorPrimary', kndCol.primary);
+            document.documentElement.style.setProperty('--kendoColorGlow', kndCol.glow);
             getEl('corsairColorTrim').value = crsCol.trim;
             let timCol = JSON.parse(localStorage.getItem('rivals_timColors')) || {
                 skin: '#22c55e',
@@ -2888,6 +2942,8 @@
                 };
                 localStorage.setItem('rivals_kendoColors', JSON.stringify(kndCol));
                 myPlayer.customization.kendoColors = kndCol;
+                document.documentElement.style.setProperty('--kendoColorPrimary', kndCol.primary);
+                document.documentElement.style.setProperty('--kendoColorGlow', kndCol.glow);
                 crsCol = {
                     trim: getEl('corsairColorTrim').value
                 };
@@ -3366,11 +3422,12 @@
                 const c = entry.ctx
                   , [r,g,b] = _hexToRgb(entry.color);
                 const tint = (a) => `rgba(${r},${g},${b},${a})`;
-                // Deep space background tinted toward hero color
-                c.fillStyle = '#04030a';
+                // Background: a slightly-darker version of the neon hero color (≈18% brightness)
+                const _dr = Math.round(r * 0.18), _dg = Math.round(g * 0.18), _db = Math.round(b * 0.18);
+                c.fillStyle = `rgb(${_dr},${_dg},${_db})`;
                 c.fillRect(0, 0, 256, 256);
                 // Subtle hero-color wash
-                c.fillStyle = tint(0.06);
+                c.fillStyle = tint(0.08);
                 c.fillRect(0, 0, 256, 256);
                 // Nebula blobs
                 entry.neb.forEach(n => {
@@ -3554,7 +3611,8 @@
             }
 
             function bakeMap() {
-                mapCtx.fillStyle = '#a0a0a0';
+                mapCtx.fillStyle = window.__BAKE_FLOOR_OVERRIDE || '#a0a0a0';
+
                 mapCtx.fillRect(0, 0, W, H);
                 // Occupancy: any non-floor cell (walls, tracks, colored tiles).
                 const occupied = new Set();
@@ -3710,10 +3768,12 @@
                 }
                 mapCtx.restore();
 
-                // ===== Bake dark wall blocks (rounded outer corners, flat outline, no glow) =====
+                // ===== Bake dark wall blocks =====
+                // Low graphics: simple square outline (R=0). Higher graphics: rounded outer corners.
                 if (darkCells.length) {
                     mapCtx.save();
-                    const R = 9;
+                    const __low = !!(window.RIVALS_SETTINGS && window.RIVALS_SETTINGS.graphics === 'low');
+                    const R = __low ? 0 : 9;
                     // Fills
                     mapCtx.fillStyle = '#000000';
                     for (let i = 0; i < darkCells.length; i++) {
@@ -3724,8 +3784,8 @@
                     // Outside-only edge outline (no shadow blur)
                     mapCtx.strokeStyle = '#ffffff';
                     mapCtx.lineWidth = 3;
-                    mapCtx.lineJoin = 'round';
-                    mapCtx.lineCap = 'round';
+                    mapCtx.lineJoin = __low ? 'miter' : 'round';
+                    mapCtx.lineCap = __low ? 'butt' : 'round';
                     for (let i = 0; i < darkCells.length; i++) {
                         const d = darkCells[i]
                           , cc = d.c
@@ -3850,6 +3910,10 @@
                     cd: 0,
                     maxCd: 8.0
                 },
+                kendoSnap: {
+                    cd: 0,
+                    maxCd: 0.5
+                },
                 glitchShoot: {
                     cd: 0,
                     maxCd: 0.6
@@ -3861,6 +3925,10 @@
                 glitchSwap: {
                     cd: 0,
                     maxCd: 2.0
+                },
+                glitchZone: {
+                    cd: 0,
+                    maxCd: 20.0
                 },
                 jubileePrimary: {
                     cd: 0,
@@ -3905,7 +3973,7 @@
                 },
                 jubileeDash: {
                     cd: 0,
-                    maxCd: 5.0,
+                    maxCd: 3.0,
                     delay: 0,
                     dTm: 0,
                     ang: 0,
@@ -3960,6 +4028,10 @@
                     active: false,
                     path: [],
                     idx: 0
+                },
+                traceEH: {
+                    cd: 0,
+                    maxCd: 12.0
                 },
                 aeroPaste: {
                     cd: 0,
@@ -4949,21 +5021,90 @@
                   , wy = (sMy / cam.zoom) + cam.y;
 
                 if (myPlayer.heroClass === 'trace') {
-                    if (myPlayer.traceShooting && (activeServerMode === 'CHAOS' || myPlayer.traceNodes.length < 40)) {
-                        let ln = myPlayer.traceNodes[myPlayer.traceNodes.length - 1];
-                        if (Math.hypot(wx - ln.x, wy - ln.y) > 60)
-                            myPlayer.traceNodes.push({
-                                x: wx,
-                                y: wy
-                            });
+                    // Helpers shared by both draw modes ----------------------------------
+                    // Snap a candidate node away from any nearby wall so the next line stays in walkable space.
+                    const _snapAwayFromWalls = (px, py) => {
+                        const PAD = 22; // safety pad outside wall cell
+                        let ox = px, oy = py;
+                        if (!gameState.walls) return { x: ox, y: oy };
+                        for (let it = 0; it < 3; it++) {
+                            let nudged = false;
+                            for (const w of gameState.walls) {
+                                const x1 = w.x - PAD, y1 = w.y - PAD;
+                                const x2 = w.x + GRID + PAD, y2 = w.y + GRID + PAD;
+                                if (ox > x1 && ox < x2 && oy > y1 && oy < y2) {
+                                    // push to nearest edge
+                                    const dL = ox - x1, dR = x2 - ox, dT = oy - y1, dB = y2 - oy;
+                                    const m = Math.min(dL, dR, dT, dB);
+                                    if (m === dL) ox = x1 - 0.5;
+                                    else if (m === dR) ox = x2 + 0.5;
+                                    else if (m === dT) oy = y1 - 0.5;
+                                    else oy = y2 + 0.5;
+                                    nudged = true;
+                                }
+                            }
+                            if (!nudged) break;
+                        }
+                        return { x: ox, y: oy };
+                    };
+                    // Segment-segment intersection: returns {x,y} or null.
+                    const _segHit = (ax, ay, bx, by, cx, cy, dx2, dy2) => {
+                        const rX = bx - ax, rY = by - ay;
+                        const sX = dx2 - cx, sY = dy2 - cy;
+                        const denom = rX * sY - rY * sX;
+                        if (Math.abs(denom) < 1e-6) return null;
+                        const t = ((cx - ax) * sY - (cy - ay) * sX) / denom;
+                        const u = ((cx - ax) * rY - (cy - ay) * rX) / denom;
+                        if (t > 0.05 && t < 0.95 && u > 0.05 && u < 0.95) {
+                            return { x: ax + t * rX, y: ay + t * rY };
+                        }
+                        return null;
+                    };
+                    // Angle (radians) between vectors P0->P1 and P1->P2 — used for sharp-corner gating.
+                    const _turnAngle = (p0, p1, p2) => {
+                        const ax = p1.x - p0.x, ay = p1.y - p0.y;
+                        const bx = p2.x - p1.x, by = p2.y - p1.y;
+                        const la = Math.hypot(ax, ay) || 1, lb = Math.hypot(bx, by) || 1;
+                        const dot = (ax * bx + ay * by) / (la * lb);
+                        return Math.acos(Math.max(-1, Math.min(1, dot))); // 0 = straight, π = U-turn
+                    };
+                    // Try to insert an "intersection node" where a→b crosses any prior segment.
+                    const _insertIntersections = (arr, nx, ny) => {
+                        if (arr.length < 2) return;
+                        const a = arr[arr.length - 1];
+                        for (let i = 0; i < arr.length - 2; i++) {
+                            const c = arr[i], d = arr[i + 1];
+                            const hit = _segHit(a.x, a.y, nx, ny, c.x, c.y, d.x, d.y);
+                            if (hit) { arr.push({ x: hit.x, y: hit.y, _ix: true }); break; }
+                        }
+                    };
+
+                    if (myPlayer.traceShooting && (activeServerMode === 'CHAOS' || myPlayer.traceNodes.length < 120)) {
+                        const arr = myPlayer.traceNodes;
+                        const ln = arr[arr.length - 1];
+                        const dist = Math.hypot(wx - ln.x, wy - ln.y);
+                        // Drop a fine line-path node every ~10px so the connecting line tracks the
+                        // freehand stroke. Only the node is flagged `_glint:true` when the path bends
+                        // sharply — straight stretches stay line-only, so no star is rendered there.
+                        if (dist > 10) {
+                            const prev = arr.length >= 2 ? arr[arr.length - 2] : { x: myPlayer.x, y: myPlayer.y };
+                            const ang = _turnAngle(prev, ln, { x: wx, y: wy });
+                            const isGlint = (ang > 0.6); // ~35° corner
+                            const snapped = _snapAwayFromWalls(wx, wy);
+                            _insertIntersections(arr, snapped.x, snapped.y);
+                            if (isGlint) snapped._glint = true;
+                            arr.push(snapped);
+                        }
                     }
                     if (myPlayer.traceDashing && myPlayer.traceDashNodes && myPlayer.traceDashNodes.length < 8) {
-                        let ln = myPlayer.traceDashNodes[myPlayer.traceDashNodes.length - 1];
-                        if (Math.hypot(wx - ln.x, wy - ln.y) > 80)
-                            myPlayer.traceDashNodes.push({
-                                x: wx,
-                                y: wy
-                            });
+                        const arr = myPlayer.traceDashNodes;
+                        const ln = arr[arr.length - 1];
+                        const dist = Math.hypot(wx - ln.x, wy - ln.y);
+                        if (dist > 80) {
+                            const snapped = _snapAwayFromWalls(wx, wy);
+                            _insertIntersections(arr, snapped.x, snapped.y);
+                            arr.push(snapped);
+                        }
                     }
                 }
             }
@@ -5002,9 +5143,15 @@
                 }
                 myPlayer.isRoulette = false;
                 myPlayer.rouletteSpin = null;
+                myPlayer.isSpectator = (id === 'spectator');
+                if (myPlayer.isSpectator) {
+                    myPlayer.invulnerable = true;
+                    window.__specCam = { x: myPlayer.x || 1600, y: myPlayer.y || 1250, followId: null };
+                }
                 _applyHeroState(id, false);
                 updateLobbyState();
             }
+
 
             // Apply per-hero state initialization (used by selectHero AND Roulette swaps).
             // When keepRoulette is true, do NOT clear isRoulette flag and do NOT reset score.
@@ -5152,6 +5299,27 @@
                 sdUp();
             }
 
+            // Swap hero kit during a roulette spin step, preserving HP ratio,
+            // and toggle Kendo's permanent arrow on/off as the class flips.
+            function _rouletteSwapKit(id) {
+                const prev = myPlayer.heroClass;
+                if (prev === id) return;
+                const hpRatio = (myPlayer.maxHp > 0) ? (myPlayer.hp / myPlayer.maxHp) : 1;
+                // If leaving Kendo, remove the persistent arrow projectile.
+                if (prev === 'kendo' && id !== 'kendo') {
+                    myPlayer.arrowActive = false;
+                    sdEv({ type: 'remove_arrow' });
+                }
+                _applyHeroState(id, true);
+                // Preserve HP ratio across rapid swaps so cycling doesn't fully heal.
+                myPlayer.hp = Math.max(1, Math.round(myPlayer.maxHp * hpRatio));
+                // If entering Kendo, ensure the arrow gets deployed immediately.
+                if (id === 'kendo' && !myPlayer.isDead) {
+                    myPlayer.arrowActive = true;
+                    sdEv({ type: 'deploy_arrow' });
+                }
+            }
+
             function tickRoulette(dt) {
                 if (!myPlayer.isRoulette || myPlayer.isDead)
                     return;
@@ -5166,6 +5334,8 @@
                     if (newIdx !== sp.idx) {
                         sp.idx = newIdx;
                         myPlayer.rouletteSpinVisualHero = sp.sequence[sp.idx];
+                        // Actually become that hero so the player can use its full kit during cycling.
+                        _rouletteSwapKit(sp.sequence[sp.idx]);
                         sdUp();
                     }
                     // Force-send minimal state every frame while spinning so all peers see it
@@ -5177,7 +5347,9 @@
                         myPlayer.rouletteSpinActive = false;
                         myPlayer.rouletteLockGlow = 1.0;
                         myPlayer.rouletteSpinVisualHero = null;
-                        _applyHeroState(sp.finalHero, true);
+                        _rouletteSwapKit(sp.finalHero);
+                        // Full heal on lock-in so the final hero starts fresh.
+                        myPlayer.hp = myPlayer.maxHp;
                         myPlayer.rouletteTimer = 10.0;
                         sdEv({
                             type: 'roulette_lock',
@@ -6664,7 +6836,7 @@
                         }
 
                         if (s.players[id].isDead && !myPlayer.isDead)
-                            myPlayer.arrowActive = false;
+                            myPlayer.arrowActive = (myPlayer.heroClass === 'kendo');
                         if (!s.players[id].isDead && myPlayer.isDead) {
                             myPlayer.x = s.players[id].x;
                             myPlayer.y = s.players[id].y;
@@ -6861,6 +7033,8 @@
                     aeroContextMenuWorldX: myPlayer.aeroContextMenuWorldX || 0,
                     aeroContextMenuWorldY: myPlayer.aeroContextMenuWorldY || 0,
                     invulnerable: myPlayer.invulnerable || false,
+                    isSpectator: myPlayer.isSpectator || false,
+
                     copycatWeapons: myPlayer.copycatWeapons,
                     aeroContextMenu: myPlayer.aeroContextMenu || false,
                     corsairStance: myPlayer.corsairStance || 'cannon',
@@ -6995,6 +7169,30 @@
                 if (keys.hasOwnProperty(k))
                     keys[k] = true;
 
+                // Spectator POV cycle: [ prev, ] next, \ free cam
+                if (myPlayer.isSpectator && (k === '[' || k === ']' || k === '\\')) {
+                    if (!window.__specCam) window.__specCam = { x: 1600, y: 1250, followId: null };
+                    if (k === '\\') {
+                        window.__specCam.followId = null;
+                    } else {
+                        const ids = [];
+                        for (const pid in gameState.players) {
+                            const pp = gameState.players[pid];
+                            if (pp && !pp.isDead && !pp.isSpectator && pid !== myId) ids.push(pid);
+                        }
+                        if (ids.length) {
+                            const cur = window.__specCam.followId;
+                            let idx = ids.indexOf(cur);
+                            idx = (k === ']') ? (idx + 1) % ids.length : (idx <= 0 ? ids.length - 1 : idx - 1);
+                            window.__specCam.followId = ids[idx];
+                        }
+
+                    }
+                    e.preventDefault();
+                    return;
+                }
+
+
                 if (k === '1' && !localCombat.m1 && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
                     localCombat.m1 = true;
                     if (myPlayer.heroClass === 'misaki') {
@@ -7099,6 +7297,22 @@
                         localCombat.jubileeMode = (localCombat.jubileeMode === 'big') ? 'stream' : 'big';
                         localCombat.jubileeCharge.active = false;
                         localCombat.jubileeCharge.t = 0;
+                    } else if (myPlayer.heroClass === 'trace' && !localCombat.mQ) {
+                        localCombat.mQ = true;
+                        if (localCombat.traceEH.cd <= 0) {
+                            localCombat.traceEH.cd = (activeServerMode === 'CHAOS') ? 0.05 : localCombat.traceEH.maxCd;
+                            const _wx = (sMx / cam.zoom) + cam.x;
+                            const _wy = (sMy / cam.zoom) + cam.y;
+                            const _ang = Math.atan2(_wy - myPlayer.y, _wx - myPlayer.x);
+                            const _dist = Math.min(700, Math.hypot(_wx - myPlayer.x, _wy - myPlayer.y));
+                            sdEv({
+                                type: 'trace_eh_throw',
+                                x: myPlayer.x,
+                                y: myPlayer.y,
+                                angle: _ang,
+                                dist: _dist
+                            });
+                        }
                     }
                 }
 
@@ -7395,7 +7609,8 @@
                             myPlayer.traceShooting = true;
                             myPlayer.traceNodes = [{
                                 x: wx,
-                                y: wy
+                                y: wy,
+                                _glint: true
                             }];
                         }
                         return;
@@ -7404,7 +7619,7 @@
                     if (myPlayer.heroClass === 'thorfinn')
                         trSl();
                     else if (myPlayer.heroClass === 'kendo')
-                        tgKndA();
+                        trKndSnap();
                     else if (myPlayer.heroClass === 'glitch')
                         trGlSh();
                     else if (myPlayer.heroClass === 'rift')
@@ -7875,12 +8090,22 @@
                     }
                 }
             }
-            function tgKndA() {
-                myPlayer.arrowActive = !myPlayer.arrowActive;
-                if (myPlayer.arrowActive)
-                    sdEv({
-                        type: 'deploy_arrow'
-                    });
+            function trKndSnap() {
+                if (localCombat.kendoSnap.cd > 0) return;
+                // Make sure arrow exists (Kendo's arrow is permanent)
+                if (!myPlayer.arrowActive) {
+                    myPlayer.arrowActive = true;
+                    sdEv({ type: 'deploy_arrow' });
+                }
+                let a = gameState.projectiles.find(p => p.type === 'kinetic_arrow' && p.ownerId === myId);
+                const tx = myPlayer.targetX, ty = myPlayer.targetY;
+                const ax = a ? a.x : myPlayer.x, ay = a ? a.y : myPlayer.y;
+                const d = Math.hypot(tx - ax, ty - ay);
+                const SNAP_MAX_DIST = 1800;
+                const cd = (activeServerMode === 'CHAOS') ? 0.05 : (0.5 + Math.min(1, d / SNAP_MAX_DIST) * 3.0);
+                localCombat.kendoSnap.cd = cd;
+                localCombat.kendoSnap.maxCd = cd;
+                sdEv({ type: 'kendo_snap', targetX: tx, targetY: ty });
                 sdUp();
             }
             function trKndR() {
@@ -8644,12 +8869,32 @@
                         ownerId: sId,
                         x: e.x,
                         y: e.y,
+                        startX: e.x,
+                        startY: e.y,
                         nodes: e.nodes,
                         targetIdx: 0,
                         speed: 2500,
+                        baseSpeed: 2500,
+                        speedMult: 1,
                         life: 3.0,
                         hitIds: {},
                         dmgMult: e.dmgMult || 1
+                    });
+                } else if (e.type === 'trace_eh_throw') {
+                    // Throwable that travels to a target point, then opens into an Event Horizon.
+                    const travelTime = Math.max(0.15, Math.min(0.6, (e.dist || 300) / 1400));
+                    gameState.projectiles.push({
+                        type: 'eh_throwable',
+                        id: Math.random().toString(),
+                        ownerId: sId,
+                        x: e.x,
+                        y: e.y,
+                        startX: e.x,
+                        startY: e.y,
+                        targetX: e.x + Math.cos(e.angle) * (e.dist || 300),
+                        targetY: e.y + Math.sin(e.angle) * (e.dist || 300),
+                        t: 0,
+                        travelTime
                     });
                 } else if (e.type === 'slash') {
                     s.slashAnimTimer = 0.15;
@@ -8725,18 +8970,31 @@
                             life: 9999,
                             hitCooldowns: {}
                         });
+                } else if (e.type === 'remove_arrow') {
+                    gameState.projectiles = gameState.projectiles.filter(p => !(p.type === 'kinetic_arrow' && p.ownerId === sId));
+                } else if (e.type === 'kendo_snap') {
+                    let a = gameState.projectiles.find(p => p.type === 'kinetic_arrow' && p.ownerId === sId);
+                    if (a && (a.mode === 'normal' || !a.mode || a.mode === 'snap')) {
+                        a.mode = 'snap';
+                        a.snapStartX = a.x;
+                        a.snapStartY = a.y;
+                        a.snapDestX = e.targetX;
+                        a.snapDestY = e.targetY;
+                        a.snapDist = Math.max(1, Math.hypot(e.targetX - a.x, e.targetY - a.y));
+                        a.angle = Math.atan2(e.targetY - a.y, e.targetX - a.x);
+                    }
                 } else if (e.type === 'kendo_ride_recall') {
                     let a = gameState.projectiles.find(p => p.type === 'kinetic_arrow' && p.ownerId === sId);
                     if (a && (a.mode === 'normal' || !a.mode))
                         a.mode = 'recalling';
                 } else if (e.type === 'kendo_shield_start') {
                     let a = gameState.projectiles.find(p => p.type === 'kinetic_arrow' && p.ownerId === sId);
-                    if (a && (a.mode === 'normal' || !a.mode)) {
+                    if (a && (a.mode === 'normal' || !a.mode || a.mode === 'snap')) {
                         a.mode = 'building_shield';
                         a.buildTimer = 1.5;
                         a.shieldTarget = {
-                            x: e.targetX,
-                            y: e.targetY
+                            x: a.x,
+                            y: a.y
                         };
                     }
                 } else if (e.type === 'copycat_kendo_shoot') {
@@ -10039,8 +10297,41 @@
             }
 
             function updateMovement(dt) {
+                // ===== SPECTATOR MODE: free-fly, no collision, invisible, fast =====
+                if (myPlayer.isSpectator) {
+                    if (!window.__specCam) window.__specCam = { x: myPlayer.x || 1600, y: myPlayer.y || 1250, followId: null };
+                    const sc = window.__specCam;
+                    // POV follow: if locked onto another player, mirror their position.
+                    if (sc.followId && gameState.players[sc.followId] && !gameState.players[sc.followId].isDead && !gameState.players[sc.followId].isSpectator) {
+                        const t = gameState.players[sc.followId];
+                        sc.x = t.x; sc.y = t.y;
+                    } else {
+                        sc.followId = null;
+                        const SPD = 1500 * dt;
+                        let dx = 0, dy = 0;
+                        if (keys['w']) dy -= 1;
+                        if (keys['s']) dy += 1;
+                        if (keys['a']) dx -= 1;
+                        if (keys['d']) dx += 1;
+                        if (dx || dy) {
+                            const L = Math.hypot(dx, dy) || 1;
+                            sc.x += (dx / L) * SPD;
+                            sc.y += (dy / L) * SPD;
+                        }
+                        sc.x = Math.max(0, Math.min(W, sc.x));
+                        sc.y = Math.max(0, Math.min(H, sc.y));
+                    }
+                    // Park the real player off-map so no projectile/collision logic ever hits them.
+                    myPlayer.x = -9999; myPlayer.y = -9999;
+                    myPlayer.hp = 9999; myPlayer.maxHp = 9999;
+                    myPlayer.isDead = false;
+                    myPlayer.invulnerable = true;
+                    return;
+                }
+
                 if (isHost && gameState.players[myId]) {
                     let sp = gameState.players[myId];
+
                     if (!sp.isDead && myPlayer.isDead) {
                         myPlayer.x = sp.x;
                         myPlayer.y = sp.y;
@@ -10693,7 +10984,7 @@
                         if (localCombat.jubileeCharge.t >= 0.32) {
                             localCombat.jubileeCharge.active = false;
                             localCombat.jubileeCharge.t = 0;
-                            localCombat.jubileePrimary.cd = (activeServerMode === 'CHAOS') ? 0.05 : 1.5;
+                            localCombat.jubileePrimary.cd = (activeServerMode === 'CHAOS') ? 0.05 : 0.85;
                             applyShake(6, 0.18);
                             let ang = Math.atan2(myPlayer.targetY - myPlayer.y, myPlayer.targetX - myPlayer.x);
                             sdEv({
@@ -10925,7 +11216,7 @@
 
             function updateGameState(dt) {
                 let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-                ['slash', 'kendoRide', 'kendoShield', 'glitchShoot', 'glitchClone', 'glitchSwap', 'jubileePrimary', 'jubileeDash', 'nitroCharge', 'nitroVault', 'misakiShoot', 'misakiGrapple', 'misakiFlare', 'blitzPrimary', 'blitzGrab', 'blitzParry', 'traceShoot', 'traceDash', 'aeroPaste', 'aeroCopy', 'corsairPrimary', 'corsairParry', 'corsairCombo', 'timPrimary', 'timVents', 'timUlt', 'riftPrimary', 'riftOrb', 'riftJab', 'breadShoot', 'breadShield', 'breadGrapple', 'esperCradle'].forEach(k => {
+                ['slash', 'kendoRide', 'kendoShield', 'kendoSnap', 'glitchShoot', 'glitchClone', 'glitchSwap', 'glitchZone', 'jubileePrimary', 'jubileeDash', 'nitroCharge', 'nitroVault', 'misakiShoot', 'misakiGrapple', 'misakiFlare', 'blitzPrimary', 'blitzGrab', 'blitzParry', 'traceShoot', 'traceDash', 'traceEH', 'aeroPaste', 'aeroCopy', 'corsairPrimary', 'corsairParry', 'corsairCombo', 'timPrimary', 'timVents', 'timUlt', 'riftPrimary', 'riftOrb', 'riftJab', 'breadShoot', 'breadShield', 'breadGrapple', 'esperCradle'].forEach(k => {
                     if (localCombat[k] && localCombat[k].cd > 0)
                         localCombat[k].cd -= dt * cdM;
                 }
@@ -11334,22 +11625,160 @@
                         let p = gameState.projectiles[i]
                           , sm = 1.0;
 
+                        if (p.type === 'trace_pulse') {
+                            p.life -= dt;
+                            if (p.life <= 0) {
+                                gameState.projectiles.splice(i, 1);
+                                continue;
+                            }
+                            if (!p.hitCooldowns) p.hitCooldowns = {};
+                            for (let _k in p.hitCooldowns) {
+                                p.hitCooldowns[_k] -= dt;
+                                if (p.hitCooldowns[_k] <= 0) delete p.hitCooldowns[_k];
+                            }
+                            // Distance from point to segment helper
+                            const pSeg = (px, py, ax, ay, bx, by) => {
+                                const dx = bx - ax, dy = by - ay;
+                                const L2 = dx * dx + dy * dy || 1;
+                                let t = ((px - ax) * dx + (py - ay) * dy) / L2;
+                                t = Math.max(0, Math.min(1, t));
+                                const cx = ax + t * dx, cy = ay + t * dy;
+                                return Math.hypot(px - cx, py - cy);
+                            };
+                            const touches = (tx, ty) => {
+                                if (!p.pts || p.pts.length < 2) return false;
+                                for (let j = 0; j < p.pts.length - 1; j++) {
+                                    if (pSeg(tx, ty, p.pts[j].x, p.pts[j].y, p.pts[j + 1].x, p.pts[j + 1].y) < 22)
+                                        return true;
+                                }
+                                return false;
+                            };
+                            for (let id in gameState.players) {
+                                const t = gameState.players[id];
+                                if (!t.isDead && cDm(p.ownerId, id) && !p.hitCooldowns[id] && !t.invulnerable && touches(t.x, t.y)) {
+                                    const dg = 38 * (p.dmgMult || 1);
+                                    dmgTk(t, dg, p.ownerId);
+                                    sendHitmarker(p.ownerId, t, dg);
+                                    t.lastAttacker = p.ownerId;
+                                    t.lastHitTime = Date.now();
+                                    chD(t, id);
+                                    p.hitCooldowns[id] = 999;
+                                }
+                            }
+                            for (let c of gameState.clones) {
+                                if (cDm(p.ownerId, c.ownerId) && !p.hitCooldowns[c.id] && !c.invulnerable && touches(c.x, c.y)) {
+                                    const dg = 38 * (p.dmgMult || 1);
+                                    dmgTk(c, dg, p.ownerId);
+                                    sendHitmarker(p.ownerId, c, dg);
+                                    p.hitCooldowns[c.id] = 999;
+                                }
+                            }
+                            continue;
+                        }
+
+                        if (p.type === 'eh_throwable') {
+                            p.t = (p.t || 0) + dt;
+                            const f = Math.min(1, p.t / p.travelTime);
+                            p.x = p.startX + (p.targetX - p.startX) * f;
+                            p.y = p.startY + (p.targetY - p.startY) * f;
+                            if (f >= 1) {
+                                gameState.projectiles.push({
+                                    type: 'event_horizon',
+                                    id: Math.random().toString(),
+                                    ownerId: p.ownerId,
+                                    x: p.x,
+                                    y: p.y,
+                                    life: 4.0,
+                                    maxLife: 4.0,
+                                    radius: 180,
+                                    coreRadius: 36
+                                });
+                                gameState.projectiles.splice(i, 1);
+                                continue;
+                            }
+                            continue;
+                        }
+
+                        if (p.type === 'event_horizon') {
+                            p.life -= dt;
+                            if (p.life <= 0) {
+                                gameState.projectiles.splice(i, 1);
+                                continue;
+                            }
+                            // Pull players (enemies) toward center
+                            for (const id in gameState.players) {
+                                const t = gameState.players[id];
+                                if (t.isDead || !cDm(p.ownerId, id)) continue;
+                                const dxP = p.x - t.x, dyP = p.y - t.y;
+                                const dP = Math.hypot(dxP, dyP);
+                                if (dP < p.radius && dP > 0.1) {
+                                    const pull = 320 * (1 - dP / p.radius);
+                                    t.x += (dxP / dP) * pull * dt;
+                                    t.y += (dyP / dP) * pull * dt;
+                                }
+                            }
+                            // Pull friendly/enemy projectiles toward center too (skip self & arrows, which bend separately)
+                            for (const pr of gameState.projectiles) {
+                                if (pr === p || pr.type === 'event_horizon' || pr.type === 'eh_throwable' || pr.type === 'vector_arrow' || pr.type === 'trace_pulse') continue;
+                                if (pr.vx == null || pr.vy == null) continue;
+                                const dxQ = p.x - pr.x, dyQ = p.y - pr.y;
+                                const dQ = Math.hypot(dxQ, dyQ);
+                                if (dQ < p.radius && dQ > 0.1) {
+                                    const a = 600 * (1 - dQ / p.radius);
+                                    pr.vx += (dxQ / dQ) * a * dt;
+                                    pr.vy += (dyQ / dQ) * a * dt;
+                                }
+                            }
+                            continue;
+                        }
+
                         if (p.type === 'vector_arrow') {
                             let n = p.nodes[p.targetIdx];
                             if (!n) {
                                 gameState.projectiles.splice(i, 1);
                                 continue;
                             }
-                            let dx = n.x - p.x
-                              , dy = n.y - p.y
-                              , dist = Math.hypot(dx, dy)
-                              , move = Math.min(dist, p.speed * dt);
-                            p.angle = Math.atan2(dy, dx);
-                            let nx = p.x + Math.cos(p.angle) * move
-                              , ny = p.y + Math.sin(p.angle) * move
-                              , hw = false;
+                            // === Event-Horizon gravitational bending ===
+                            // If arrow is within an Event Horizon's radius, orbit the singularity
+                            // along its event horizon (radius * 0.55) instead of chasing the next node.
+                            let _ehWarp = null;
+                            for (const eh of gameState.projectiles) {
+                                if (eh.type !== 'event_horizon') continue;
+                                const _rd = Math.hypot(p.x - eh.x, p.y - eh.y);
+                                if (_rd < eh.radius) { _ehWarp = eh; break; }
+                            }
+                            let dx, dy, dist, effSpeed, move, nx, ny, hw = false;
+                            if (_ehWarp) {
+                                const ex = p.x - _ehWarp.x, ey = p.y - _ehWarp.y;
+                                const er = Math.hypot(ex, ey) || 0.001;
+                                const orbitR = _ehWarp.radius * 0.55;
+                                // Tangent direction (counter-clockwise) plus a tiny radial correction
+                                const tx = -ey / er, ty = ex / er;
+                                const radialErr = (er - orbitR);
+                                const rx = -ex / er, ry = -ey / er;
+                                const blend = 0.18; // pull back toward orbit ring
+                                const vxDir = tx * (1 - blend) + rx * Math.sign(radialErr) * blend;
+                                const vyDir = ty * (1 - blend) + ry * Math.sign(radialErr) * blend;
+                                const vL = Math.hypot(vxDir, vyDir) || 1;
+                                effSpeed = (p.baseSpeed || p.speed) * (p.speedMult || 1);
+                                move = effSpeed * dt;
+                                p.angle = Math.atan2(vyDir, vxDir);
+                                nx = p.x + (vxDir / vL) * move;
+                                ny = p.y + (vyDir / vL) * move;
+                                dist = move;
+                            } else {
+                                dx = n.x - p.x;
+                                dy = n.y - p.y;
+                                dist = Math.hypot(dx, dy);
+                                effSpeed = (p.baseSpeed || p.speed) * (p.speedMult || 1);
+                                move = Math.min(dist, effSpeed * dt);
+                                p.angle = Math.atan2(dy, dx);
+                                nx = p.x + Math.cos(p.angle) * move;
+                                ny = p.y + Math.sin(p.angle) * move;
+                            }
 
                             for (let w of gameState.walls) {
+                                if (typeof __isWallNoclippedFor === 'function' && __isWallNoclippedFor(w, nx, ny)) continue;
                                 if (nx > w.x && nx < w.x + GRID && ny > w.y && ny < w.y + GRID) {
                                     hw = true;
                                     break;
@@ -11393,11 +11822,42 @@
 
                             p.x = nx;
                             p.y = ny;
-                            if (move >= dist) {
+                            // Decay the per-turn speed boost smoothly back to 1.
+                            if (p.speedMult && p.speedMult > 1) {
+                                p.speedMult = Math.max(1, p.speedMult - dt * 1.5);
+                            }
+                            if (!_ehWarp && move >= dist) {
                                 p.targetIdx++;
                                 if (p.targetIdx >= p.nodes.length) {
+                                    // Spawn a bright constellation pulse that damages briefly.
+                                    const pathPts = [];
+                                    if (p.startX != null) pathPts.push({ x: p.startX, y: p.startY });
+                                    for (const nd of p.nodes) pathPts.push({ x: nd.x, y: nd.y });
+                                    gameState.projectiles.push({
+                                        type: 'trace_pulse',
+                                        id: Math.random().toString(),
+                                        ownerId: p.ownerId,
+                                        x: pathPts[0].x,
+                                        y: pathPts[0].y,
+                                        pts: pathPts,
+                                        life: 1.0,
+                                        maxLife: 1.0,
+                                        hitCooldowns: {},
+                                        dmgMult: p.dmgMult || 1
+                                    });
                                     gameState.projectiles.splice(i, 1);
                                     continue;
+                                }
+                                // Sharp-turn speed boost: compare incoming vs outgoing direction.
+                                const nxt = p.nodes[p.targetIdx];
+                                if (nxt) {
+                                    const inAng = p.angle;
+                                    const outAng = Math.atan2(nxt.y - p.y, nxt.x - p.x);
+                                    let da = Math.abs(outAng - inAng);
+                                    while (da > Math.PI) da = Math.abs(da - 2 * Math.PI);
+                                    // 0 (straight) -> 1 (180deg). Boost up to 3.3x at sharp turns.
+                                    const sharp = da / Math.PI;
+                                    p.speedMult = Math.max(p.speedMult || 1, 1 + sharp * 2.3);
                                 }
                             }
                             continue;
@@ -11756,7 +12216,8 @@
                                   , ny = p.y + p.vy * s_dt
                                   , hw = false
                                   , wn = null;
-                                for (let w of gameState.walls)
+                                for (let w of gameState.walls) {
+                                    if (typeof __isWallNoclippedFor === 'function' && __isWallNoclippedFor(w, nx, ny)) continue;
                                     if (nx > w.x && nx < w.x + GRID && ny > w.y && ny < w.y + GRID) {
                                         hw = true;
                                         wn = p.x <= w.x || p.x >= w.x + GRID ? {
@@ -11768,6 +12229,7 @@
                                         };
                                         break;
                                     }
+                                }
                                 if (hw) {
                                     if (p.bounces > 0) {
                                         p.bounces--;
@@ -12153,7 +12615,7 @@
                                         break;
                                     }
                             if (hw || hitSomething || p.life <= 0) {
-                                rainbowExplosion(p.x, p.y, 30, 60, 220, p.ownerId, 60);
+                                rainbowExplosion(p.x, p.y, 35, 135, 220, p.ownerId, 60);
                                 gameState.projectiles.splice(i, 1);
                             }
                         } else if (p.type === 'jubilee_stream') {
@@ -12280,7 +12742,7 @@
                             }
                         } else if (p.type === 'kinetic_arrow') {
                             let o = gameState.players[p.ownerId];
-                            if (!o || o.isDead || (!o.arrowActive && p.mode !== 'copycat')) {
+                            if (!o || o.isDead) {
                                 gameState.projectiles.splice(i, 1);
                                 continue;
                             }
@@ -12311,6 +12773,22 @@
                                     p.speed = 540;
                                     p.x += Math.cos(p.angle) * p.speed * sm * dt;
                                     p.y += Math.sin(p.angle) * p.speed * sm * dt;
+                                }
+                            } else if (p.mode === 'snap') {
+                                const remaining = Math.hypot(p.snapDestX - p.x, p.snapDestY - p.y);
+                                const progress = Math.max(0, Math.min(1, 1 - (remaining / p.snapDist)));
+                                const SNAP_MAX_S = 4500, SNAP_MIN_S = 750;
+                                const sp = SNAP_MAX_S - (SNAP_MAX_S - SNAP_MIN_S) * progress;
+                                const step = sp * sm * dt;
+                                if (step >= remaining || remaining < 4) {
+                                    p.x = p.snapDestX;
+                                    p.y = p.snapDestY;
+                                    p.mode = 'normal';
+                                    p.speed = SNAP_MIN_S;
+                                } else {
+                                    p.angle = Math.atan2(p.snapDestY - p.y, p.snapDestX - p.x);
+                                    p.x += Math.cos(p.angle) * step;
+                                    p.y += Math.sin(p.angle) * step;
                                 }
                             } else if (p.mode === 'building_shield') {
                                 p.buildTimer -= dt;
@@ -12970,18 +13448,25 @@
                     getEl('ui-slash').style.opacity = myPlayer.daggers > 0 ? "1" : "0.4";
                 } else if (myPlayer.heroClass === 'kendo') {
                     setVisibleAbilities(['kendo-arrow', 'kendo-ride', 'kendo-shield']);
-                    getEl('status-kendo-arrow').innerText = myPlayer.arrowActive ? 'Active' : 'Ready';
-                    getEl('ui-kendo-arrow').style.borderColor = myPlayer.arrowActive ? '#ef4444' : '#52525b';
+                    // Ensure Kendo's arrow is always deployed — it can never be turned off.
+                    if (!myPlayer.isDead && !myPlayer.arrowActive) {
+                        myPlayer.arrowActive = true;
+                        sdEv({ type: 'deploy_arrow' });
+                    }
+                    let snc = localCombat.kendoSnap.cd, snm = localCombat.kendoSnap.maxCd || 0.5;
+                    getEl('cd-kendo-arrow').style.height = `${snc > 0 ? (snc / Math.max(snm, 0.01)) * 100 : 0}%`;
+                    getEl('status-kendo-arrow').innerText = snc > 0 ? snc.toFixed(1) + 's' : 'Ready';
+                    getEl('ui-kendo-arrow').style.borderColor = '#ef4444';
                     let rc = localCombat.kendoRide.cd;
                     getEl('cd-kendo-ride').style.height = `${rc > 0 ? (rc / 1.0) * 100 : 0}%`;
-                    getEl('status-kendo-ride').innerText = rc > 0 ? rc.toFixed(1) + 's' : (myPlayer.arrowActive ? 'Ready' : 'Req. Arrow');
-                    getEl('ui-kendo-ride').style.opacity = (rc <= 0 && myPlayer.arrowActive) ? "1" : "0.5";
+                    getEl('status-kendo-ride').innerText = rc > 0 ? rc.toFixed(1) + 's' : 'Ready';
+                    getEl('ui-kendo-ride').style.opacity = (rc <= 0) ? "1" : "0.5";
                     let sc = localCombat.kendoShield.cd;
                     getEl('cd-kendo-shield').style.height = `${sc > 0 ? (sc / 1.0) * 100 : 0}%`;
-                    getEl('status-kendo-shield').innerText = sc > 0 ? sc.toFixed(1) + 's' : (myPlayer.arrowActive ? 'Ready' : 'Req. Arrow');
-                    getEl('ui-kendo-shield').style.opacity = (sc <= 0 && myPlayer.arrowActive) ? "1" : "0.5";
+                    getEl('status-kendo-shield').innerText = sc > 0 ? sc.toFixed(1) + 's' : 'Ready';
+                    getEl('ui-kendo-shield').style.opacity = (sc <= 0) ? "1" : "0.5";
                 } else if (myPlayer.heroClass === 'glitch') {
-                    setVisibleAbilities(['glitch-shoot', 'glitch-clone', 'glitch-swap']);
+                    setVisibleAbilities(['glitch-shoot', 'glitch-clone', 'glitch-swap', 'glitch-zone']);
                     let sc = localCombat.glitchShoot.cd;
                     getEl('cd-glitch-shoot').style.height = `${sc > 0 ? (sc / 0.45) * 100 : 0}%`;
                     getEl('status-glitch-shoot').innerText = sc > 0 ? sc.toFixed(1) + 's' : 'Ready';
@@ -12993,6 +13478,13 @@
                     getEl('cd-glitch-swap').style.height = `${wc > 0 ? (wc / 1.5) * 100 : 0}%`;
                     getEl('status-glitch-swap').innerText = wc > 0 ? wc.toFixed(1) + 's' : (ac > 0 ? 'Ready' : 'Req. Clone');
                     getEl('ui-glitch-swap').style.opacity = (wc <= 0 && ac > 0) ? "1" : "0.5";
+                    let zc = localCombat.glitchZone ? localCombat.glitchZone.cd : 0;
+                    let zMax = localCombat.glitchZone ? localCombat.glitchZone.maxCd : 20;
+                    getEl('cd-glitch-zone').style.height = `${zc > 0 ? (zc / zMax) * 100 : 0}%`;
+                    let zStatus = zc > 0 ? zc.toFixed(1) + 's'
+                        : (window.__glitchZonePending ? 'Pick 1-5' : (window.__glitchZoneDragging ? 'Painting…' : 'Ready'));
+                    getEl('status-glitch-zone').innerText = zStatus;
+                    getEl('ui-glitch-zone').style.opacity = (zc <= 0) ? "1" : "0.5";
                 } else if (myPlayer.heroClass === 'nitro') {
                     setVisibleAbilities(['nitro-charge', 'nitro-vault']);
                     let nc = localCombat.nitroCharge;
@@ -13122,7 +13614,12 @@
                     getEl('cd-tim-vents').style.height = `${tv > 0 ? (tv / 2.0) * 100 : 0}%`;
                     getEl('status-tim-vents').innerText = tv > 0 ? tv.toFixed(1) + 's' : 'Ready';
                 } else if (myPlayer.heroClass === 'trace') {
-                    setVisibleAbilities(['trace-primary', 'trace-dash']);
+                    setVisibleAbilities(['trace-primary', 'trace-dash', 'trace-eh']);
+                    {
+                        let teh = localCombat.traceEH.cd;
+                        getEl('cd-trace-eh').style.height = `${teh > 0 ? (teh / localCombat.traceEH.maxCd) * 100 : 0}%`;
+                        getEl('status-trace-eh').innerText = teh > 0 ? teh.toFixed(1) + 's' : 'Ready';
+                    }
                     let tp = localCombat.traceShoot.cd;
                     getEl('cd-trace-primary').style.height = `${tp > 0 ? (tp / 1.0) * 100 : 0}%`;
                     getEl('status-trace-primary').innerText = tp > 0 ? tp.toFixed(1) + 's' : 'Ready';
@@ -13235,9 +13732,16 @@
                         let c = p.team === 'red' ? '#ef4444' : (p.team === 'blue' ? '#3b82f6' : '#71717a');
                         d = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c};margin-right:8px;box-shadow:0 0 5px ${c};"></span>`;
                     }
-                    html += `<div class="sb-row"><div>${d}${p.name}</div><div><span style="color:#22c55e">${p.kills || 0} K</span> <span style="color:#71717a">|</span> <span style="color:#ef4444">${p.deaths || 0} D</span></div></div>`;
+                    const hData = (typeof HERO_DATA !== 'undefined' && HERO_DATA[p.heroClass]) || null;
+                    const hColor = (hData && hData.color) || p.color || '#a1a1aa';
+                    const hName = hData ? (hData.name.split(' ')[0]) : (p.heroClass || '');
+                    const heroDot = `<span title="${hName}" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${hColor};margin-right:6px;box-shadow:0 0 5px ${hColor};vertical-align:middle;"></span>`;
+                    const heroTag = `<span style="color:${hColor};font-size:0.7vw;font-weight:700;margin-left:6px;opacity:0.85;">${hName}</span>`;
+                    const specTag = p.isSpectator ? `<span style="color:#94a3b8;font-size:0.65vw;margin-left:6px;font-style:italic;">[SPEC]</span>` : '';
+                    html += `<div class="sb-row"><div>${d}${heroDot}${p.name}${heroTag}${specTag}</div><div><span style="color:#22c55e">${p.kills || 0} K</span> <span style="color:#71717a">|</span> <span style="color:#ef4444">${p.deaths || 0} D</span></div></div>`;
                 }
                 );
+
                 if (html !== lastScoreboardHtml) {
                     sb.innerHTML = html;
                     lastScoreboardHtml = html;
@@ -13781,6 +14285,11 @@
                     }
                 }
                 const c = p.customization || {};
+                if (k === 'trace' && c.traceColors && c.traceColors.neon)
+                    return {
+                        type: 'color',
+                        value: c.traceColors.neon
+                    };
                 if (k === 'kendo' && c.kendoColors && c.kendoColors.primary)
                     return {
                         type: 'color',
@@ -13837,8 +14346,13 @@
             const _zoneT0 = performance.now();
             let _zoneLastUpdate = 0;
             function drawZones() {
+                // Disabled: territory zones, transition lines, and shared color floors are
+                // permanently removed. Floor color is handled locally in drawGrid() so each
+                // player only ever sees their own hero color (or grey when Hero Zone is off).
+                return;
                 if (typeof gameState === 'undefined' || !gameState || !gameState.players)
                     return;
+
                 const wallsN = (gameState.walls || []).length;
                 if (!_zoneFloorMask || _zoneWallsCount !== wallsN) {
                     _zoneFloorMask = _buildZoneFloorMask();
@@ -13999,27 +14513,58 @@
                 ctx.restore();
             }
 
+            // Re-bakes the map with a new floor color whenever it changes (cheap: only on hero change).
+            // Avoids per-frame multiply tinting which crushed walls to black on dark backgrounds.
+            window.__lastBakedFloor = window.__lastBakedFloor || null;
+            function _ensureFloorColor(col) {
+                if (col !== window.__lastBakedFloor && typeof bakeMap === 'function') {
+                    window.__BAKE_FLOOR_OVERRIDE = col;
+                    try { bakeMap(); } catch (e) {}
+                    window.__lastBakedFloor = col;
+                }
+            }
             function drawGrid() {
                 const s = window.RIVALS_SETTINGS;
-                // Flat color mode skips the expensive baked map blit entirely — biggest win
-                // for weak laptops. Just fills a solid color across the whole world.
-                if (s && s.mapStyle === 'flat') {
-                    ctx.fillStyle = s.mapBgColor || '#1a1025';
-                    ctx.fillRect(0, 0, W, H);
-                } else {
-                    // Dark walls are now baked into mapCanvas (rounded corners, flat outline, no glow).
-                    ctx.drawImage(mapCanvas, 0, 0);
-                    // Optional color tint over the detailed map (player preference).
-                    if (s && s.mapBgColor && s.mapBgColor !== '#1a1025') {
-                        ctx.save();
-                        ctx.globalAlpha = 0.35;
-                        ctx.globalCompositeOperation = 'multiply';
-                        ctx.fillStyle = s.mapBgColor;
-                        ctx.fillRect(0, 0, W, H);
-                        ctx.restore();
-                    }
+                // Floor color:
+                //   Hero Zone ON  => local player's hero color (each client sees its own — never shared).
+                //   Hero Zone OFF => plain grey.
+                // Zones (other-player floor colors, transition lines) are ALWAYS hidden now.
+                let floorColor = '#a0a0a0';
+                if (s && s.heroZone !== false) {
+                    try {
+                        const me = (typeof gameState !== 'undefined' && gameState && gameState.players && typeof myId !== 'undefined') ? gameState.players[myId] : null;
+                        if (me) {
+                            const hc = (typeof _zonePlayerColor === 'function') ? _zonePlayerColor(me) : (me.color || floorColor);
+                            if (hc) floorColor = hc;
+                        }
+                    } catch (e) {}
                 }
-                drawZones();
+                if (s && s.mapStyle === 'flat') {
+                    ctx.fillStyle = floorColor;
+                    ctx.fillRect(0, 0, W, H);
+                    // Always render black wall blocks (with thin white outlines) so they remain visible.
+                    const dc = window.__darkWallCells, ds = window.__darkWallSet;
+                    if (dc && dc.length) {
+                        ctx.fillStyle = '#000000';
+                        for (let i = 0; i < dc.length; i++) { const d = dc[i]; ctx.fillRect(d.x, d.y, GRID, GRID); }
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        for (let i = 0; i < dc.length; i++) {
+                            const d = dc[i], cc = d.c, rr = d.r;
+                            if (!ds.has(cc + ',' + (rr - 1))) { ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + GRID, d.y); }
+                            if (!ds.has((cc + 1) + ',' + rr)) { ctx.moveTo(d.x + GRID, d.y); ctx.lineTo(d.x + GRID, d.y + GRID); }
+                            if (!ds.has(cc + ',' + (rr + 1))) { ctx.moveTo(d.x + GRID, d.y + GRID); ctx.lineTo(d.x, d.y + GRID); }
+                            if (!ds.has((cc - 1) + ',' + rr)) { ctx.moveTo(d.x, d.y + GRID); ctx.lineTo(d.x, d.y); }
+                        }
+                        ctx.stroke();
+                    }
+                } else {
+                    _ensureFloorColor(floorColor);
+                    ctx.drawImage(mapCanvas, 0, 0);
+                }
+
+
 
                 if (gameState.koth && activeServerMode === 'KOTH') {
                     let k = gameState.koth;
@@ -14155,37 +14700,86 @@
                 if (myPlayer.heroClass === 'trace' && gCon.classList.contains('active')) {
                     let nL = myPlayer.traceShooting ? myPlayer.traceNodes : (myPlayer.traceDashing ? myPlayer.traceDashNodes : null);
                     if (nL && nL.length > 0) {
+                        const _tCol = myPlayer.customization?.traceColors?.neon || '#a855f7';
+                        // Build full point list (start player -> nodes -> cursor while drawing)
+                        const pts = [{ x: myPlayer.x, y: myPlayer.y }, ...nL];
+                        if ((myPlayer.traceShooting && nL.length < 120) || (myPlayer.traceDashing && nL.length < 8)) {
+                            pts.push({
+                                x: (sMx / cam.zoom) + cam.x,
+                                y: (sMy / cam.zoom) + cam.y
+                            });
+                        }
+                        // Gravitational bending: if any Event Horizon is active, project nearby
+                        // displayed points onto its orbit ring so the preview matches the arrow's path.
+                        const _ehs = (gameState.projectiles || []).filter(pp => pp.type === 'event_horizon');
+                        if (_ehs.length) {
+                            for (const pt of pts) {
+                                for (const eh of _ehs) {
+                                    const ex = pt.x - eh.x, ey = pt.y - eh.y;
+                                    const er = Math.hypot(ex, ey);
+                                    if (er < eh.radius && er > 0.001) {
+                                        const orbitR = eh.radius * 0.55;
+                                        pt.x = eh.x + (ex / er) * orbitR;
+                                        pt.y = eh.y + (ey / er) * orbitR;
+                                    }
+                                }
+                            }
+                        }
+                        // Connecting line: a thin low-opacity guide tracing the full freehand path.
                         ctx.save();
-                        ctx.strokeStyle = myPlayer.customization?.traceColors?.neon || '#a855f7';
-                        ctx.lineWidth = 2;
-                        ctx.setLineDash([5, 5]);
+                        ctx.strokeStyle = _tCol;
+                        ctx.lineWidth = 1.4;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.globalAlpha = 0.55;
                         ctx.beginPath();
-                        ctx.moveTo(myPlayer.x, myPlayer.y);
-                        nL.forEach(n => ctx.lineTo(n.x, n.y));
-                        if ((myPlayer.traceShooting && nL.length < 5) || (myPlayer.traceDashing && nL.length < 3)) {
-                            let wx = (sMx / cam.zoom) + cam.x
-                              , wy = (sMy / cam.zoom) + cam.y;
-                            ctx.lineTo(wx, wy);
+                        for (let i = 0; i < pts.length; i++) {
+                            if (i === 0) ctx.moveTo(pts[i].x, pts[i].y);
+                            else ctx.lineTo(pts[i].x, pts[i].y);
                         }
                         ctx.stroke();
                         ctx.restore();
+                        // Glint nodes: drawn ONLY at sharp angles (nodes flagged _glint).
                         nL.forEach(n => {
+                            if (!n._glint) return;
                             ctx.save();
                             ctx.translate(n.x, n.y);
-                            ctx.fillStyle = myPlayer.customization?.traceColors?.neon || '#a855f7';
+                            ctx.fillStyle = '#ffffff';
+                            ctx.shadowBlur = 22;
+                            ctx.shadowColor = _tCol;
+                            drawTraceGlint(ctx, 1.25);
+                            ctx.fillStyle = _tCol;
                             ctx.shadowBlur = 10;
-                            ctx.shadowColor = ctx.fillStyle;
-                            ctx.beginPath();
-                            ctx.moveTo(0, -8);
-                            ctx.lineTo(8, 0);
-                            ctx.lineTo(0, 8);
-                            ctx.lineTo(-8, 0);
-                            ctx.fill();
+                            drawTraceGlint(ctx, 0.7);
                             ctx.restore();
-                        }
-                        );
+                        });
                     }
                 }
+            }
+
+            // Trace glint node: 4-point star with long thin arms and concave, rounded inner corners.
+            function drawTraceGlint(c, s = 1) {
+                const L = 10 * s;   // arm length (long)
+                const W = 1.6 * s;  // waist (thin arms)
+                const K = 2.5 * s;  // concave control distance (rounded corners)
+                const tips = [[L, 0], [0, L], [-L, 0], [0, -L]];
+                c.beginPath();
+                for (let i = 0; i < 4; i++) {
+                    const t1 = tips[i];
+                    const t2 = tips[(i + 1) % 4];
+                    const mx = (t1[0] + t2[0]) * 0.5;
+                    const my = (t1[1] + t2[1]) * 0.5;
+                    const mlen = Math.hypot(mx, my) || 1;
+                    const inX = (mx / mlen) * W;
+                    const inY = (my / mlen) * W;
+                    const cx = (mx / mlen) * K;
+                    const cy = (my / mlen) * K;
+                    if (i === 0) c.moveTo(t1[0], t1[1]);
+                    c.quadraticCurveTo(cx, cy, inX, inY);
+                    c.quadraticCurveTo(cx, cy, t2[0], t2[1]);
+                }
+                c.closePath();
+                c.fill();
             }
 
             function drawHPs() {
@@ -14377,6 +14971,39 @@
                 }
                 );
 
+                // === TRACE arrow trail — drawn BEFORE projectiles so arrow renders ON TOP ===
+                {
+                    const _now = performance.now();
+                    const TRAIL_LIFE = 2000;
+                    for (let id in traceArrowTrails) {
+                        const tr = traceArrowTrails[id];
+                        while (tr.pts.length && (_now - tr.pts[0].t) > TRAIL_LIFE)
+                            tr.pts.shift();
+                        if (tr.pts.length === 0) {
+                            delete traceArrowTrails[id];
+                            continue;
+                        }
+                        const col = tr.color || '#a855f7';
+                        ctx.save();
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        for (let i = 0; i < tr.pts.length - 1; i++) {
+                            const a = tr.pts[i], b = tr.pts[i + 1];
+                            if (!iV(a.x, a.y, 200) && !iV(b.x, b.y, 200)) continue;
+                            const ageA = (_now - a.t) / TRAIL_LIFE;
+                            const lifeF = Math.max(0, 1 - ageA);
+                            ctx.globalAlpha = 0.85 * lifeF;
+                            ctx.lineWidth = 2 + 12 * lifeF;
+                            ctx.strokeStyle = col;
+                            ctx.beginPath();
+                            ctx.moveTo(a.x, a.y);
+                            ctx.lineTo(b.x, b.y);
+                            ctx.stroke();
+                        }
+                        ctx.restore();
+                    }
+                }
+
                 let aId = new Set();
                 gameState.projectiles.forEach(p => {
                     if (!iV(p.x, p.y, 400))
@@ -14392,7 +15019,9 @@
                         if (!traceArrowTrails[p.id])
                             traceArrowTrails[p.id] = {
                                 color: tc,
-                                pts: []
+                                pts: [],
+                                startX: p.startX,
+                                startY: p.startY
                             };
                         traceArrowTrails[p.id].color = tc;
                         const _pts = traceArrowTrails[p.id].pts;
@@ -14403,6 +15032,46 @@
                                 y: p.y,
                                 t: _now
                             });
+                        // White constellation path traced so far, visible to ALL players
+                        {
+                            const visited = [];
+                            if (p.startX != null) visited.push({ x: p.startX, y: p.startY });
+                            for (let j = 0; j < p.targetIdx && j < p.nodes.length; j++)
+                                visited.push({ x: p.nodes[j].x, y: p.nodes[j].y });
+                            visited.push({ x: p.x, y: p.y });
+                            const GAP = 9;
+                            ctx.save();
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 1.1;
+                            ctx.lineCap = 'round';
+                            ctx.shadowBlur = 8;
+                            ctx.shadowColor = '#ffffff';
+                            for (let j = 0; j < visited.length - 1; j++) {
+                                const a = visited[j], b = visited[j + 1];
+                                const dx = b.x - a.x, dy = b.y - a.y;
+                                const d = Math.hypot(dx, dy);
+                                if (d < 0.001) continue;
+                                const ux = dx / d, uy = dy / d;
+                                const trimA = (j === 0) ? 0 : GAP;
+                                // last segment ends at arrow position, no gap
+                                const trimB = (j === visited.length - 2) ? 0 : GAP;
+                                if (d <= trimA + trimB + 1) continue;
+                                ctx.beginPath();
+                                ctx.moveTo(a.x + ux * trimA, a.y + uy * trimA);
+                                ctx.lineTo(b.x - ux * trimB, b.y - uy * trimB);
+                                ctx.stroke();
+                            }
+                            // White glints at the visited nodes (sharp-angle ones only)
+                            ctx.fillStyle = '#ffffff';
+                            for (let j = 0; j < p.targetIdx && j < p.nodes.length; j++) {
+                                if (!p.nodes[j]._glint) continue;
+                                ctx.save();
+                                ctx.translate(p.nodes[j].x, p.nodes[j].y);
+                                drawTraceGlint(ctx, 1);
+                                ctx.restore();
+                            }
+                            ctx.restore();
+                        }
                         ctx.save();
                         ctx.translate(p.x, p.y);
                         ctx.rotate(p.angle);
@@ -14416,11 +15085,12 @@
                         ctx.lineTo(-15, -5);
                         ctx.fill();
                         ctx.restore();
+                        // Faint preview of remaining path (owner / team only)
                         if (p.ownerId === myId || (gameState.isTeamMode && gameState.players[p.ownerId]?.team === myPlayer.team)) {
                             ctx.save();
                             ctx.strokeStyle = tc;
                             ctx.lineWidth = 1;
-                            ctx.globalAlpha = 0.4;
+                            ctx.globalAlpha = 0.35;
                             ctx.beginPath();
                             ctx.moveTo(p.x, p.y);
                             for (let j = p.targetIdx; j < p.nodes.length; j++)
@@ -14428,6 +15098,187 @@
                             ctx.stroke();
                             ctx.restore();
                         }
+                    } else if (p.type === 'trace_pulse') {
+                        // Single pulse: one smooth bell curve over the pulse lifetime (no oscillation).
+                        const lf = Math.max(0, p.life / (p.maxLife || 1));
+                        const tc = gameState.players[p.ownerId]?.customization?.traceColors?.neon || '#ffffff';
+                        const t = 1 - lf;                       // 0 -> 1 across lifetime
+                        const pulse = Math.sin(t * Math.PI);    // one rise & fall, peak at t=0.5
+                        ctx.save();
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.shadowBlur = 18 * pulse + 4;
+                        ctx.shadowColor = '#ffffff';
+                        // Outer wide glow stroke in hero color (thinner than before)
+                        ctx.globalAlpha = 0.55 * pulse;
+                        ctx.strokeStyle = tc;
+                        ctx.lineWidth = 6 + 5 * pulse;
+                        ctx.beginPath();
+                        for (let j = 0; j < p.pts.length; j++) {
+                            const pt = p.pts[j];
+                            if (j === 0) ctx.moveTo(pt.x, pt.y);
+                            else ctx.lineTo(pt.x, pt.y);
+                        }
+                        ctx.stroke();
+                        // Inner bright white core — also thinner
+                        ctx.globalAlpha = Math.min(1, 0.7 * pulse + 0.2 * lf);
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1.5 + 1.5 * pulse;
+                        ctx.stroke();
+                        // Glints at each waypoint
+                        ctx.fillStyle = '#ffffff';
+                        ctx.globalAlpha = lf;
+                        for (let j = 1; j < p.pts.length - 1; j++) {
+                            ctx.save();
+                            ctx.translate(p.pts[j].x, p.pts[j].y);
+                            ctx.scale(1 + 0.4 * pulse, 1 + 0.4 * pulse);
+                            drawTraceGlint(ctx, 1);
+                            ctx.restore();
+                        }
+                        ctx.restore();
+                    } else if (p.type === 'eh_throwable') {
+                        const tc = gameState.players[p.ownerId]?.customization?.traceColors?.neon || '#a855f7';
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(performance.now() / 80);
+                        ctx.fillStyle = '#0a0010';
+                        ctx.shadowBlur = 16;
+                        ctx.shadowColor = tc;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 9, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = tc;
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(-12, 0); ctx.lineTo(12, 0);
+                        ctx.moveTo(0, -12); ctx.lineTo(0, 12);
+                        ctx.stroke();
+                        ctx.restore();
+                    } else if (p.type === 'event_horizon') {
+                        const tc = gameState.players[p.ownerId]?.customization?.traceColors?.neon || '#a855f7';
+                        const lf = Math.max(0, p.life / (p.maxLife || 1));
+                        const tNow = performance.now() / 1000;
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+
+                        // ===== INTERSTELLAR-STYLE BLACK HOLE =====
+                        // Soft outer halo (gravitational lensing falloff) — tinted with neon color
+                        const halo = ctx.createRadialGradient(0, 0, p.coreRadius * 1.1, 0, 0, p.radius);
+                        halo.addColorStop(0, tc);
+                        halo.addColorStop(0.25, tc);
+                        halo.addColorStop(0.6, 'rgba(0,0,0,0.55)');
+                        halo.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.globalAlpha = 0.18 * lf;
+                        ctx.fillStyle = halo;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+
+                        // Accretion disk — flat ellipse wrapping the equator, neon-tinted, with
+                        // a bright photon-ring arc bending OVER the top of the singularity to
+                        // mimic the Interstellar/Gargantua silhouette.
+                        const diskRx = p.coreRadius * 2.6;
+                        const diskRy = p.coreRadius * 0.55;
+                        const spin = tNow * 0.9;
+
+                        // Back half of disk (behind the hole, drawn first)
+                        ctx.save();
+                        ctx.rotate(0);
+                        const backGrd = ctx.createLinearGradient(-diskRx, 0, diskRx, 0);
+                        backGrd.addColorStop(0, 'rgba(0,0,0,0)');
+                        backGrd.addColorStop(0.5, tc);
+                        backGrd.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = backGrd;
+                        ctx.globalAlpha = 0.85 * lf;
+                        ctx.shadowBlur = 28;
+                        ctx.shadowColor = tc;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, diskRx, diskRy, 0, Math.PI, Math.PI * 2);
+                        ctx.lineTo(diskRx, 0);
+                        ctx.ellipse(0, 0, diskRx, diskRy * 0.55, 0, 0, Math.PI, true);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+
+                        // Photon ring arching OVER the top — the signature Interstellar bend
+                        ctx.save();
+                        ctx.lineCap = 'round';
+                        ctx.strokeStyle = tc;
+                        ctx.globalAlpha = 0.95 * lf;
+                        ctx.lineWidth = Math.max(2, p.coreRadius * 0.22);
+                        ctx.shadowBlur = 32;
+                        ctx.shadowColor = tc;
+                        ctx.beginPath();
+                        ctx.ellipse(0, -p.coreRadius * 0.05, p.coreRadius * 1.18, p.coreRadius * 1.08, 0, Math.PI * 1.04, Math.PI * 1.96);
+                        ctx.stroke();
+                        // Inner white-hot photon thread
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = Math.max(1, p.coreRadius * 0.07);
+                        ctx.globalAlpha = lf;
+                        ctx.beginPath();
+                        ctx.ellipse(0, -p.coreRadius * 0.05, p.coreRadius * 1.18, p.coreRadius * 1.08, 0, Math.PI * 1.08, Math.PI * 1.92);
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Event horizon — pitch black core (drawn over back disk so disk wraps it)
+                        ctx.fillStyle = '#000';
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, p.coreRadius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Front half of disk (in front of the hole)
+                        ctx.save();
+                        const frontGrd = ctx.createLinearGradient(-diskRx, 0, diskRx, 0);
+                        frontGrd.addColorStop(0, 'rgba(0,0,0,0)');
+                        frontGrd.addColorStop(0.5, tc);
+                        frontGrd.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = frontGrd;
+                        ctx.globalAlpha = 0.95 * lf;
+                        ctx.shadowBlur = 26;
+                        ctx.shadowColor = tc;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, diskRx, diskRy, 0, 0, Math.PI);
+                        ctx.lineTo(-diskRx, 0);
+                        ctx.ellipse(0, 0, diskRx, diskRy * 0.55, 0, Math.PI, 0, true);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+
+                        // Rotating bright streamers along the disk to suggest motion
+                        ctx.save();
+                        ctx.globalAlpha = 0.7 * lf;
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.shadowBlur = 18;
+                        ctx.shadowColor = tc;
+                        for (let k = 0; k < 6; k++) {
+                            const a0 = spin * (1 + k * 0.15) + k * 1.05;
+                            const ang = (a0 % (Math.PI * 2));
+                            // streamer is brightest near the disk equator (sin near 0 wraps)
+                            const ex = Math.cos(ang) * diskRx;
+                            const ey = Math.sin(ang) * diskRy;
+                            ctx.lineWidth = 1.6;
+                            ctx.beginPath();
+                            ctx.moveTo(ex * 0.85, ey * 0.85);
+                            ctx.lineTo(ex * 1.05, ey * 1.05);
+                            ctx.stroke();
+                        }
+                        ctx.restore();
+
+                        // Crisp event horizon rim
+                        ctx.strokeStyle = tc;
+                        ctx.globalAlpha = lf;
+                        ctx.lineWidth = 1.6;
+                        ctx.shadowBlur = 22;
+                        ctx.shadowColor = tc;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, p.coreRadius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+                        ctx.globalAlpha = 1;
+                        ctx.restore();
                     } else if (p.type === 'paradox_rift') {
                         ctx.save();
                         ctx.translate(p.x, p.y);
@@ -15180,45 +16031,6 @@
                     }
                 }
 
-                // === TRACE space-pattern arrow trail — points linger 2s, fading out ===
-                {
-                    const _now = performance.now();
-                    const TRAIL_LIFE = 2000;
-                    // ms
-                    for (let id in traceArrowTrails) {
-                        const tr = traceArrowTrails[id];
-                        // Drop expired points
-                        while (tr.pts.length && (_now - tr.pts[0].t) > TRAIL_LIFE)
-                            tr.pts.shift();
-                        if (tr.pts.length === 0) {
-                            delete traceArrowTrails[id];
-                            continue;
-                        }
-                        const pat = getSpacePat(tr.color);
-                        // Draw each segment with a width/alpha based on remaining life
-                        ctx.save();
-                        ctx.lineCap = 'round';
-                        ctx.lineJoin = 'round';
-                        for (let i = 0; i < tr.pts.length - 1; i++) {
-                            const a = tr.pts[i]
-                              , b = tr.pts[i + 1];
-                            if (!iV(a.x, a.y, 200) && !iV(b.x, b.y, 200))
-                                continue;
-                            const ageA = (_now - a.t) / TRAIL_LIFE;
-                            // 0 fresh -> 1 gone
-                            const lifeF = Math.max(0, 1 - ageA);
-                            ctx.globalAlpha = lifeF;
-                            ctx.lineWidth = 2 + 14 * lifeF;
-                            ctx.strokeStyle = pat || tr.color;
-                            ctx.beginPath();
-                            ctx.moveTo(a.x, a.y);
-                            ctx.lineTo(b.x, b.y);
-                            ctx.stroke();
-                        }
-                        ctx.restore();
-                    }
-                }
-
                 if (gameState.ultOrb && gameState.ultOrb.state !== 'inactive') {
                     let o = gameState.ultOrb;
                     if (iV(o.x, o.y, 100)) {
@@ -15438,7 +16250,13 @@
                     ctx.beginPath();
                     ctx.arc(0, 0, s.radius, 0, 6.28);
                     ctx.fill();
-                    ctx.strokeStyle = `rgba(${rgb},${a * 0.8})`;
+                    // Thick black outline (matches Kendo arrow silhouette)
+                    ctx.strokeStyle = `rgba(0,0,0,${a * 0.95})`;
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, s.radius, 0, 6.28);
+                    ctx.stroke();
+                    ctx.strokeStyle = `rgba(${rgb},${a * 0.95})`;
                     ctx.lineWidth = 3;
                     ctx.beginPath();
                     ctx.arc(0, 0, s.radius, 0, 6.28);
@@ -15553,7 +16371,8 @@
                     }
                 }
 
-                let ents = [...gameState.clones, ...Object.values(gameState.players).filter(p => !p.isDead)]
+                let ents = [...gameState.clones, ...Object.values(gameState.players).filter(p => !p.isDead && !p.isSpectator)]
+
                   , mp = ents.some(e => (e.ownerId !== undefined ? gameState.players[e.ownerId] : e)?.heroClass === 'glitch') ? getMatrixPat() : null;
                 const _rs = (window.__RENDER_SCALE !== undefined) ? Math.max(0.05, window.__RENDER_SCALE) : 1;
                 const vW = (can.width / _rs) / cam.zoom
@@ -15678,7 +16497,7 @@
                     // (Dynamic per-pixel toon outline runs as a post-process after all heroes draw.)
 
                     if (!iC && o.heroClass === 'trace') {
-                        ctx.fillStyle = isImpactFlash ? '#000' : '#a855f7';
+                        ctx.fillStyle = isImpactFlash ? '#000' : (o.customization?.traceColors?.neon || '#a855f7');
                         ctx.beginPath();
                         ctx.arc(0, 0, 16, 0, 6.28);
                         ctx.fill();
@@ -17087,15 +17906,29 @@
                         ctx.arc(0, 0, 4, 0, 6.28);
                         ctx.fill();
                         ctx.shadowBlur = 0;
-                        // Orbiting sparkles
+                        // Three rainbow-loop glints — ALWAYS orbiting the hero model
                         let ro = (Date.now() / 150) % 6.28;
-                        ctx.fillStyle = isImpactFlash ? '#000' : '#fce7f3';
+                        let hueShift = (Date.now() / 12) % 360;
                         for (let s = 0; s < 3; s++) {
                             let a = ro + s * 2.094;
+                            let hx = Math.cos(a) * 22;
+                            let hy = Math.sin(a) * 22;
+                            let hue = (hueShift + s * 120) % 360;
+                            let rainbow = isImpactFlash ? '#000' : `hsl(${hue}, 100%, 60%)`;
+                            ctx.shadowBlur = isImpactFlash ? 0 : 12;
+                            ctx.shadowColor = rainbow;
+                            ctx.fillStyle = rainbow;
                             ctx.beginPath();
-                            ctx.arc(Math.cos(a) * 22, Math.sin(a) * 22, 2.5, 0, 6.28);
+                            ctx.arc(hx, hy, 3, 0, 6.28);
+                            ctx.fill();
+                            // Bright white core for sparkle
+                            ctx.shadowBlur = 0;
+                            ctx.fillStyle = isImpactFlash ? '#000' : '#ffffff';
+                            ctx.beginPath();
+                            ctx.arc(hx, hy, 1.2, 0, 6.28);
                             ctx.fill();
                         }
+                        ctx.shadowBlur = 0;
                     } else if (!iC && o.heroClass === 'rift') {
                         // Body recoil from primary fire (riftPrimary anim is 0.15s) — separate from jab
                         let isMine = (o.id === myId);
@@ -18229,7 +19062,10 @@
                 updateUI(t);
 
                 let isF = (Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y) > 10) || myPlayer.isFlying || localCombat.jubileeDash?.dTm > 0 || localCombat.misakiGrapple?.dTm > 0 || myPlayer.traceDashing;
-                cam.targetZoom = myPlayer.isJuggernaut ? 0.45 : (isF ? 0.55 : 0.65);
+                // Nitro Stratosphere Launch: zoom out further while ascending/descending so the player can see the whole arena.
+                let _nvPhase = (myPlayer.heroClass === 'nitro' && localCombat.nitroVault) ? localCombat.nitroVault.phase : 'idle';
+                let _nvLaunching = (_nvPhase === 'ascending' || _nvPhase === 'descending');
+                cam.targetZoom = myPlayer.isJuggernaut ? 0.45 : (_nvLaunching ? 0.32 : (isF ? 0.55 : 0.65));
                 cam.zoom += (cam.targetZoom - cam.zoom) * 5 * dt;
 
                 const pk = Object.keys(gameState.players)
@@ -18276,10 +19112,16 @@
                 const LW = can.width / _RS
                   , LH = can.height / _RS;
 
-                let tX = Math.max(0, Math.min(W - LW / cam.zoom, myPlayer.x - (LW / 2) / cam.zoom));
-                let tY = Math.max(0, Math.min(H - LH / cam.zoom, myPlayer.y - (LH / 2) / cam.zoom));
+                let _camFX = myPlayer.x, _camFY = myPlayer.y;
+                if (myPlayer.isSpectator && window.__specCam) {
+                    _camFX = window.__specCam.x;
+                    _camFY = window.__specCam.y;
+                }
+                let tX = Math.max(0, Math.min(W - LW / cam.zoom, _camFX - (LW / 2) / cam.zoom));
+                let tY = Math.max(0, Math.min(H - LH / cam.zoom, _camFY - (LH / 2) / cam.zoom));
                 cam.x += (tX - cam.x) * 10 * dt;
                 cam.y += (tY - cam.y) * 10 * dt;
+
 
                 // Decrement impact flash timer (skipped entirely in low gfx)
                 if (impactFlashTimer > 0)
@@ -19422,7 +20264,7 @@
                             // Toggle combo side BEFORE this swing so each click alternates direction
                             myPlayer.excaliburComboSide = (myPlayer.excaliburComboSide === 1) ? -1 : 1;
                             myPlayer.excaliburSlashAnim = EXC.SWING_DUR;
-                            // Lunge is DELAYED by 0.4s so it looks like the sword pulls Excalibur forward.
+                            // Lunge is DELAYED by 0.15s so it looks like the sword pulls Excalibur forward.
                             const _lungeAng = myPlayer.angle || 0;
                             setTimeout( () => {
                                 if (!myPlayer || myPlayer.isDead)
@@ -19432,7 +20274,7 @@
                                 localCombat.dash.rec = 0.12;
                                 applyShake(5, 0.14);
                             }
-                            , 400);
+                            , 150);
                             // No external slash-arc VFX - the SWORD ITSELF is the hitbox & visual.
                             sdEv({
                                 type: 'excalibur_slash',
@@ -20390,13 +21232,21 @@
                 const bgCtx = bgCv.getContext('2d');
                 const entCtx = entCv.getContext('2d');
                 const outCtx = outCv.getContext('2d');
-                const BASE_R = 3;
-                // outline thickness (screen px before zoom)
+                const BASE_R = 1;
+                // outline thickness (screen px before zoom) — thinnest for projectiles
 
                 window.drawEnts = function() {
                     const cw = can.width
                       , ch = can.height;
                     if (cw <= 0 || ch <= 0) {
+                        return _prevEnts.apply(this, arguments);
+                    }
+                    // Perf: if no projectiles/pickups, skip the entire 4-pass outline pipeline.
+                    const _hasEnts = (typeof gameState !== 'undefined' && gameState && (
+                        (gameState.projectiles && gameState.projectiles.length) ||
+                        (gameState.pickups && gameState.pickups.length)
+                    ));
+                    if (!_hasEnts) {
                         return _prevEnts.apply(this, arguments);
                     }
 
@@ -20453,6 +21303,438 @@
                 ;
             }
             )();
+
+            /* ===========================================================================
+ * SHAPE-FOLLOWING BLACK OUTLINE FOR VFX (post-process) — THINNEST
+ * Adds a 1px black outline around every visual effect (explosions, glints,
+ * slashes, beams) so they read clearly against any background.
+ * =========================================================================*/
+            (function installVfxOutlinePostProcess() {
+                if (typeof window.drawVFX !== 'function')
+                    return;
+                const _prev = window.drawVFX;
+                const bgCv = document.createElement('canvas');
+                const fxCv = document.createElement('canvas');
+                const outCv = document.createElement('canvas');
+                const bgCtx = bgCv.getContext('2d');
+                const fxCtx = fxCv.getContext('2d');
+                const outCtx = outCv.getContext('2d');
+
+                window.drawVFX = function() {
+                    const cw = can.width, ch = can.height;
+                    if (cw <= 0 || ch <= 0) return _prev.apply(this, arguments);
+                    // Perf: bail out entirely when there are no active effects.
+                    if (typeof vfx === 'undefined' || !vfx || vfx.length === 0) {
+                        return _prev.apply(this, arguments);
+                    }
+                    if (bgCv.width !== cw || bgCv.height !== ch) {
+                        bgCv.width = fxCv.width = outCv.width = cw;
+                        bgCv.height = fxCv.height = outCv.height = ch;
+                    }
+                    // 1) Snapshot existing canvas
+                    bgCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    bgCtx.clearRect(0, 0, cw, ch);
+                    bgCtx.drawImage(can, 0, 0);
+                    // 2) Clear and draw vfx only
+                    const prevT = ctx.getTransform();
+                    ctx.save();
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.clearRect(0, 0, cw, ch);
+                    ctx.restore();
+                    ctx.setTransform(prevT);
+                    try { _prev.apply(this, arguments); } catch (e) {}
+                    // 3) Snapshot vfx layer
+                    fxCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    fxCtx.clearRect(0, 0, cw, ch);
+                    fxCtx.drawImage(can, 0, 0);
+                    // 4) THIN 1px ring outline
+                    outCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    outCtx.clearRect(0, 0, cw, ch);
+                    const R = 1;
+                    const offs = [[R, 0], [-R, 0], [0, R], [0, -R]];
+                    for (let i = 0; i < offs.length; i++)
+                        outCtx.drawImage(fxCv, offs[i][0], offs[i][1]);
+                    outCtx.globalCompositeOperation = 'source-in';
+                    outCtx.fillStyle = '#000';
+                    outCtx.fillRect(0, 0, cw, ch);
+                    outCtx.globalCompositeOperation = 'source-over';
+                    // 5) Recomposite bg → outline → vfx
+                    ctx.save();
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.clearRect(0, 0, cw, ch);
+                    ctx.drawImage(bgCv, 0, 0);
+                    ctx.drawImage(outCv, 0, 0);
+                    ctx.drawImage(fxCv, 0, 0);
+                    ctx.restore();
+                    ctx.setTransform(prevT);
+                };
+            })();
+            // ============================================================
+            // ============== GLITCH HACKER ZONE MODULE ===================
+            // ============================================================
+            (function () {
+                const ZONE_TYPES = {
+                    1: 'overclock',
+                    2: 'packetLoss',
+                    3: 'arrayWrap',
+                    4: 'forceVector',
+                    5: 'noclip'
+                };
+                const ZONE_LABEL = {
+                    overclock: 'OVERCLOCK', packetLoss: 'PACKET LOSS',
+                    arrayWrap: 'ARRAY WRAP', forceVector: 'FORCE VECTOR', noclip: 'NOCLIP'
+                };
+                const MIN_DRAG = 40; // px
+                const PICK_WINDOW = 4.0; // seconds to pick type after drag
+
+                // Painting state (client local)
+                let dragging = false;
+                let dragStart = null;     // {x,y} world
+                let dragEnd = null;
+                let pending = null;       // {x,y,w,h,dragVecX,dragVecY,timer}
+                window.__glitchZoneDragging = false;
+                window.__glitchZonePending = false;
+
+                function isGlitch() { return myPlayer && myPlayer.heroClass === 'glitch' && !myPlayer.isDead; }
+                function zoneCdReady() { return localCombat.glitchZone && localCombat.glitchZone.cd <= 0; }
+
+                function snap(v) { return Math.round(v / GRID) * GRID; }
+                function clampZoneRect(sx, sy, ex, ey) {
+                    let x1 = Math.min(sx, ex), y1 = Math.min(sy, ey);
+                    let x2 = Math.max(sx, ex), y2 = Math.max(sy, ey);
+                    x1 = snap(x1); y1 = snap(y1);
+                    x2 = snap(x2); y2 = snap(y2);
+                    let maxPx = BALANCE.glitch.zoneMaxCells * GRID;
+                    if (x2 - x1 > maxPx) x2 = x1 + maxPx;
+                    if (y2 - y1 > maxPx) y2 = y1 + maxPx;
+                    if (x2 - x1 < GRID) x2 = x1 + GRID;
+                    if (y2 - y1 < GRID) y2 = y1 + GRID;
+                    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+                }
+
+                // ---- INPUT ----
+                can.addEventListener('mousedown', function (e) {
+                    if (e.button !== 2) return;
+                    if (!isGlitch() || !zoneCdReady() || !gCon.classList.contains('active')) return;
+                    if (pending) return;
+                    let wx = (sMx / cam.zoom) + cam.x, wy = (sMy / cam.zoom) + cam.y;
+                    dragging = true;
+                    dragStart = { x: wx, y: wy };
+                    dragEnd = { x: wx, y: wy };
+                    window.__glitchZoneDragging = true;
+                    e.preventDefault(); e.stopPropagation();
+                }, true);
+
+                window.addEventListener('mousemove', function () {
+                    if (!dragging) return;
+                    dragEnd = { x: (sMx / cam.zoom) + cam.x, y: (sMy / cam.zoom) + cam.y };
+                });
+
+                window.addEventListener('mouseup', function (e) {
+                    if (e.button !== 2 || !dragging) return;
+                    dragging = false;
+                    window.__glitchZoneDragging = false;
+                    if (!dragStart || !dragEnd) return;
+                    const dx = dragEnd.x - dragStart.x, dy = dragEnd.y - dragStart.y;
+                    if (Math.hypot(dx, dy) < MIN_DRAG) { dragStart = dragEnd = null; return; }
+                    const rect = clampZoneRect(dragStart.x, dragStart.y, dragEnd.x, dragEnd.y);
+                    const len = Math.hypot(dx, dy) || 1;
+                    pending = {
+                        x: rect.x, y: rect.y, w: rect.w, h: rect.h,
+                        dragVecX: (dx / len) * BALANCE.glitch.zoneForceStrength,
+                        dragVecY: (dy / len) * BALANCE.glitch.zoneForceStrength,
+                        timer: PICK_WINDOW
+                    };
+                    window.__glitchZonePending = true;
+                    dragStart = dragEnd = null;
+                }, true);
+
+                // Capture-phase keydown so number keys don't trigger other ability handlers while picking
+                window.addEventListener('keydown', function (e) {
+                    if (!pending) return;
+                    if (document.activeElement && document.activeElement.id === 'chat-input') return;
+                    if (ZONE_TYPES[e.key]) {
+                        const t = ZONE_TYPES[e.key];
+                        sdEv({
+                            type: 'glitch_zone',
+                            zoneType: t,
+                            x: pending.x, y: pending.y, w: pending.w, h: pending.h,
+                            fvx: pending.dragVecX, fvy: pending.dragVecY
+                        });
+                        localCombat.glitchZone.cd = (activeServerMode === 'CHAOS') ? 0.05 : localCombat.glitchZone.maxCd;
+                        applyShake(5, 0.15);
+                        pending = null;
+                        window.__glitchZonePending = false;
+                        e.preventDefault(); e.stopPropagation();
+                    } else if (e.key === 'Escape') {
+                        pending = null;
+                        window.__glitchZonePending = false;
+                    }
+                }, true);
+
+                // Tick pending window
+                setInterval(() => {
+                    if (!pending) return;
+                    pending.timer -= 0.05;
+                    if (pending.timer <= 0) { pending = null; window.__glitchZonePending = false; }
+                }, 50);
+
+                // ---- HOST EVENT HANDLER ----
+                const _pceOrig = window.processCombatEvent || (typeof processCombatEvent === 'function' ? processCombatEvent : null);
+                if (typeof processCombatEvent === 'function') {
+                    const _orig = processCombatEvent;
+                    processCombatEvent = function (sId, e) {
+                        if (e && e.type === 'glitch_zone') {
+                            if (!gameState.hackerZones) gameState.hackerZones = [];
+                            const s = gameState.players[sId];
+                            if (!s || s.isDead || s.heroClass !== 'glitch') return;
+                            const maxLife = BALANCE.glitch.zoneDurations[e.zoneType] || 8;
+                            gameState.hackerZones.push({
+                                id: Math.random().toString(),
+                                ownerId: sId,
+                                type: e.zoneType,
+                                x: e.x, y: e.y, w: e.w, h: e.h,
+                                fvx: e.fvx || 0, fvy: e.fvy || 0,
+                                life: maxLife,
+                                maxLife: maxLife,
+                                createdAt: performance.now()
+                            });
+                            return;
+                        }
+                        return _orig(sId, e);
+                    };
+                }
+
+                // ---- HOST TICK (post-movement effects) ----
+                function pointInZone(x, y, z) {
+                    return x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h;
+                }
+
+                function updateHackerZones(dt) {
+                    if (!gameState.hackerZones) gameState.hackerZones = [];
+                    if (!isHost) return;
+
+                    // Lifetime
+                    for (let i = gameState.hackerZones.length - 1; i >= 0; i--) {
+                        gameState.hackerZones[i].life -= dt;
+                        if (gameState.hackerZones[i].life <= 0) gameState.hackerZones.splice(i, 1);
+                    }
+
+                    // Gather entities
+                    const ents = [];
+                    for (const id in gameState.players) {
+                        const p = gameState.players[id];
+                        if (p && !p.isDead) ents.push(p);
+                    }
+                    if (gameState.clones) for (const c of gameState.clones) ents.push(c);
+                    if (gameState.projectiles) for (const p of gameState.projectiles) ents.push(p);
+
+                    for (const e of ents) {
+                        if (e._zPrevX === undefined) {
+                            e._zPrevX = e.x; e._zPrevY = e.y;
+                            e.zoneNoclip = false; e.zoneInsideType = null;
+                            continue;
+                        }
+                        const dx = e.x - e._zPrevX, dy = e.y - e._zPrevY;
+                        e.zoneNoclip = false; e.zoneInsideType = null;
+
+                        for (const z of gameState.hackerZones) {
+                            const inside = pointInZone(e.x, e.y, z);
+                            const prevInside = pointInZone(e._zPrevX, e._zPrevY, z);
+                            if (!inside && !prevInside) continue;
+                            e.zoneInsideType = z.type;
+
+                            if (z.type === 'overclock' && inside) {
+                                // Add an extra delta this frame -> ~2x effective speed
+                                e.x += dx * (BALANCE.glitch.zoneSpeedMul.overclock - 1);
+                                e.y += dy * (BALANCE.glitch.zoneSpeedMul.overclock - 1);
+                            } else if (z.type === 'packetLoss' && inside) {
+                                e.x -= dx * (1 - BALANCE.glitch.zoneSpeedMul.packetLoss);
+                                e.y -= dy * (1 - BALANCE.glitch.zoneSpeedMul.packetLoss);
+                            } else if (z.type === 'arrayWrap' && prevInside) {
+                                if (e.x < z.x) e.x = z.x + z.w - (z.x - e.x);
+                                else if (e.x > z.x + z.w) e.x = z.x + (e.x - (z.x + z.w));
+                                if (e.y < z.y) e.y = z.y + z.h - (z.y - e.y);
+                                else if (e.y > z.y + z.h) e.y = z.y + (e.y - (z.y + z.h));
+                            } else if (z.type === 'forceVector' && inside) {
+                                e.x += z.fvx * dt;
+                                e.y += z.fvy * dt;
+                                // keep inside arena
+                                e.x = Math.max(15, Math.min(W - 15, e.x));
+                                e.y = Math.max(15, Math.min(H - 15, e.y));
+                            } else if (z.type === 'noclip' && inside) {
+                                e.zoneNoclip = true;
+                            }
+                        }
+                        e._zPrevX = e.x; e._zPrevY = e.y;
+                    }
+                }
+
+                // Hook updates: run after movement each frame
+                const _umOrig = updateMovement;
+                updateMovement = function (dt) {
+                    _umOrig(dt);
+                    updateHackerZones(dt);
+                };
+
+                // ---- NOCLIP HELPER (used by patched iW + projectile collisions) ----
+                window.__isWallNoclippedFor = function (w, x, y) {
+                    if (!gameState.hackerZones || gameState.hackerZones.length === 0) return false;
+                    for (const z of gameState.hackerZones) {
+                        if (z.type !== 'noclip') continue;
+                        const wallInZone = (w.x + GRID >= z.x && w.x <= z.x + z.w &&
+                            w.y + GRID >= z.y && w.y <= z.y + z.h);
+                        if (!wallInZone) continue;
+                        if (x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h) return true;
+                    }
+                    return false;
+                };
+
+                // Patch iW so player movement collision honors noclip too
+                const _iWOrig = iW;
+                iW = function (x, y) {
+                    for (let w of gameState.walls) {
+                        if (window.__isWallNoclippedFor(w, x, y)) continue;
+                        if (x + 15 > w.x && x - 15 < w.x + GRID && y + 15 > w.y && y - 15 < w.y + GRID) return true;
+                    }
+                    return false;
+                };
+
+                // ---- RENDER ----
+                function makeMatrixStroke() {
+                    try {
+                        const pat = getMatrixPat && getMatrixPat();
+                        return pat || '#22c55e';
+                    } catch (_) { return '#22c55e'; }
+                }
+
+                function drawZoneFloorAndBorders() {
+                    if (!gameState.hackerZones || gameState.hackerZones.length === 0) return;
+                    const stroke = makeMatrixStroke();
+                    const t = performance.now() / 1000;
+                    for (const z of gameState.hackerZones) {
+                        // Black floor (under walls — walls will be drawn on top by drawWallsOverlay)
+                        ctx.save();
+                        ctx.fillStyle = '#000';
+                        ctx.globalAlpha = 0.95;
+                        ctx.fillRect(z.x, z.y, z.w, z.h);
+                        ctx.restore();
+                        // Animated matrix border
+                        ctx.save();
+                        ctx.lineWidth = 5;
+                        ctx.setLineDash([18, 8]);
+                        ctx.lineDashOffset = -((t * 60) % 26);
+                        ctx.strokeStyle = stroke;
+                        ctx.strokeRect(z.x, z.y, z.w, z.h);
+                        ctx.restore();
+                        // Type label
+                        ctx.save();
+                        ctx.fillStyle = '#22c55e';
+                        ctx.font = 'bold 14px monospace';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(ZONE_LABEL[z.type] + '  ' + z.life.toFixed(1) + 's', z.x + 6, z.y - 8);
+                        ctx.restore();
+                    }
+                }
+
+                function drawZoneOverlaysAfterWalls() {
+                    if (!gameState.hackerZones || gameState.hackerZones.length === 0) return;
+                    const stroke = makeMatrixStroke();
+                    const t = performance.now() / 1000;
+                    for (const z of gameState.hackerZones) {
+                        // Replace block outlines for blocks inside this zone (or fully wireframe for noclip)
+                        for (const w of gameState.walls) {
+                            const inZ = w.x + GRID > z.x && w.x < z.x + z.w && w.y + GRID > z.y && w.y < z.y + z.h;
+                            if (!inZ) continue;
+                            ctx.save();
+                            if (z.type === 'noclip') {
+                                // Translucent wireframe replaces the wall
+                                ctx.globalCompositeOperation = 'destination-out';
+                                ctx.fillStyle = '#000';
+                                ctx.fillRect(w.x, w.y, GRID, GRID);
+                                ctx.restore();
+                                ctx.save();
+                                ctx.fillStyle = 'rgba(34,197,94,0.18)';
+                                ctx.fillRect(w.x, w.y, GRID, GRID);
+                            }
+                            ctx.lineWidth = 3;
+                            ctx.setLineDash([6, 4]);
+                            ctx.lineDashOffset = -((t * 40) % 10);
+                            ctx.strokeStyle = stroke;
+                            ctx.strokeRect(w.x + 1, w.y + 1, GRID - 2, GRID - 2);
+                            ctx.restore();
+                        }
+                    }
+
+                    // Drag preview while painting
+                    if (dragging && dragStart && dragEnd) {
+                        const r = clampZoneRect(dragStart.x, dragStart.y, dragEnd.x, dragEnd.y);
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                        ctx.fillRect(r.x, r.y, r.w, r.h);
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([10, 6]);
+                        ctx.strokeStyle = '#22c55e';
+                        ctx.strokeRect(r.x, r.y, r.w, r.h);
+                        ctx.restore();
+                    } else if (pending) {
+                        ctx.save();
+                        ctx.lineWidth = 4;
+                        ctx.setLineDash([14, 6]);
+                        ctx.strokeStyle = '#86efac';
+                        ctx.lineDashOffset = -((t * 80) % 20);
+                        ctx.strokeRect(pending.x, pending.y, pending.w, pending.h);
+                        ctx.fillStyle = '#86efac';
+                        ctx.font = 'bold 18px monospace';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('1:OC  2:LAG  3:WRAP  4:FORCE  5:NOCLIP',
+                            pending.x + pending.w / 2, pending.y - 14);
+                        ctx.restore();
+                    }
+                }
+
+                // Tint pass over any entity inside a zone (all players see this).
+                function drawZoneEntityTints() {
+                    if (!gameState.hackerZones || gameState.hackerZones.length === 0) return;
+                    const stroke = makeMatrixStroke();
+                    const collect = [];
+                    for (const id in gameState.players) {
+                        const p = gameState.players[id];
+                        if (!p || p.isDead) continue;
+                        collect.push({ x: p.x, y: p.y, r: 28 });
+                    }
+                    if (gameState.clones) for (const c of gameState.clones) collect.push({ x: c.x, y: c.y, r: 26 });
+                    if (gameState.projectiles) for (const p of gameState.projectiles) collect.push({ x: p.x, y: p.y, r: 12 });
+                    for (const it of collect) {
+                        let inAny = false;
+                        for (const z of gameState.hackerZones) {
+                            if (it.x >= z.x && it.x <= z.x + z.w && it.y >= z.y && it.y <= z.y + z.h) { inAny = true; break; }
+                        }
+                        if (!inAny) continue;
+                        ctx.save();
+                        ctx.lineWidth = 2.5;
+                        ctx.strokeStyle = stroke;
+                        ctx.globalAlpha = 0.95;
+                        ctx.beginPath();
+                        ctx.arc(it.x, it.y, it.r, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+
+                // Hook into draw functions
+                const _dwOrig = drawWallsOverlay;
+                drawWallsOverlay = function () {
+                    drawZoneFloorAndBorders();   // black floor + border BEFORE walls
+                    _dwOrig();                    // walls drawn on top of floor
+                    drawZoneOverlaysAfterWalls(); // border-replace + drag preview AFTER walls
+                };
+                const _dpOrig = drawPlayers;
+                drawPlayers = function () {
+                    _dpOrig();
+                    drawZoneEntityTints();
+                };
+            })();
         </script>
     </body>
 </html>
