@@ -1662,7 +1662,7 @@
                             <h3 class="section-header">Select Hero</h3>
                             <div class="roster-grid">
                                 <button id="btn-aero" class="class-list-btn" onclick="selectHero('aero')" style="--glow-color: #38bdf8; background:url('https://i.pinimg.com/originals/f2/ff/82/f2ff82037fcc5a2305be0ee82d79e893.gif') bottom/cover;">Aero</button>
-                                <button id="btn-blitz" class="class-list-btn" onclick="selectHero('blitz')" style="--glow-color:#d4d4d8;background:url('https://i.imgur.com/2jH4ZiT.gif') center / 100% 160%; color:#fff;">Blitz</button>
+                                <button id="btn-blitz" class="class-list-btn selected" onclick="selectHero('blitz')" style="--glow-color:#d4d4d8;background:url('https://i.imgur.com/2jH4ZiT.gif') center / 100% 160%; color:#fff;">Blitz</button>
                                 <button id="btn-corsair" class="class-list-btn" onclick="selectHero('corsair')" style="--glow-color: #ea580c; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyaTA4bjYwdzRmbWFhOG0wc2JweHVwMTg5czM1b3N4MmxxamM4MGU5OCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/7SrHwak3yoO9a/200.gif') center/100% 180%;">Corsair</button>
                                 <button id="btn-excalibur" class="class-list-btn" onclick="selectHero('excalibur')" style="--glow-color: #fbbf24; background: linear-gradient(135deg, #b45309, #fbbf24, #fde68a); color:#000;">Excalibur</button>
                                 <button id="btn-glitch" class="class-list-btn" onclick="selectHero('glitch')" style="--glow-color: #22c55e; background:url('https://media.giphy.com/media/sULKEgDMX8LcI/giphy.gif') center/cover;">Glitch</button>
@@ -1675,7 +1675,7 @@
                                 <button id="btn-bread" class="class-list-btn" onclick="selectHero('bread')" style="--glow-color: #eab308; background:url('https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNTJoNTR3bTh1NXZuMWwzYzFqdm5sZzV3eDE2dHBkeWVzOTRpamZ2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/5hd6VlgjmgvR54liai/200w.gif') center/100% 180%;">The Bread-Burner</button>
                                 <!-- The Esper removed -->
                                 <button id="btn-tim" class="class-list-btn" onclick="selectHero('tim')" style="--glow-color: #71717a; background:var(--timColorBeam, #66FF00);color:#000;">Tiny Tim</button>
-                                <button id="btn-trace" class="class-list-btn selected" onclick="selectHero('trace')" style="--glow-color: #a855f7; background:url('https://cdn.dribbble.com/userupload/20458852/file/original-68a5cddf4d8bad135c3791b2ebc891df.gif') center/cover;">Trace</button>
+                                <button id="btn-trace" class="class-list-btn" onclick="selectHero('trace')" style="display:none;">Trace</button>
                                 <button id="btn-spectator" class="class-list-btn" onclick="selectHero('spectator')" style="--glow-color: #94a3b8; background:linear-gradient(135deg,#1f2937,#475569,#94a3b8);color:#fff;">Spectator</button>
 
                             </div>
@@ -2881,7 +2881,7 @@
 
 
             // Roster of heroes the Roulette can roll into (excludes 'roulette' itself)
-            const ROULETTE_POOL = ['trace', 'blitz', 'kendo', 'glitch', 'jubilee', 'misaki', 'corsair', 'aero', 'tim', 'rift', 'nitro', 'bread', 'excalibur'];
+            const ROULETTE_POOL = ['blitz', 'kendo', 'glitch', 'jubilee', 'misaki', 'corsair', 'aero', 'tim', 'rift', 'nitro', 'bread', 'excalibur'];
 
             getEl('playerName').value = localStorage.getItem('rivals_playerName') || "Player";
             let tCol = JSON.parse(localStorage.getItem('rivals_traceColors')) || {
@@ -2991,7 +2991,7 @@
             let myPlayer = {
                 id: null,
                 name: getEl('playerName').value,
-                heroClass: "trace",
+                heroClass: "blitz",
                 team: "none",
                 color: "#f59e0b",
                 x: W / 2,
@@ -8133,19 +8133,17 @@
                         mg.startY = myPlayer.y;
                         mg.endX = k.x;
                         mg.endY = k.y;
-                        // New timing: ascending portion = 90% of the whole grapple sequence.
-                        // Sequence: anchor -> kisakiAscent (bird flies up alone) ->
-                        // misakiAscent (player swings up to bird's height + travels) -> descent.
-                        let travelT = Math.max(0.45, dist / 850);
-                        let kisakiAscentDur = 0.35; // Kisaki rises FIRST, alone
-                        let misakiAscentDur = travelT; // then Misaki rises & moves
-                        let ascendingTotal = kisakiAscentDur + misakiAscentDur;
+                        // Ascending portion = 90% of the whole grapple sequence.
+                        // Misaki and Kisaki now rise IN SYNC with the cable/hook.
+                        // Sequence: anchor -> ascent (Misaki + Kisaki rise together + travel) -> descent.
+                        let travelT = Math.max(0.55, dist / 850);
+                        let ascendingTotal = travelT;
                         // anchor + descent must equal ascending/9 so ascending = 90% of total
                         let endBudget = ascendingTotal / 9;
                         mg.anchorDur = Math.max(0.05, endBudget * 0.35);
                         mg.descentDur = Math.max(0.1, endBudget * 0.65);
-                        mg.kisakiAscentDur = kisakiAscentDur;
-                        mg.ascentDur = misakiAscentDur;
+                        mg.kisakiAscentDur = 0; // merged into ascent for sync
+                        mg.ascentDur = travelT;
                         mg.peakDur = 0; // peak phase removed
                         mg.dTm = 0;
                         mg.maxDTm = 0;
@@ -10842,25 +10840,16 @@
                             _mg.hookY = myPlayer.y + (_mg.anchorY - myPlayer.y) * _u;
                             if (_kProj) _kProj.z = 0;
                             if (_mg.phaseT <= 0) {
-                                _mg.phase = 'kisakiAscent';
-                                _mg.phaseT = _mg.kisakiAscentDur || 0.35;
-                            }
-                        } else if (_mg.phase === 'kisakiAscent') {
-                            // Phase 2: Kisaki flies up to max height ALONE. Misaki stays grounded.
-                            myPlayer.z = 0;
-                            myPlayer.isFlying = false;
-                            let _kDur = _mg.kisakiAscentDur || 0.35;
-                            let _u = 1 - Math.max(0, Math.min(1, _mg.phaseT / _kDur));
-                            let _e = _u * _u * (3 - 2 * _u);
-                            if (_kProj) _kProj.z = _mg.peakZ * _e;
-                            _mg.hookX = _mg.anchorX;
-                            _mg.hookY = _mg.anchorY - (_kProj ? (_kProj.z || 0) : 0);
-                            if (_mg.phaseT <= 0) {
+                                // Skip kisakiAscent (merged into ascent for sync) and go straight to ascent.
                                 _mg.phase = 'ascent';
                                 _mg.phaseT = _mg.ascentDur;
                             }
+                        } else if (_mg.phase === 'kisakiAscent') {
+                            // Legacy phase (unused now). Pass through to ascent immediately.
+                            _mg.phase = 'ascent';
+                            _mg.phaseT = _mg.ascentDur;
                         } else if (_mg.phase === 'ascent') {
-                            // Phase 3: Misaki is hoisted to peak height AND pulled all the way to Kisaki.
+                            // Phase 3 (SYNCED): Misaki AND Kisaki rise together while Misaki travels to Kisaki.
                             myPlayer.isFlying = true;
                             let _u = 1 - Math.max(0, Math.min(1, _mg.phaseT / Math.max(0.001, _mg.ascentDur)));
                             let _e = _u * _u * (3 - 2 * _u);
@@ -10870,9 +10859,10 @@
                             let _ty = _mg.startY + (_mg.endY - _mg.startY) * _e;
                             myPlayer.x = _tx;
                             myPlayer.y = _ty;
-                            if (_kProj) _kProj.z = _mg.peakZ;
+                            // Kisaki rises IN SYNC with Misaki.
+                            if (_kProj) _kProj.z = _mg.peakZ * _e;
                             _mg.hookX = _mg.anchorX;
-                            _mg.hookY = _mg.anchorY - _mg.peakZ;
+                            _mg.hookY = _mg.anchorY - _mg.peakZ * _e;
                             md = wM = true;
                             if (_mg.phaseT <= 0) {
                                 _mg.phase = 'descent';
@@ -16541,16 +16531,17 @@
             // a black border to the trajectory line. Solid line, red by default,
             // green when it would hit an enemy. Reflects off walls AND Kisaki mirrors.
             function drawMisakiAimPreview() {
-                let o = gameState.players[myId];
+                if (!myId) return;
+                let o = gameState && gameState.players ? gameState.players[myId] : null;
                 if (!o || o.heroClass !== 'misaki' || o.isDead) return;
-                let aimAng = Math.atan2(o.targetY - o.y, o.targetX - o.x);
+                let tgtX = (typeof o.targetX === 'number') ? o.targetX : (o.x + Math.cos(o.angle || 0) * 100);
+                let tgtY = (typeof o.targetY === 'number') ? o.targetY : (o.y + Math.sin(o.angle || 0) * 100);
+                let aimAng = Math.atan2(tgtY - o.y, tgtX - o.x);
+                if (!isFinite(aimAng)) aimAng = o.angle || 0;
                 let sx0 = o.x + Math.cos(aimAng) * 45;
                 let sy0 = o.y + Math.sin(aimAng) * 45;
                 let vxs = Math.cos(aimAng) * 2500;
                 let vys = Math.sin(aimAng) * 2500;
-                // Default: one wall bounce. Mirror reflections do NOT cost a bounce,
-                // and after a mirror reflection we refresh +1 wall bounce so the user
-                // sees up to two bounce segments when aiming at a mirror.
                 let wallBouncesLeft = 1;
                 let mirrorBouncesLeft = 1;
                 let usedMirrors = {};
@@ -16558,24 +16549,22 @@
                 let willHit = false;
                 let curX = sx0, curY = sy0;
                 const stepLen = 10;
-                const maxRange = 2500 * 2.0;
+                const maxRange = 5000;
                 let traveled = 0;
-                const _walls = gameState.walls;
+                const _walls = (gameState && gameState.walls) ? gameState.walls : [];
                 const _isNoclip = (typeof __isWallNoclippedFor === 'function') ? __isWallNoclippedFor : null;
                 let enemies = [];
                 for (let pid in gameState.players) {
                     let pp = gameState.players[pid];
-                    if (pid === myId || pp.isDead || pp.isSpectator) continue;
-                    if (pp.team && o.team && pp.team === o.team) continue;
+                    if (pid === myId || !pp || pp.isDead || pp.isSpectator) continue;
+                    if (pp.team && o.team && pp.team !== 'none' && o.team !== 'none' && pp.team === o.team) continue;
                     enemies.push(pp);
                 }
-                let mirrors = gameState.projectiles.filter(k => k.type === 'kisaki' && k.hasMirror);
+                let mirrors = (gameState.projectiles || []).filter(k => k.type === 'kisaki' && k.hasMirror);
                 outer: while (traveled < maxRange) {
                     let dirAng = Math.atan2(vys, vxs);
                     let nx = curX + Math.cos(dirAng) * stepLen;
                     let ny = curY + Math.sin(dirAng) * stepLen;
-                    // Enemy intersection — use closest point on the step segment to the
-                    // enemy circle so thin grazes never get skipped.
                     for (let en of enemies) {
                         let _r = (en.radius || 18) + 10;
                         let sxd = nx - curX, syd = ny - curY;
@@ -16607,8 +16596,6 @@
                                 vxs -= 2 * d2 * nxn;
                                 vys -= 2 * d2 * nyn;
                                 usedMirrors[k.id] = true;
-                                // Mirror reflection grants an extra wall bounce so the
-                                // trajectory keeps drawing past the mirror.
                                 wallBouncesLeft = Math.max(wallBouncesLeft, 1) + 1;
                                 bounced = true;
                                 break;
@@ -16637,17 +16624,25 @@
                         traveled += stepLen;
                     }
                 }
-                if (pts[pts.length - 1][0] !== curX || pts[pts.length - 1][1] !== curY) {
-                    pts.push([curX, curY]);
+                if (!willHit) {
+                    let last = pts[pts.length - 1];
+                    if (!last || last[0] !== curX || last[1] !== curY) {
+                        pts.push([curX, curY]);
+                    }
                 }
+                if (pts.length < 2) return;
                 ctx.save();
-                ctx.strokeStyle = willHit ? 'rgba(34,197,94,1)' : 'rgba(239,68,68,0.6)';
-                ctx.lineWidth = 2;
+                ctx.globalAlpha = 1;
+                ctx.globalCompositeOperation = 'source-over';
                 ctx.setLineDash([]);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = willHit ? 3 : 2.5;
+                ctx.strokeStyle = willHit ? 'rgba(34,197,94,1)' : 'rgba(239,68,68,0.6)';
                 ctx.beginPath();
-                for (let i = 0; i < pts.length; i++) {
-                    if (i === 0) ctx.moveTo(pts[i][0], pts[i][1]);
-                    else ctx.lineTo(pts[i][0], pts[i][1]);
+                ctx.moveTo(pts[0][0], pts[0][1]);
+                for (let i = 1; i < pts.length; i++) {
+                    ctx.lineTo(pts[i][0], pts[i][1]);
                 }
                 ctx.stroke();
                 if (willHit) {
@@ -16969,9 +16964,16 @@
                     }
                 }
 
-                let ents = [...gameState.clones, ...Object.values(gameState.players).filter(p => !p.isDead && !p.isSpectator)]
+                const __outFilt = window.__outlinePassFilter;
+                let ents = [...gameState.clones, ...Object.values(gameState.players).filter(p => !p.isDead && !p.isSpectator)];
+                if (typeof __outFilt === 'function') {
+                    ents = ents.filter(e => {
+                        let o = e.ownerId !== undefined ? gameState.players[e.ownerId] : e;
+                        return __outFilt(o);
+                    });
+                }
 
-                  , mp = ents.some(e => (e.ownerId !== undefined ? gameState.players[e.ownerId] : e)?.heroClass === 'glitch') ? getMatrixPat() : null;
+                let mp = ents.some(e => (e.ownerId !== undefined ? gameState.players[e.ownerId] : e)?.heroClass === 'glitch') ? getMatrixPat() : null;
                 const _rs = (window.__RENDER_SCALE !== undefined) ? Math.max(0.05, window.__RENDER_SCALE) : 1;
                 const vW = (can.width / _rs) / cam.zoom
                   , vH = (can.height / _rs) / cam.zoom;
@@ -21768,35 +21770,72 @@
             }
             ;
 
-            // Outline style: rainbow gradient whenever any Roulette OR Jubilee player is alive,
-            // otherwise solid black. Applied uniformly to heroes, projectiles, and VFX.
+            // Outline style: always solid black for projectiles/VFX. Per-hero rainbow
+            // (for Roulette/Jubilee only) is handled in the hero outline post-process.
             function getRouletteOutlineStyle(ctx) {
-                try {
-                    const players = (typeof gameState !== 'undefined' && gameState && gameState.players) || null;
-                    let hasRainbow = false;
-                    if (players) {
-                        const list = Object.values(players);
-                        for (let i = 0; i < list.length; i++) {
-                            const p = list[i];
-                            if (!p || p.isDead || p.isSpectator) continue;
-                            const hc = p.heroClass;
-                            if (hc === 'roulette' || hc === 'jubilee' || p.isRoulette) {
-                                hasRainbow = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!hasRainbow) return '#000';
-                    const hue = (Date.now() / 10) % 360;
-                    const grad = ctx.createLinearGradient(0, 0, 200, 0);
-                    grad.addColorStop(0, `hsl(${hue},100%,50%)`);
-                    grad.addColorStop(0.33, `hsl(${(hue + 90) % 360},100%,50%)`);
-                    grad.addColorStop(0.66, `hsl(${(hue + 180) % 360},100%,50%)`);
-                    grad.addColorStop(1, `hsl(${(hue + 270) % 360},100%,50%)`);
-                    return grad;
-                } catch (e) {
-                    return '#000';
+                return '#000';
+            }
+            function getRainbowGradient(ctx) {
+                const hue = (Date.now() / 10) % 360;
+                const grad = ctx.createLinearGradient(0, 0, 200, 0);
+                grad.addColorStop(0, `hsl(${hue},100%,50%)`);
+                grad.addColorStop(0.33, `hsl(${(hue + 90) % 360},100%,50%)`);
+                grad.addColorStop(0.66, `hsl(${(hue + 180) % 360},100%,50%)`);
+                grad.addColorStop(1, `hsl(${(hue + 270) % 360},100%,50%)`);
+                return grad;
+            }
+            function __isRainbowHero(o) {
+                if (!o) return false;
+                return o.heroClass === 'roulette' || o.heroClass === 'jubilee' || o.isRoulette;
+            }
+            function __isRainbowType(t) {
+                if (!t || typeof t !== 'string') return false;
+                return t.indexOf('jubilee') === 0 || t.indexOf('roulette') === 0
+                    || t.indexOf('jub_') === 0 || t.indexOf('rou_') === 0;
+            }
+            function __isRainbowEntity(e) {
+                if (!e) return false;
+                if (__isRainbowType(e.type)) return true;
+                const players = (typeof gameState !== 'undefined' && gameState && gameState.players) || null;
+                if (players && e.ownerId && __isRainbowHero(players[e.ownerId])) return true;
+                return false;
+            }
+            // Paints a screen-space white mask covering all jubilee/roulette projectiles + vfx.
+            function buildRainbowRegionMask(maskCtx, prevT) {
+                const cw = maskCtx.canvas.width, ch = maskCtx.canvas.height;
+                maskCtx.setTransform(1, 0, 0, 1, 0, 0);
+                maskCtx.clearRect(0, 0, cw, ch);
+                maskCtx.fillStyle = '#fff';
+                const a = prevT.a, b = prevT.b, c = prevT.c, d = prevT.d, e = prevT.e, f = prevT.f;
+                const zoom = (typeof cam !== 'undefined') ? cam.zoom : 1;
+                const projs = (typeof gameState !== 'undefined' && gameState && gameState.projectiles) || [];
+                let painted = false;
+                for (let i = 0; i < projs.length; i++) {
+                    const p = projs[i];
+                    if (!p || !__isRainbowEntity(p)) continue;
+                    const sx = a * p.x + c * p.y + e;
+                    const sy = b * p.x + d * p.y + f;
+                    const baseR = Math.max(14, (p.radius || 14)) * zoom + 24;
+                    maskCtx.beginPath();
+                    maskCtx.arc(sx, sy, baseR, 0, 6.283185);
+                    maskCtx.fill();
+                    painted = true;
                 }
+                if (typeof vfx !== 'undefined' && Array.isArray(vfx)) {
+                    for (let i = 0; i < vfx.length; i++) {
+                        const v = vfx[i];
+                        if (!v || typeof v.x !== 'number' || typeof v.y !== 'number') continue;
+                        if (!__isRainbowEntity(v)) continue;
+                        const sx = a * v.x + c * v.y + e;
+                        const sy = b * v.x + d * v.y + f;
+                        const baseR = Math.max(40, (v.radius || 40)) * zoom + 30;
+                        maskCtx.beginPath();
+                        maskCtx.arc(sx, sy, baseR, 0, 6.283185);
+                        maskCtx.fill();
+                        painted = true;
+                    }
+                }
+                return painted;
             }
 
             /* ===========================================================================
@@ -21806,54 +21845,83 @@
                 if (typeof window.drawPlayers !== 'function') return;
                 const _prev = window.drawPlayers;
                 const bgCv = document.createElement('canvas');
-                const heroCv = document.createElement('canvas');
+                const heroCvA = document.createElement('canvas');
+                const heroCvB = document.createElement('canvas');
                 const outCv = document.createElement('canvas');
                 const bgCtx = bgCv.getContext('2d');
-                const heroCtx = heroCv.getContext('2d');
+                const heroCtxA = heroCvA.getContext('2d');
+                const heroCtxB = heroCvB.getContext('2d');
                 const outCtx = outCv.getContext('2d');
                 const BASE_R = 4;
 
-                window.drawPlayers = function () {
+                function snapshotPass(filterFn, destCtx, destCv, args, self) {
                     const cw = can.width, ch = can.height;
-                    if (cw <= 0 || ch <= 0) return _prev.apply(this, arguments);
-                    if (bgCv.width !== cw || bgCv.height !== ch) {
-                        bgCv.width = heroCv.width = outCv.width = cw;
-                        bgCv.height = heroCv.height = outCv.height = ch;
-                    }
-                    bgCtx.setTransform(1, 0, 0, 1, 0, 0);
-                    bgCtx.clearRect(0, 0, cw, ch);
-                    bgCtx.drawImage(can, 0, 0);
-
                     const prevT = ctx.getTransform();
                     ctx.save();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.clearRect(0, 0, cw, ch);
                     ctx.restore();
                     ctx.setTransform(prevT);
-                    try { _prev.apply(this, arguments); } catch (e) {}
+                    window.__outlinePassFilter = filterFn;
+                    try { _prev.apply(self, args); } catch (e) {}
+                    window.__outlinePassFilter = null;
+                    destCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    destCtx.clearRect(0, 0, cw, ch);
+                    destCtx.drawImage(can, 0, 0);
+                }
 
-                    heroCtx.setTransform(1, 0, 0, 1, 0, 0);
-                    heroCtx.clearRect(0, 0, cw, ch);
-                    heroCtx.drawImage(can, 0, 0);
+                window.drawPlayers = function () {
+                    const cw = can.width, ch = can.height;
+                    if (cw <= 0 || ch <= 0) return _prev.apply(this, arguments);
+                    if (bgCv.width !== cw || bgCv.height !== ch) {
+                        bgCv.width = heroCvA.width = heroCvB.width = outCv.width = cw;
+                        bgCv.height = heroCvA.height = heroCvB.height = outCv.height = ch;
+                    }
+                    bgCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    bgCtx.clearRect(0, 0, cw, ch);
+                    bgCtx.drawImage(can, 0, 0);
 
-                    outCtx.setTransform(1, 0, 0, 1, 0, 0);
-                    outCtx.clearRect(0, 0, cw, ch);
+                    const prevT = ctx.getTransform();
+
+                    // Pass A: non-rainbow heroes (black outline)
+                    snapshotPass((o) => !__isRainbowHero(o), heroCtxA, heroCvA, arguments, this);
+                    // Pass B: rainbow heroes (Roulette/Jubilee only)
+                    snapshotPass((o) => __isRainbowHero(o), heroCtxB, heroCvB, arguments, this);
+
                     const zoom = (typeof cam !== 'undefined') ? cam.zoom : 1;
                     const R = Math.max(2, Math.round(BASE_R * zoom));
                     const offs = [[R, 0], [-R, 0], [0, R], [0, -R]];
+
+                    // Build outline A (black)
+                    outCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    outCtx.clearRect(0, 0, cw, ch);
                     for (let i = 0; i < offs.length; i++)
-                        outCtx.drawImage(heroCv, offs[i][0], offs[i][1]);
+                        outCtx.drawImage(heroCvA, offs[i][0], offs[i][1]);
                     outCtx.globalCompositeOperation = 'source-in';
-                    outCtx.fillStyle = getRouletteOutlineStyle(outCtx);
+                    outCtx.fillStyle = '#000';
                     outCtx.fillRect(0, 0, cw, ch);
                     outCtx.globalCompositeOperation = 'source-over';
 
+                    // Composite background + black-outline + heroes A
                     ctx.save();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.clearRect(0, 0, cw, ch);
                     ctx.drawImage(bgCv, 0, 0);
                     ctx.drawImage(outCv, 0, 0);
-                    ctx.drawImage(heroCv, 0, 0);
+                    ctx.drawImage(heroCvA, 0, 0);
+
+                    // Build outline B (rainbow) and composite
+                    outCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    outCtx.clearRect(0, 0, cw, ch);
+                    for (let i = 0; i < offs.length; i++)
+                        outCtx.drawImage(heroCvB, offs[i][0], offs[i][1]);
+                    outCtx.globalCompositeOperation = 'source-in';
+                    outCtx.fillStyle = getRainbowGradient(outCtx);
+                    outCtx.fillRect(0, 0, cw, ch);
+                    outCtx.globalCompositeOperation = 'source-over';
+
+                    ctx.drawImage(outCv, 0, 0);
+                    ctx.drawImage(heroCvB, 0, 0);
                     ctx.restore();
                     ctx.setTransform(prevT);
                 };
@@ -21872,80 +21940,94 @@
                 const bgCv = document.createElement('canvas');
                 const entCv = document.createElement('canvas');
                 const outCv = document.createElement('canvas');
+                const rbCv = document.createElement('canvas');
+                const maskCv = document.createElement('canvas');
                 const bgCtx = bgCv.getContext('2d');
                 const entCtx = entCv.getContext('2d');
                 const outCtx = outCv.getContext('2d');
+                const rbCtx = rbCv.getContext('2d');
+                const maskCtx = maskCv.getContext('2d');
                 const BASE_R = 1;
-                // outline thickness (screen px before zoom) — thinnest for projectiles
 
                 window.drawEnts = function() {
-                    const cw = can.width
-                      , ch = can.height;
-                    if (cw <= 0 || ch <= 0) {
-                        return _prevEnts.apply(this, arguments);
-                    }
-                    // Perf: if no projectiles/pickups, skip the entire 4-pass outline pipeline.
+                    const cw = can.width, ch = can.height;
+                    if (cw <= 0 || ch <= 0) return _prevEnts.apply(this, arguments);
                     const _hasEnts = (typeof gameState !== 'undefined' && gameState && (
                         (gameState.projectiles && gameState.projectiles.length) ||
                         (gameState.pickups && gameState.pickups.length)
                     ));
-                    if (!_hasEnts) {
-                        return _prevEnts.apply(this, arguments);
-                    }
+                    if (!_hasEnts) return _prevEnts.apply(this, arguments);
 
                     if (bgCv.width !== cw || bgCv.height !== ch) {
-                        bgCv.width = entCv.width = outCv.width = cw;
-                        bgCv.height = entCv.height = outCv.height = ch;
+                        bgCv.width = entCv.width = outCv.width = rbCv.width = maskCv.width = cw;
+                        bgCv.height = entCv.height = outCv.height = rbCv.height = maskCv.height = ch;
                     }
 
-                    // 1) Snapshot whatever is on the canvas (background + map + walls + shields)
                     bgCtx.setTransform(1, 0, 0, 1, 0, 0);
                     bgCtx.clearRect(0, 0, cw, ch);
                     bgCtx.drawImage(can, 0, 0);
 
-                    // 2) Clear and draw entities only.
                     const prevT = ctx.getTransform();
                     ctx.save();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.clearRect(0, 0, cw, ch);
                     ctx.restore();
                     ctx.setTransform(prevT);
-                    try {
-                        _prevEnts.apply(this, arguments);
-                    } catch (e) {}
+                    try { _prevEnts.apply(this, arguments); } catch (e) {}
 
-                    // 3) Snapshot entity-only layer
                     entCtx.setTransform(1, 0, 0, 1, 0, 0);
                     entCtx.clearRect(0, 0, cw, ch);
                     entCtx.drawImage(can, 0, 0);
 
-                    // 4) Build a black ring outline by drawing the silhouette at 8 offsets
-                    //    and tinting with source-in.
+                    // Silhouette ring
                     outCtx.setTransform(1, 0, 0, 1, 0, 0);
                     outCtx.clearRect(0, 0, cw, ch);
                     const R = Math.max(1, Math.round(BASE_R * (typeof cam !== 'undefined' ? cam.zoom : 1)));
-                    // Cardinal-only ring (4 offsets) — perf parity with the player outline.
                     const offs = [[R, 0], [-R, 0], [0, R], [0, -R]];
                     for (let i = 0; i < offs.length; i++)
                         outCtx.drawImage(entCv, offs[i][0], offs[i][1]);
-                    outCtx.globalCompositeOperation = 'source-in';
-                    outCtx.fillStyle = getRouletteOutlineStyle(outCtx);
-                    outCtx.fillRect(0, 0, cw, ch);
-                    outCtx.globalCompositeOperation = 'source-over';
 
-                    // 5) Recomposite: background → outline → entities
+                    // Build rainbow region mask in screen space
+                    const hasRainbow = buildRainbowRegionMask(maskCtx, prevT);
+
+                    if (hasRainbow) {
+                        // rainbow outline copy
+                        rbCtx.setTransform(1, 0, 0, 1, 0, 0);
+                        rbCtx.clearRect(0, 0, cw, ch);
+                        rbCtx.globalCompositeOperation = 'source-over';
+                        rbCtx.drawImage(outCv, 0, 0);
+                        rbCtx.globalCompositeOperation = 'destination-in';
+                        rbCtx.drawImage(maskCv, 0, 0);
+                        rbCtx.globalCompositeOperation = 'source-in';
+                        rbCtx.fillStyle = getRainbowGradient(rbCtx);
+                        rbCtx.fillRect(0, 0, cw, ch);
+                        rbCtx.globalCompositeOperation = 'source-over';
+
+                        // black outline = original outline minus mask
+                        outCtx.globalCompositeOperation = 'destination-out';
+                        outCtx.drawImage(maskCv, 0, 0);
+                        outCtx.globalCompositeOperation = 'source-in';
+                        outCtx.fillStyle = '#000';
+                        outCtx.fillRect(0, 0, cw, ch);
+                        outCtx.globalCompositeOperation = 'source-over';
+                    } else {
+                        outCtx.globalCompositeOperation = 'source-in';
+                        outCtx.fillStyle = '#000';
+                        outCtx.fillRect(0, 0, cw, ch);
+                        outCtx.globalCompositeOperation = 'source-over';
+                    }
+
                     ctx.save();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.clearRect(0, 0, cw, ch);
                     ctx.drawImage(bgCv, 0, 0);
                     ctx.drawImage(outCv, 0, 0);
+                    if (hasRainbow) ctx.drawImage(rbCv, 0, 0);
                     ctx.drawImage(entCv, 0, 0);
                     ctx.restore();
                     ctx.setTransform(prevT);
-                }
-                ;
-            }
-            )();
+                };
+            })();
 
             /* ===========================================================================
  * SHAPE-FOLLOWING BLACK OUTLINE FOR VFX (post-process) — THINNEST
@@ -21959,26 +22041,28 @@
                 const bgCv = document.createElement('canvas');
                 const fxCv = document.createElement('canvas');
                 const outCv = document.createElement('canvas');
+                const rbCv = document.createElement('canvas');
+                const maskCv = document.createElement('canvas');
                 const bgCtx = bgCv.getContext('2d');
                 const fxCtx = fxCv.getContext('2d');
                 const outCtx = outCv.getContext('2d');
+                const rbCtx = rbCv.getContext('2d');
+                const maskCtx = maskCv.getContext('2d');
 
                 window.drawVFX = function() {
                     const cw = can.width, ch = can.height;
                     if (cw <= 0 || ch <= 0) return _prev.apply(this, arguments);
-                    // Perf: bail out entirely when there are no active effects.
                     if (typeof vfx === 'undefined' || !vfx || vfx.length === 0) {
                         return _prev.apply(this, arguments);
                     }
                     if (bgCv.width !== cw || bgCv.height !== ch) {
-                        bgCv.width = fxCv.width = outCv.width = cw;
-                        bgCv.height = fxCv.height = outCv.height = ch;
+                        bgCv.width = fxCv.width = outCv.width = rbCv.width = maskCv.width = cw;
+                        bgCv.height = fxCv.height = outCv.height = rbCv.height = maskCv.height = ch;
                     }
-                    // 1) Snapshot existing canvas
                     bgCtx.setTransform(1, 0, 0, 1, 0, 0);
                     bgCtx.clearRect(0, 0, cw, ch);
                     bgCtx.drawImage(can, 0, 0);
-                    // 2) Clear and draw vfx only
+
                     const prevT = ctx.getTransform();
                     ctx.save();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -21987,27 +22071,50 @@
                     ctx.setTransform(prevT);
                     try { _prev.apply(this, arguments); } catch (e) {}
 
-                    // 3) Snapshot vfx layer
                     fxCtx.setTransform(1, 0, 0, 1, 0, 0);
                     fxCtx.clearRect(0, 0, cw, ch);
                     fxCtx.drawImage(can, 0, 0);
-                    // 4) THIN 1px ring outline
+
                     outCtx.setTransform(1, 0, 0, 1, 0, 0);
                     outCtx.clearRect(0, 0, cw, ch);
                     const R = 1;
                     const offs = [[R, 0], [-R, 0], [0, R], [0, -R]];
                     for (let i = 0; i < offs.length; i++)
                         outCtx.drawImage(fxCv, offs[i][0], offs[i][1]);
-                    outCtx.globalCompositeOperation = 'source-in';
-                    outCtx.fillStyle = getRouletteOutlineStyle(outCtx);
-                    outCtx.fillRect(0, 0, cw, ch);
-                    outCtx.globalCompositeOperation = 'source-over';
-                    // 5) Recomposite bg → outline → vfx
+
+                    const hasRainbow = buildRainbowRegionMask(maskCtx, prevT);
+
+                    if (hasRainbow) {
+                        rbCtx.setTransform(1, 0, 0, 1, 0, 0);
+                        rbCtx.clearRect(0, 0, cw, ch);
+                        rbCtx.globalCompositeOperation = 'source-over';
+                        rbCtx.drawImage(outCv, 0, 0);
+                        rbCtx.globalCompositeOperation = 'destination-in';
+                        rbCtx.drawImage(maskCv, 0, 0);
+                        rbCtx.globalCompositeOperation = 'source-in';
+                        rbCtx.fillStyle = getRainbowGradient(rbCtx);
+                        rbCtx.fillRect(0, 0, cw, ch);
+                        rbCtx.globalCompositeOperation = 'source-over';
+
+                        outCtx.globalCompositeOperation = 'destination-out';
+                        outCtx.drawImage(maskCv, 0, 0);
+                        outCtx.globalCompositeOperation = 'source-in';
+                        outCtx.fillStyle = '#000';
+                        outCtx.fillRect(0, 0, cw, ch);
+                        outCtx.globalCompositeOperation = 'source-over';
+                    } else {
+                        outCtx.globalCompositeOperation = 'source-in';
+                        outCtx.fillStyle = '#000';
+                        outCtx.fillRect(0, 0, cw, ch);
+                        outCtx.globalCompositeOperation = 'source-over';
+                    }
+
                     ctx.save();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.clearRect(0, 0, cw, ch);
                     ctx.drawImage(bgCv, 0, 0);
                     ctx.drawImage(outCv, 0, 0);
+                    if (hasRainbow) ctx.drawImage(rbCv, 0, 0);
                     ctx.drawImage(fxCv, 0, 0);
                     ctx.restore();
                     ctx.setTransform(prevT);
