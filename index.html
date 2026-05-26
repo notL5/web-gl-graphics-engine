@@ -1296,19 +1296,30 @@
                     <div class="cooldown-overlay" id="cd-misaki-shoot"></div>
                 </div>
                 <div class="ability-slot" id="ui-misaki-kisaki">
-                    <div class="key">Q</div>
+                    <div class="key">R-CLICK</div>
                     <div class="name">Kisaki</div>
-                    <div class="status" id="status-misaki-kisaki">Ready</div>
+                    <div class="status" id="status-misaki-kisaki">Perched</div>
+                </div>
+                <div class="ability-slot" id="ui-misaki-grenade">
+                    <div class="key">Q</div>
+                    <div class="name">Grenade</div>
+                    <div class="status" id="status-misaki-grenade">Ready</div>
+                    <div class="cooldown-overlay" id="cd-misaki-grenade"></div>
                 </div>
                 <div class="ability-slot" id="ui-misaki-mirror">
                     <div class="key">1</div>
                     <div class="name">Mirror</div>
-                    <div class="status" id="status-misaki-mirror">Ready</div>
+                    <div class="status" id="status-misaki-mirror">ON</div>
                 </div>
-                <div class="ability-slot" id="ui-misaki-rotate">
-                    <div class="key">HOLD E</div>
-                    <div class="name">Aim Mirror</div>
-                    <div class="status" id="status-misaki-rotate">Ready</div>
+                <div class="ability-slot" id="ui-misaki-flame">
+                    <div class="key">2</div>
+                    <div class="name">Flame Hoop</div>
+                    <div class="status" id="status-misaki-flame">OFF</div>
+                </div>
+                <div class="ability-slot" id="ui-misaki-gong">
+                    <div class="key">3</div>
+                    <div class="name">Gong</div>
+                    <div class="status" id="status-misaki-gong">OFF</div>
                 </div>
                 <div class="ability-slot" id="ui-misaki-grapple">
                     <div class="key">SPACE</div>
@@ -1316,11 +1327,11 @@
                     <div class="status" id="status-misaki-grapple">Ready</div>
                     <div class="cooldown-overlay" id="cd-misaki-grapple"></div>
                 </div>
-                <div class="ability-slot" id="ui-misaki-flare">
-                    <div class="key">2</div>
-                    <div class="name">Flare</div>
-                    <div class="status" id="status-misaki-flare">Ready</div>
-                    <div class="cooldown-overlay" id="cd-misaki-flare"></div>
+                <div class="ability-slot" id="ui-misaki-banana">
+                    <div class="key">4</div>
+                    <div class="name">Banana Peel</div>
+                    <div class="status" id="status-misaki-banana">Ready</div>
+                    <div class="cooldown-overlay" id="cd-misaki-banana"></div>
                 </div>
                 <div class="ability-slot" id="ui-kendo-arrow">
                     <div class="key">L-CLICK</div>
@@ -2408,8 +2419,8 @@
                     zoneCooldown: 20.0,
                     zoneMaxCells: 10,
                     zoneDurations: { overclock: 1200, packetLoss: 70, arrayWrap: 1000, forceVector: 120, noclip: 80 },
-                    zoneSpeedMul: { overclock: 5.0, packetLoss: 0.9 },
-                    zoneForceStrength:1000,
+                    zoneSpeedMul: { overclock: 2.8, packetLoss: 0.5 },
+                    zoneForceStrength: 620,
                 }
             };
             // =====================================================================
@@ -2774,7 +2785,7 @@
                     speed: 'Medium',
                     color: '#f2a401',
                     desc: 'Deadly marksman bonded with a macaw that redirects shots.',
-                    abilities: ['Heavy Sniper', 'Command Kisaki', 'Aim Mirror', 'Talon Grapple', 'Prism Flare']
+                    abilities: ['Heavy Sniper', 'Anchor Kisaki', 'Grenade Bullet', 'Talon Grapple', 'Banana Peel']
                 },
                 corsair: {
                     name: 'Corsair',
@@ -3015,9 +3026,16 @@
                     timColors: timCol,
                     excaliburColors: excCol
                 },
-                kisakiDeployed: false,
-                kisakiMirrorOn: false,
+                kisakiDeployed: true,
+                kisakiMirrorOn: true,
+                kisakiFlameHoopOn: false,
+                kisakiGongOn: false,
                 kisakiMirrorAngle: 0,
+                kisakiAnchored: false,
+                kisakiAnchorX: 0,
+                kisakiAnchorY: 0,
+                kisakiSuppressTimer: 0,
+                misakiGrenadeMode: false,
                 blitzWeapon: 'handgun',
                 blitzAmmo: 8,
                 blitzParryActive: false,
@@ -3986,15 +4004,41 @@
                 },
                 misakiGrapple: {
                     cd: 0,
-                    maxCd: 6.0,
+                    maxCd: 10.0,
                     dTm: 0,
+                    maxDTm: 0,
                     ang: 0,
-                    spd: 1800
+                    spd: 850,
+                    phase: 'idle',
+                    phaseT: 0,
+                    anchorX: 0,
+                    anchorY: 0,
+                    hookX: 0,
+                    hookY: 0,
+                    peakZ: 120,
+                    ascentDur: 0.3,
+                    peakDur: 0.0,
+                    startX: 0,
+                    startY: 0,
+                    endX: 0,
+                    endY: 0,
+                    lungeVX: 0,
+                    lungeVY: 0,
+                    prevKisakiAnchored: false,
+                    prevKisakiAnchorX: 0,
+                    prevKisakiAnchorY: 0
                 },
-                misakiFlare: {
+                misakiGrenade: {
+                    cd: 0,
+                    maxCd: 5.0,
+                    reload: 0,
+                    reloadMax: 1.2
+                },
+                misakiBanana: {
                     cd: 0,
                     maxCd: 10.0
                 },
+                kisakiSuppressTimer: 0,
                 blitzPrimary: {
                     cd: 0,
                     rTm: 0
@@ -5191,9 +5235,16 @@
                         trimColor: myPlayer.customization?.corsairColors?.trim || '#dc2626'
                     });
                 }
-                myPlayer.kisakiDeployed = false;
-                myPlayer.kisakiMirrorOn = false;
+                myPlayer.kisakiDeployed = true;
+                myPlayer.kisakiMirrorOn = true;
+                myPlayer.kisakiFlameHoopOn = false;
+                myPlayer.kisakiGongOn = false;
                 myPlayer.kisakiMirrorAngle = 0;
+                myPlayer.kisakiAnchored = false;
+                myPlayer.kisakiAnchorX = 0;
+                myPlayer.kisakiAnchorY = 0;
+                myPlayer.kisakiSuppressTimer = 0;
+                myPlayer.misakiGrenadeMode = false;
                 myPlayer.blitzWeapon = 'handgun';
                 myPlayer.blitzAmmo = 8;
                 myPlayer.riftAmmo = 18;
@@ -7022,7 +7073,14 @@
                     targetY: myPlayer.targetY,
                     kisakiDeployed: myPlayer.kisakiDeployed,
                     kisakiMirrorOn: myPlayer.kisakiMirrorOn,
+                    kisakiFlameHoopOn: myPlayer.kisakiFlameHoopOn,
+                    kisakiGongOn: myPlayer.kisakiGongOn,
                     kisakiMirrorAngle: myPlayer.kisakiMirrorAngle,
+                    kisakiAnchored: myPlayer.kisakiAnchored,
+                    kisakiAnchorX: myPlayer.kisakiAnchorX,
+                    kisakiAnchorY: myPlayer.kisakiAnchorY,
+                    kisakiSuppressTimer: myPlayer.kisakiSuppressTimer || 0,
+                    misakiGrenadeMode: myPlayer.misakiGrenadeMode,
                     blitzWeapon: myPlayer.blitzWeapon,
                     blitzAmmo: myPlayer.blitzAmmo,
                     blitzParryActive: myPlayer.blitzParryActive || false,
@@ -7157,7 +7215,10 @@
                 e: false,
                 '1': false,
                 '2': false,
+                '3': false,
+                '4': false,
                 q: false,
+                c: false,
                 shift: false,
                 f: false
             };
@@ -7195,24 +7256,36 @@
 
                 if (k === '1' && !localCombat.m1 && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
                     localCombat.m1 = true;
-                    if (myPlayer.heroClass === 'misaki') {
-                        if (myPlayer.kisakiDeployed) {
-                            myPlayer.kisakiMirrorOn = !myPlayer.kisakiMirrorOn;
-                            sdEv({
-                                type: 'misaki_toggle_mirror',
-                                state: myPlayer.kisakiMirrorOn
-                            });
-                            sdUp();
-                        }
-                    } else if (myPlayer.heroClass === 'aero') {
+                    if (myPlayer.heroClass === 'aero') {
                         myPlayer.aeroTabType = 1;
+                        sdUp();
+                    } else if (myPlayer.heroClass === 'misaki') {
+                        myPlayer.kisakiMirrorOn = !myPlayer.kisakiMirrorOn;
                         sdUp();
                     }
                 }
 
-                if (k === '2' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
-                    if (myPlayer.heroClass === 'misaki')
-                        trMisF();
+                if (k === '2' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && !keys['2_held']) {
+                    keys['2_held'] = true;
+                    if (myPlayer.heroClass === 'misaki') {
+                        myPlayer.kisakiFlameHoopOn = !myPlayer.kisakiFlameHoopOn;
+                        sdUp();
+                    }
+                }
+
+                if (k === '3' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && !keys['3_held']) {
+                    keys['3_held'] = true;
+                    if (myPlayer.heroClass === 'misaki') {
+                        myPlayer.kisakiGongOn = !myPlayer.kisakiGongOn;
+                        sdUp();
+                    }
+                }
+
+                if (k === '4' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && !keys['4_held']) {
+                    keys['4_held'] = true;
+                    if (myPlayer.heroClass === 'misaki') {
+                        trMisBanana();
+                    }
                 }
 
                 if (k === 'f' && !myPlayer.isDead && myPlayer.stunTimer <= 0) {
@@ -7242,21 +7315,25 @@
                             x: myPlayer.x,
                             y: myPlayer.y
                         });
-                    } else if (myPlayer.heroClass === 'misaki' && !localCombat.mQ) {
+                    } else if (myPlayer.heroClass === 'misaki' && !localCombat.mQ && localCombat.misakiGrenade.cd <= 0) {
                         localCombat.mQ = true;
-                        if (Math.hypot(myPlayer.targetX - myPlayer.x, myPlayer.targetY - myPlayer.y) < 50) {
-                            myPlayer.kisakiDeployed = myPlayer.kisakiMirrorOn = false;
-                            sdEv({
-                                type: 'kisaki_recall'
-                            });
-                        } else {
-                            myPlayer.kisakiDeployed = true;
-                            sdEv({
-                                type: 'kisaki_deploy',
-                                x: myPlayer.targetX,
-                                y: myPlayer.targetY
-                            });
-                        }
+                        // Q now makes Kisaki throw the grenade from the bird's position.
+                        let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === myId);
+                        let sx = k ? k.x : myPlayer.x;
+                        let sy = k ? k.y : myPlayer.y;
+                        localCombat.misakiGrenade.cd = localCombat.misakiGrenade.maxCd;
+                        // Suppress mirror/flame/gong locally for 0.5s and notify peers
+                        myPlayer.kisakiSuppressTimer = 0.5;
+                        applyShake(7, 0.2);
+                        sdEv({
+                            type: 'misaki_grenade_shoot',
+                            x: sx,
+                            y: sy,
+                            angle: myPlayer.angle,
+                            tx: myPlayer.targetX,
+                            ty: myPlayer.targetY,
+                            suppress: 0.5
+                        });
                         sdUp();
                     } else if (myPlayer.heroClass === 'blitz' && !localCombat.mQ) {
                         localCombat.mQ = true;
@@ -7424,8 +7501,11 @@
                 }
 
                 if (k === 'c') {
-                    // Chat toggle ONLY in-game; on start screen chat is always shown.
-                    if (gCon && gCon.classList.contains('active')) {
+                    // Misaki: Banana Peel trap takes priority over chat toggle.
+                    if (myPlayer.heroClass === 'misaki' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && gCon && gCon.classList.contains('active')) {
+                        trMisBanana();
+                    } else if (gCon && gCon.classList.contains('active')) {
+                        // Chat toggle ONLY in-game; on start screen chat is always shown.
                         const cw = getEl('chat-wrapper');
                         if (cw) {
                             const next = (window.__chatState === 'off') ? 'normal' : 'off';
@@ -7525,6 +7605,9 @@
                     localCombat.mQ = false;
                 if (k === '1')
                     localCombat.m1 = false;
+                if (k === '2') keys['2_held'] = false;
+                if (k === '3') keys['3_held'] = false;
+                if (k === '4') keys['4_held'] = false;
             }
             );
 
@@ -7814,6 +7897,47 @@
             }
             );
 
+            // Misaki: RMB hold = command Kisaki to cursor, release = anchor at that point.
+            can.addEventListener('mousedown', e => {
+                if (e.button === 2 && myPlayer.heroClass === 'misaki' && !myPlayer.isDead && myPlayer.stunTimer <= 0 && gCon.classList.contains('active')) {
+                    e.preventDefault();
+                    let wx = (sMx / cam.zoom) + cam.x
+                      , wy = (sMy / cam.zoom) + cam.y;
+                    localCombat.kisakiHolding = true;
+                    myPlayer.kisakiAnchored = true;
+                    myPlayer.kisakiAnchorX = wx;
+                    myPlayer.kisakiAnchorY = wy;
+                    sdEv({
+                        type: 'misaki_kisaki_move',
+                        x: wx,
+                        y: wy,
+                        anchored: true
+                    });
+                    sdUp();
+                }
+            });
+            window.addEventListener('mousemove', e => {
+                if (localCombat.kisakiHolding && myPlayer.heroClass === 'misaki' && !myPlayer.isDead) {
+                    let wx = (sMx / cam.zoom) + cam.x
+                      , wy = (sMy / cam.zoom) + cam.y;
+                    myPlayer.kisakiAnchorX = wx;
+                    myPlayer.kisakiAnchorY = wy;
+                    sdEv({
+                        type: 'misaki_kisaki_move',
+                        x: wx,
+                        y: wy,
+                        anchored: true
+                    });
+                }
+            });
+            window.addEventListener('mouseup', e => {
+                if (e.button === 2 && localCombat.kisakiHolding) {
+                    localCombat.kisakiHolding = false;
+                    // Anchor remains where Kisaki currently is — already set by last mousemove.
+                    sdUp();
+                }
+            });
+
             // Esper: right-click release = flick caught projectiles
             window.addEventListener('mouseup', e => {
                 if (e.button === 2 && myPlayer.heroClass === 'esper' && localCombat.esperGrab.active) {
@@ -7994,14 +8118,51 @@
                 }
             }
             function trMisG() {
-                if (localCombat.misakiGrapple.cd <= 0 && myPlayer.kisakiDeployed) {
+                let mg = localCombat.misakiGrapple;
+                if (mg.cd <= 0 && mg.phase === 'idle') {
                     let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === myId);
                     if (k) {
-                        localCombat.misakiGrapple.cd = (activeServerMode === 'CHAOS') ? 0.05 : localCombat.misakiGrapple.maxCd;
+                        mg.cd = (activeServerMode === 'CHAOS') ? 0.05 : mg.maxCd;
                         let dx = k.x - myPlayer.x
                           , dy = k.y - myPlayer.y;
-                        localCombat.misakiGrapple.ang = Math.atan2(dy, dx);
-                        localCombat.misakiGrapple.dTm = Math.hypot(dx, dy) / 1800;
+                        let dist = Math.hypot(dx, dy);
+                        mg.ang = Math.atan2(dy, dx);
+                        mg.anchorX = k.x;
+                        mg.anchorY = k.y;
+                        mg.startX = myPlayer.x;
+                        mg.startY = myPlayer.y;
+                        mg.endX = k.x;
+                        mg.endY = k.y;
+                        // New timing: ascending portion = 90% of the whole grapple sequence.
+                        // Sequence: anchor -> kisakiAscent (bird flies up alone) ->
+                        // misakiAscent (player swings up to bird's height + travels) -> descent.
+                        let travelT = Math.max(0.45, dist / 850);
+                        let kisakiAscentDur = 0.35; // Kisaki rises FIRST, alone
+                        let misakiAscentDur = travelT; // then Misaki rises & moves
+                        let ascendingTotal = kisakiAscentDur + misakiAscentDur;
+                        // anchor + descent must equal ascending/9 so ascending = 90% of total
+                        let endBudget = ascendingTotal / 9;
+                        mg.anchorDur = Math.max(0.05, endBudget * 0.35);
+                        mg.descentDur = Math.max(0.1, endBudget * 0.65);
+                        mg.kisakiAscentDur = kisakiAscentDur;
+                        mg.ascentDur = misakiAscentDur;
+                        mg.peakDur = 0; // peak phase removed
+                        mg.dTm = 0;
+                        mg.maxDTm = 0;
+                        // Lock Kisaki in place for the entire grapple sequence.
+                        mg.prevKisakiAnchored = !!myPlayer.kisakiAnchored;
+                        mg.prevKisakiAnchorX = myPlayer.kisakiAnchorX;
+                        mg.prevKisakiAnchorY = myPlayer.kisakiAnchorY;
+                        myPlayer.kisakiAnchored = true;
+                        myPlayer.kisakiAnchorX = k.x;
+                        myPlayer.kisakiAnchorY = k.y;
+                        // Phase 1: anchor connection (hook flies out).
+                        mg.phase = 'anchor';
+                        mg.phaseT = mg.anchorDur;
+                        mg.hookX = myPlayer.x;
+                        mg.hookY = myPlayer.y;
+                        mg.lungeVX = 0;
+                        mg.lungeVY = 0;
                         sdEv({
                             type: 'misaki_grapple',
                             targetX: k.x,
@@ -8010,21 +8171,32 @@
                     }
                 }
             }
-            function trMisF() {
-                if (localCombat.misakiFlare.cd <= 0 && myPlayer.kisakiDeployed && myPlayer.kisakiMirrorOn) {
-                    localCombat.misakiFlare.cd = (activeServerMode === 'CHAOS') ? 0.05 : localCombat.misakiFlare.maxCd;
+            function trMisBanana() {
+                if (localCombat.misakiBanana.cd <= 0) {
+                    // Kisaki (the macaw) is the one who drops the peel.
+                    let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === myId);
+                    let dx = k ? k.x : myPlayer.x;
+                    let dy = k ? k.y : myPlayer.y;
+                    localCombat.misakiBanana.cd = (activeServerMode === 'CHAOS') ? 0.05 : localCombat.misakiBanana.maxCd;
+                    // Suppress mirror/flame/gong locally for 0.5s
+                    myPlayer.kisakiSuppressTimer = 0.5;
                     sdEv({
-                        type: 'misaki_flare'
+                        type: 'misaki_banana_drop',
+                        x: dx,
+                        y: dy,
+                        suppress: 0.5
                     });
                 }
             }
             function trMisS() {
+                // Misaki primary fire — sniper only (grenade now lives on Q).
                 if (localCombat.misakiShoot.cd <= 0) {
                     localCombat.misakiShoot.cd = (activeServerMode === 'CHAOS') ? 0.05 : localCombat.misakiShoot.maxCd;
                     applyShake(5, 0.15);
                     sdEv({
                         type: 'misaki_shoot',
-                        angle: myPlayer.angle
+                        angle: myPlayer.angle,
+                        flying: (localCombat.misakiGrapple.phase && localCombat.misakiGrapple.phase !== 'idle') ? 1 : 0
                     });
                 }
             }
@@ -9558,7 +9730,8 @@
                         bounces: 1,
                         damage: 85 * (e.dmgMult || 1),
                         hitIds: {},
-                        hitMirrors: {}
+                        hitMirrors: {},
+                        flying: !!e.flying
                     });
                     connections.forEach(c => {
                         if (c.peer !== sId && c.open)
@@ -9579,77 +9752,67 @@
                             life: 0.15,
                             maxLife: 0.15
                         });
-                } else if (e.type === 'kisaki_deploy') {
+                } else if (e.type === 'misaki_kisaki_move') {
+                    // Player commands Kisaki to fly to a world point and anchor there.
                     let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === sId);
-                    if (!k)
-                        gameState.projectiles.push({
-                            type: 'kisaki',
-                            id: Math.random().toString(),
-                            ownerId: sId,
-                            x: s.x,
-                            y: s.y,
-                            targetX: e.x,
-                            targetY: e.y,
-                            mode: 'flying',
-                            hasMirror: false,
-                            mirrorAngle: 0,
-                            speed: 600,
-                            life: 99999,
-                            angle: 0
-                        });
-                    else {
+                    if (k) {
                         k.targetX = e.x;
                         k.targetY = e.y;
                         k.mode = 'flying';
                     }
-                } else if (e.type === 'kisaki_recall') {
-                    let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === sId);
-                    if (k) {
-                        k.mode = 'recalling';
-                        k.hasMirror = false;
+                    if (s) {
+                        s.kisakiAnchored = !!e.anchored;
+                        s.kisakiAnchorX = e.x;
+                        s.kisakiAnchorY = e.y;
                     }
-                } else if (e.type === 'misaki_toggle_mirror') {
-                    let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === sId);
-                    if (k)
-                        k.hasMirror = e.state;
-                } else if (e.type === 'misaki_flare') {
-                    let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === sId);
-                    if (k && k.hasMirror) {
-                        connections.forEach(c => {
-                            if (c.open)
-                                c.send({
-                                    type: 'flare_vfx',
-                                    x: k.x,
-                                    y: k.y
-                                });
-                        }
-                        );
-                        if (sId !== myId)
-                            vfx.push({
-                                type: 'flareVfx',
-                                x: k.x,
-                                y: k.y,
-                                life: 0.5,
-                                maxLife: 0.5
-                            });
-                        for (let id in gameState.players)
-                            if (!gameState.players[id].isDead && cDm(sId, id)) {
-                                let t = gameState.players[id];
-                                if (Math.hypot(t.x - k.x, t.y - k.y) < 180 && !t.invulnerable) {
-                                    t.stunTimer = 1.5;
-                                    dmgTk(t, 20, sId);
-                                    sendHitmarker(sId, t, 20);
-                                    t.lastAttacker = sId;
-                                    t.lastHitTime = Date.now();
-                                    chD(t, id);
-                                }
-                            }
-                        for (let c of gameState.clones)
-                            if (cDm(sId, c.ownerId) && Math.hypot(c.x - k.x, c.y - k.y) < 180 && !c.invulnerable) {
-                                dmgTk(c, 100, sId);
-                                sendHitmarker(sId, c, 100);
-                            }
+                } else if (e.type === 'misaki_grenade_toggle') {
+                    if (s) s.misakiGrenadeMode = !!e.state;
+                } else if (e.type === 'misaki_grenade_shoot') {
+                    if (s) {
+                        s.slashAnimTimer = 0.2;
+                        if (e.suppress) s.kisakiSuppressTimer = Math.max(s.kisakiSuppressTimer || 0, e.suppress);
                     }
+                    let sx = e.x
+                      , sy = e.y
+                      , tx = e.tx
+                      , ty = e.ty
+                      , dx = tx - sx
+                      , dy = ty - sy
+                      , dist = Math.min(420, Math.hypot(dx, dy));
+                    let ang = Math.atan2(dy, dx);
+                    // Slow, arcing projectile — flight time scales with distance, peak z is height of arc.
+                    let flightTime = 0.45 + dist / 900;
+                    gameState.projectiles.push({
+                        type: 'misaki_grenade',
+                        id: Math.random().toString(),
+                        ownerId: sId,
+                        x: sx,
+                        y: sy,
+                        startX: sx,
+                        startY: sy,
+                        landX: sx + Math.cos(ang) * dist,
+                        landY: sy + Math.sin(ang) * dist,
+                        angle: ang,
+                        t: 0,
+                        flightTime: flightTime,
+                        peakZ: 110 + dist * 0.18,
+                        life: flightTime + 0.05
+                    });
+                } else if (e.type === 'misaki_banana_drop') {
+                    if (s && e.suppress) s.kisakiSuppressTimer = Math.max(s.kisakiSuppressTimer || 0, e.suppress);
+                    gameState.projectiles.push({
+                        type: 'banana_peel',
+                        id: Math.random().toString(),
+                        ownerId: sId,
+                        x: e.x,
+                        y: e.y,
+                        dropZ: -8,   // start just BENEATH Kisaki (negative = below the perch) and fall to ground
+                        dropT: 0.35, // seconds until landed
+                        dropTotal: 0.35,
+                        triggered: false,
+                        fadeT: 0,
+                        life: 12.0
+                    });
                 } else if (e.type === 'blitz_shoot') {
                     s.slashAnimTimer = 0.15;
                     let sx = s.x + Math.cos(e.angle) * 35
@@ -10649,26 +10812,112 @@
                 }
 
                 if (myPlayer.heroClass === 'misaki') {
-                    let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === myId);
-                    if (k && keys.e && myPlayer.kisakiDeployed && myPlayer.kisakiMirrorOn) {
-                        let a = Math.atan2(wy - k.y, wx - k.x);
-                        if (Math.abs(a - myPlayer.kisakiMirrorAngle) > 0.05) {
-                            myPlayer.kisakiMirrorAngle = a;
-                            md = true;
-                        }
+                    // Reload tick for grenade bullet (1.2s between shots while in grenade mode).
+                    if (localCombat.misakiGrenade.reload > 0) {
+                        localCombat.misakiGrenade.reload -= dt * ((activeServerMode === 'CHAOS') ? 50 : 1);
+                        if (localCombat.misakiGrenade.reload < 0) localCombat.misakiGrenade.reload = 0;
                     }
-                    if (localCombat.misakiGrapple.dTm > 0) {
-                        myPlayer.isFlying = true;
-                        localCombat.misakiGrapple.dTm -= dt;
-                        myPlayer.x += Math.cos(localCombat.misakiGrapple.ang) * 1800 * dt;
-                        myPlayer.y += Math.sin(localCombat.misakiGrapple.ang) * 1800 * dt;
-                        md = wM = true;
-                        if (localCombat.misakiGrapple.dTm <= 0) {
-                            myPlayer.isFlying = false;
-                            let s = gnV(myPlayer.x, myPlayer.y);
-                            myPlayer.x = s.x;
-                            myPlayer.y = s.y;
+                    // Local suppress decay so the mirror reliably returns after a banana/grenade
+                    // (host's authoritative loop also decays, but non-hosts need a local tick too).
+                    if (myPlayer.kisakiSuppressTimer && myPlayer.kisakiSuppressTimer > 0) {
+                        myPlayer.kisakiSuppressTimer = Math.max(0, myPlayer.kisakiSuppressTimer - dt);
+                    }
+                    let _mg = localCombat.misakiGrapple;
+                    if (_mg.phase && _mg.phase !== 'idle') {
+                        myPlayer.misakiGrappling = true;
+                        _mg.phaseT -= dt;
+                        // Kisaki is locked in place; track her current (frozen) position for the cable.
+                        let _kProj = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === myId);
+                        if (_kProj) {
+                            _mg.anchorX = _kProj.x;
+                            _mg.anchorY = _kProj.y;
                         }
+                        if (_mg.phase === 'anchor') {
+                            // Phase 1: hook fires from Misaki to Kisaki. No movement. z=0.
+                            myPlayer.z = 0;
+                            myPlayer.isFlying = false;
+                            let _aDur = _mg.anchorDur || 0.2;
+                            let _u = 1 - Math.max(0, Math.min(1, _mg.phaseT / _aDur));
+                            _mg.hookX = myPlayer.x + (_mg.anchorX - myPlayer.x) * _u;
+                            _mg.hookY = myPlayer.y + (_mg.anchorY - myPlayer.y) * _u;
+                            if (_kProj) _kProj.z = 0;
+                            if (_mg.phaseT <= 0) {
+                                _mg.phase = 'kisakiAscent';
+                                _mg.phaseT = _mg.kisakiAscentDur || 0.35;
+                            }
+                        } else if (_mg.phase === 'kisakiAscent') {
+                            // Phase 2: Kisaki flies up to max height ALONE. Misaki stays grounded.
+                            myPlayer.z = 0;
+                            myPlayer.isFlying = false;
+                            let _kDur = _mg.kisakiAscentDur || 0.35;
+                            let _u = 1 - Math.max(0, Math.min(1, _mg.phaseT / _kDur));
+                            let _e = _u * _u * (3 - 2 * _u);
+                            if (_kProj) _kProj.z = _mg.peakZ * _e;
+                            _mg.hookX = _mg.anchorX;
+                            _mg.hookY = _mg.anchorY - (_kProj ? (_kProj.z || 0) : 0);
+                            if (_mg.phaseT <= 0) {
+                                _mg.phase = 'ascent';
+                                _mg.phaseT = _mg.ascentDur;
+                            }
+                        } else if (_mg.phase === 'ascent') {
+                            // Phase 3: Misaki is hoisted to peak height AND pulled all the way to Kisaki.
+                            myPlayer.isFlying = true;
+                            let _u = 1 - Math.max(0, Math.min(1, _mg.phaseT / Math.max(0.001, _mg.ascentDur)));
+                            let _e = _u * _u * (3 - 2 * _u);
+                            myPlayer.z = _mg.peakZ * _e;
+                            // Cover 100% of total distance over the ascent.
+                            let _tx = _mg.startX + (_mg.endX - _mg.startX) * _e;
+                            let _ty = _mg.startY + (_mg.endY - _mg.startY) * _e;
+                            myPlayer.x = _tx;
+                            myPlayer.y = _ty;
+                            if (_kProj) _kProj.z = _mg.peakZ;
+                            _mg.hookX = _mg.anchorX;
+                            _mg.hookY = _mg.anchorY - _mg.peakZ;
+                            md = wM = true;
+                            if (_mg.phaseT <= 0) {
+                                _mg.phase = 'descent';
+                                _mg.phaseT = _mg.descentDur || 0.25;
+                                // Mid-air lunge on disconnect (~80, per-frame velocity that decays).
+                                _mg.lungeVX = Math.cos(_mg.ang) * 80;
+                                _mg.lungeVY = Math.sin(_mg.ang) * 80;
+                            }
+                        } else if (_mg.phase === 'descent') {
+                            // Phase 4: cable detached, mid-air lunge while falling back to z=0.
+                            myPlayer.isFlying = true;
+                            let _dDur = _mg.descentDur || 0.25;
+                            let _u = 1 - Math.max(0, Math.min(1, _mg.phaseT / _dDur));
+                            let _e = _u * _u * (3 - 2 * _u);
+                            myPlayer.z = _mg.peakZ * (1 - _e);
+                            if (_kProj) _kProj.z = _mg.peakZ * (1 - _e);
+                            // Apply lunge mid-air (the normal dash motion is gated off while grappling).
+                            let _nxL = myPlayer.x + (_mg.lungeVX || 0);
+                            let _nyL = myPlayer.y + (_mg.lungeVY || 0);
+                            if (!iW(_nxL, myPlayer.y)) myPlayer.x = _nxL; else _mg.lungeVX = 0;
+                            if (!iW(myPlayer.x, _nyL)) myPlayer.y = _nyL; else _mg.lungeVY = 0;
+                            _mg.lungeVX = (_mg.lungeVX || 0) * 0.82;
+                            _mg.lungeVY = (_mg.lungeVY || 0) * 0.82;
+                            md = wM = true;
+                            if (_mg.phaseT <= 0) {
+                                _mg.phase = 'idle';
+                                myPlayer.z = 0;
+                                myPlayer.isFlying = false;
+                                myPlayer.misakiGrappling = false;
+                                if (_kProj) _kProj.z = 0;
+                                _mg.lungeVX = 0;
+                                _mg.lungeVY = 0;
+                                // Restore Kisaki's prior anchor state so she returns to perch/normal anchor.
+                                myPlayer.kisakiAnchored = _mg.prevKisakiAnchored;
+                                myPlayer.kisakiAnchorX = _mg.prevKisakiAnchorX;
+                                myPlayer.kisakiAnchorY = _mg.prevKisakiAnchorY;
+                                let s = gnV(myPlayer.x, myPlayer.y);
+                                myPlayer.x = s.x;
+                                myPlayer.y = s.y;
+                            }
+                        }
+                    } else if ((myPlayer.z || 0) > 0 && myPlayer.misakiGrappling) {
+                        // Safety: drop back to ground if any other path left z set.
+                        myPlayer.z = 0;
+                        myPlayer.misakiGrappling = false;
                     }
                 }
 
@@ -11061,14 +11310,14 @@
                     if (!localCombat.jubileeDash || localCombat.jubileeDash.dTm <= 0)
                         myPlayer.isFlying = false;
 
-                    if (wf && !myPlayer.isFlying && !(myPlayer.heroClass === 'misaki' && localCombat.misakiGrapple.dTm > 0)) {
+                    if (wf && !myPlayer.isFlying && !(myPlayer.heroClass === 'misaki' && localCombat.misakiGrapple.phase && localCombat.misakiGrapple.phase !== 'idle')) {
                         let s = gnV(myPlayer.x, myPlayer.y);
                         myPlayer.x = s.x;
                         myPlayer.y = s.y;
                         md = true;
                     }
 
-                    if (!myPlayer.isFlying && !(myPlayer.heroClass === 'misaki' && localCombat.misakiGrapple.dTm > 0) && !myPlayer.grabbedLocked) {
+                    if (!myPlayer.isFlying && !(myPlayer.heroClass === 'misaki' && localCombat.misakiGrapple.phase && localCombat.misakiGrapple.phase !== 'idle') && !myPlayer.grabbedLocked) {
                         let ds = Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y);
                         if (localCombat.dash.rec > 0)
                             localCombat.dash.rec -= dt;
@@ -11216,7 +11465,7 @@
 
             function updateGameState(dt) {
                 let cdM = (activeServerMode === 'CHAOS') ? 50 : 1;
-                ['slash', 'kendoRide', 'kendoShield', 'kendoSnap', 'glitchShoot', 'glitchClone', 'glitchSwap', 'glitchZone', 'jubileePrimary', 'jubileeDash', 'nitroCharge', 'nitroVault', 'misakiShoot', 'misakiGrapple', 'misakiFlare', 'blitzPrimary', 'blitzGrab', 'blitzParry', 'traceShoot', 'traceDash', 'traceEH', 'aeroPaste', 'aeroCopy', 'corsairPrimary', 'corsairParry', 'corsairCombo', 'timPrimary', 'timVents', 'timUlt', 'riftPrimary', 'riftOrb', 'riftJab', 'breadShoot', 'breadShield', 'breadGrapple', 'esperCradle'].forEach(k => {
+                ['slash', 'kendoRide', 'kendoShield', 'kendoSnap', 'glitchShoot', 'glitchClone', 'glitchSwap', 'glitchZone', 'jubileePrimary', 'jubileeDash', 'nitroCharge', 'nitroVault', 'misakiShoot', 'misakiGrapple', 'misakiGrenade', 'misakiBanana', 'blitzPrimary', 'blitzGrab', 'blitzParry', 'traceShoot', 'traceDash', 'traceEH', 'aeroPaste', 'aeroCopy', 'corsairPrimary', 'corsairParry', 'corsairCombo', 'timPrimary', 'timVents', 'timUlt', 'riftPrimary', 'riftOrb', 'riftJab', 'breadShoot', 'breadShield', 'breadGrapple', 'esperCradle'].forEach(k => {
                     if (localCombat[k] && localCombat[k].cd > 0)
                         localCombat[k].cd -= dt * cdM;
                 }
@@ -11566,6 +11815,8 @@
                             p.stunTimer -= dt;
                         if (p.tpTimer > 0)
                             p.tpTimer -= dt;
+                        if (p.kisakiSuppressTimer && p.kisakiSuppressTimer > 0)
+                            p.kisakiSuppressTimer = Math.max(0, p.kisakiSuppressTimer - dt);
                         if (p.heroClass === 'misaki' && !p.isDead) {
                             if (!gameState.projectiles.find(pr => pr.type === 'kisaki' && pr.ownerId === id)) {
                                 gameState.projectiles.push({
@@ -12173,37 +12424,55 @@
                                 gameState.projectiles.splice(i, 1);
                                 continue;
                             }
+                            // ----- Auto-Mirror passive: pick nearest enemy in LOS, aim mirror at them. -----
+                            let bestAng = null, bestD = 9e9;
+                            for (let id in gameState.players) {
+                                let t = gameState.players[id];
+                                if (!t || t.isDead || !cDm(p.ownerId, id)) continue;
+                                let d = Math.hypot(t.x - p.x, t.y - p.y);
+                                if (d > bestD) continue;
+                                // Line-of-sight check (any wall between mirror and target = no aim).
+                                let blocked = false, steps = Math.ceil(d / 20);
+                                for (let si = 1; si < steps && !blocked; si++) {
+                                    let tx2 = p.x + (t.x - p.x) * si / steps;
+                                    let ty2 = p.y + (t.y - p.y) * si / steps;
+                                    for (let w of gameState.walls) {
+                                        if (tx2 > w.x && tx2 < w.x + GRID && ty2 > w.y && ty2 < w.y + GRID) { blocked = true; break; }
+                                    }
+                                }
+                                if (!blocked) { bestD = d; bestAng = Math.atan2(t.y - p.y, t.x - p.x); }
+                            }
+                            let _supp = (o.kisakiSuppressTimer || 0) > 0;
+                            let _mirrorEnabled = (o.kisakiMirrorOn !== false) && !_supp;
+                            if (_mirrorEnabled && bestAng !== null) o.kisakiMirrorAngle = bestAng;
                             p.mirrorAngle = o.kisakiMirrorAngle || 0;
-                            p.hasMirror = o.kisakiMirrorOn;
-                            if (p.mode === 'idle')
-                                p.angle = Math.atan2(o.y - p.y, o.x - p.x);
-                            else if (p.mode === 'recalling') {
-                                p.hasMirror = false;
+                            p.hasMirror = _mirrorEnabled;
+
+                            // ----- Movement: fly to anchor (or follow owner if not anchored). -----
+                            if (o.kisakiAnchored) {
+                                p.targetX = o.kisakiAnchorX;
+                                p.targetY = o.kisakiAnchorY;
+                                let dx = p.targetX - p.x, dy = p.targetY - p.y, d = Math.hypot(dx, dy);
+                                if (d > 4) {
+                                    p.angle = Math.atan2(dy, dx);
+                                    let m = Math.min(p.speed * dt, d);
+                                    p.x += Math.cos(p.angle) * m;
+                                    p.y += Math.sin(p.angle) * m;
+                                } else {
+                                    p.angle = Math.atan2(o.y - p.y, o.x - p.x);
+                                }
+                            } else {
+                                // Recall to a perch beside the owner.
                                 let tx = o.x + Math.cos(o.angle - 1.57) * 45 - Math.cos(o.angle) * 15
                                   , ty = o.y + Math.sin(o.angle - 1.57) * 45 - Math.sin(o.angle) * 15
-                                  , dx = tx - p.x
-                                  , dy = ty - p.y
-                                  , d = Math.hypot(dx, dy);
+                                  , dx = tx - p.x, dy = ty - p.y, d = Math.hypot(dx, dy);
                                 if (d > 5) {
                                     let fa = Math.atan2(dy, dx)
                                       , mv = Math.min(p.speed * dt, d * 5.0 * dt);
                                     p.x += Math.cos(fa) * mv;
                                     p.y += Math.sin(fa) * mv;
-                                    p.angle = Math.atan2(o.y - p.y, o.x - p.x);
-                                } else
-                                    p.angle = Math.atan2(o.y - p.y, o.x - p.x);
-                            } else if (p.mode === 'flying') {
-                                let dx = p.targetX - p.x
-                                  , dy = p.targetY - p.y
-                                  , d = Math.hypot(dx, dy);
-                                if (d < 10)
-                                    p.mode = 'idle';
-                                else {
-                                    p.angle = Math.atan2(dy, dx);
-                                    let m = Math.min(p.speed * dt, d * 5.0 * dt);
-                                    p.x += Math.cos(p.angle) * m;
-                                    p.y += Math.sin(p.angle) * m;
                                 }
+                                p.angle = Math.atan2(o.y - p.y, o.x - p.x);
                             }
                         } else if (p.type === 'sniper_bullet') {
                             let stps = Math.ceil(Math.hypot(p.vx * dt, p.vy * dt) / 20)
@@ -12216,18 +12485,21 @@
                                   , ny = p.y + p.vy * s_dt
                                   , hw = false
                                   , wn = null;
-                                for (let w of gameState.walls) {
-                                    if (typeof __isWallNoclippedFor === 'function' && __isWallNoclippedFor(w, nx, ny)) continue;
-                                    if (nx > w.x && nx < w.x + GRID && ny > w.y && ny < w.y + GRID) {
-                                        hw = true;
-                                        wn = p.x <= w.x || p.x >= w.x + GRID ? {
-                                            x: 1,
-                                            y: 0
-                                        } : {
-                                            x: 0,
-                                            y: 1
-                                        };
-                                        break;
+                                // Flying bullets (fired while Misaki is grappling, elevated z) ignore walls.
+                                if (!p.flying) {
+                                    for (let w of gameState.walls) {
+                                        if (typeof __isWallNoclippedFor === 'function' && __isWallNoclippedFor(w, nx, ny)) continue;
+                                        if (nx > w.x && nx < w.x + GRID && ny > w.y && ny < w.y + GRID) {
+                                            hw = true;
+                                            wn = p.x <= w.x || p.x >= w.x + GRID ? {
+                                                x: 1,
+                                                y: 0
+                                            } : {
+                                                x: 0,
+                                                y: 1
+                                            };
+                                            break;
+                                        }
                                     }
                                 }
                                 if (hw) {
@@ -12250,37 +12522,44 @@
                                 let hm = false;
                                 for (let k of gameState.projectiles)
                                     if (k.type === 'kisaki' && k.hasMirror && !p.hitMirrors[k.id]) {
-                                        let mx = k.x + Math.cos(k.mirrorAngle) * 20
-                                          , my = k.y + Math.sin(k.mirrorAngle) * 20;
-                                        if (Math.hypot(mx - p.x, my - p.y) < 15) {
-                                            let px = Math.cos(k.mirrorAngle)
-                                              , py = Math.sin(k.mirrorAngle)
-                                              , d = p.vx * px + p.vy * py;
-                                            if (d < 0) {
-                                                p.vx = p.vx - 2 * d * px;
-                                                p.vy = p.vy - 2 * d * py;
-                                                p.angle = Math.atan2(p.vy, p.vx);
-                                                p.hitMirrors[k.id] = true;
-                                                p.bounces++;
-                                                hm = true;
-                                                connections.forEach(c => {
-                                                    if (c.open)
-                                                        c.send({
-                                                            type: 'mirror_flash',
-                                                            x: mx,
-                                                            y: my
-                                                        });
-                                                }
-                                                );
-                                                vfx.push({
-                                                    type: 'mirrorFlash',
-                                                    x: mx,
-                                                    y: my,
-                                                    life: 0.3,
-                                                    maxLife: 0.3
-                                                });
-                                                break;
+                                        // Mirror center + perpendicular tangent (mirror surface is perpendicular to mirrorAngle, length 50)
+                                        let mcx = k.x + Math.cos(k.mirrorAngle) * 20
+                                          , mcy = k.y + Math.sin(k.mirrorAngle) * 20;
+                                        let tx_ = -Math.sin(k.mirrorAngle)  // tangent (along the mirror surface)
+                                          , ty_ = Math.cos(k.mirrorAngle);
+                                        // Project (p - center) onto tangent; clamp to [-25, 25] for segment hitbox.
+                                        let rx = p.x - mcx, ry = p.y - mcy;
+                                        let along = rx * tx_ + ry * ty_;
+                                        along = Math.max(-25, Math.min(25, along));
+                                        let cx = mcx + tx_ * along, cy = mcy + ty_ * along;
+                                        if (Math.hypot(cx - p.x, cy - p.y) < 14) {
+                                            let nx_ = Math.cos(k.mirrorAngle)
+                                              , ny_ = Math.sin(k.mirrorAngle)
+                                              , d = p.vx * nx_ + p.vy * ny_;
+                                            // Reflect regardless of which side it came from (mirror is two-sided).
+                                            p.vx = p.vx - 2 * d * nx_;
+                                            p.vy = p.vy - 2 * d * ny_;
+                                            p.angle = Math.atan2(p.vy, p.vx);
+                                            p.hitMirrors[k.id] = true;
+                                            p.bounces++;
+                                            hm = true;
+                                            connections.forEach(c => {
+                                                if (c.open)
+                                                    c.send({
+                                                        type: 'mirror_flash',
+                                                        x: mcx,
+                                                        y: mcy
+                                                    });
                                             }
+                                            );
+                                            vfx.push({
+                                                type: 'mirrorFlash',
+                                                x: mcx,
+                                                y: mcy,
+                                                life: 0.3,
+                                                maxLife: 0.3
+                                            });
+                                            break;
                                         }
                                     }
                                 if (!hm) {
@@ -12313,6 +12592,95 @@
                             p.life -= dt;
                             if (!a || p.life <= 0)
                                 gameState.projectiles.splice(i, 1);
+                        } else if (p.type === 'misaki_grenade') {
+                            // Arcing grenade — interpolates start→land position over flightTime, z = parabola.
+                            p.t += dt;
+                            let u = Math.min(1, p.t / p.flightTime);
+                            p.x = p.startX + (p.landX - p.startX) * u;
+                            p.y = p.startY + (p.landY - p.startY) * u;
+                            p.z = p.peakZ * 4 * u * (1 - u);
+                            if (u >= 1) {
+                                // Detonate: splash damage + knockback.
+                                let ex = p.x, ey = p.y, R = 90;
+                                connections.forEach(c => {
+                                    if (c.open) c.send({
+                                        type: 'nitro_explosion_vfx',
+                                        x: ex, y: ey, radius: R, palette: 'vault'
+                                    });
+                                });
+                                if (typeof spawnNitroExplosion === 'function')
+                                    spawnNitroExplosion(ex, ey, R, ['Crimson_Red', 'Napalm_Orange', 'Electric_Yellow']);
+                                for (let id in gameState.players) {
+                                    let t = gameState.players[id];
+                                    if (!t || t.isDead || !cDm(p.ownerId, id) || t.invulnerable) continue;
+                                    let d = Math.hypot(t.x - ex, t.y - ey);
+                                    if (d <= R) {
+                                        let dmg = 55 + (40) * Math.max(0, 1 - d / R);
+                                        dmgTk(t, dmg, p.ownerId);
+                                        sendHitmarker(p.ownerId, t, dmg);
+                                        t.lastAttacker = p.ownerId;
+                                        t.lastHitTime = Date.now();
+                                        chD(t, id);
+                                        let kang = Math.atan2(t.y - ey, t.x - ex);
+                                        connections.forEach(c => {
+                                            if (c.open) c.send({
+                                                type: 'knockback_apply',
+                                                targetId: id, angle: kang, force: 55
+                                            });
+                                        });
+                                        if (myId === id) {
+                                            localCombat.dash.v.x += Math.cos(kang) * 55;
+                                            localCombat.dash.v.y += Math.sin(kang) * 55;
+                                            localCombat.dash.rec = 0.3;
+                                        }
+                                    }
+                                }
+                                gameState.projectiles.splice(i, 1);
+                                continue;
+                            }
+                        } else if (p.type === 'banana_peel') {
+                            // Drop animation: fall from Kisaki's perch before arming.
+                            if ((p.dropT || 0) > 0) {
+                                p.dropT -= dt;
+                                let u = 1 - Math.max(0, p.dropT) / (p.dropTotal || 0.35);
+                                // Start beneath Kisaki (-8) and settle onto the ground (0).
+                                p.dropZ = (1 - u) * 0 + u * 0 - (1 - u) * 8;
+                                if (p.dropT <= 0) { p.dropZ = 0; p.dropT = 0; }
+                            } else if (!p.triggered) {
+                                for (let id in gameState.players) {
+                                    let t = gameState.players[id];
+                                    if (!t || t.isDead || !cDm(p.ownerId, id) || t.invulnerable) continue;
+                                    if (Math.hypot(t.x - p.x, t.y - p.y) < 24) {
+                                        t.stunTimer = Math.max(t.stunTimer || 0, 0.4);
+                                        let vx = t.vx || 0, vy = t.vy || 0;
+                                        let sp = Math.hypot(vx, vy);
+                                        let kang = sp > 5 ? Math.atan2(vy, vx) : (t.angle || 0);
+                                        let force = Math.max(40, Math.min(80, sp * 0.6));
+                                        connections.forEach(c => {
+                                            if (c.open) c.send({
+                                                type: 'knockback_apply',
+                                                targetId: id, angle: kang, force: force, slide: 1.0
+                                            });
+                                        });
+                                        if (myId === id) {
+                                            localCombat.dash.v.x += Math.cos(kang) * force;
+                                            localCombat.dash.v.y += Math.sin(kang) * force;
+                                            localCombat.dash.rec = 1.0;
+                                        }
+                                        p.triggered = true;
+                                        p.fadeT = 0.4;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                p.fadeT -= dt;
+                                if (p.fadeT <= 0) {
+                                    gameState.projectiles.splice(i, 1);
+                                    continue;
+                                }
+                            }
+                            p.life -= dt;
+                            if (p.life <= 0) gameState.projectiles.splice(i, 1);
                         } else if (p.type === 'blitz_bullet' || p.type === 'rift_bullet') {
                             p.lastX = p.x;
                             p.lastY = p.y;
@@ -13529,24 +13897,28 @@
                     getEl('cd-jubilee-dash').style.height = `${pd > 0 ? (pd / 5.0) * 100 : 0}%`;
                     getEl('status-jubilee-dash').innerText = pd > 0 ? pd.toFixed(1) + 's' : 'Ready';
                 } else if (myPlayer.heroClass === 'misaki') {
-                    setVisibleAbilities(['misaki-shoot', 'misaki-kisaki', 'misaki-rotate', 'misaki-grapple', 'misaki-flare', 'misaki-mirror']);
+                    setVisibleAbilities(['misaki-shoot', 'misaki-kisaki', 'misaki-grenade', 'misaki-grapple', 'misaki-banana']);
                     let ms = localCombat.misakiShoot.cd;
-                    getEl('cd-misaki-shoot').style.height = `${ms > 0 ? (ms / 1.8) * 100 : 0}%`;
-                    getEl('status-misaki-shoot').innerText = ms > 0 ? ms.toFixed(1) + 's' : 'Ready';
+                    let mr = localCombat.misakiGrenade.reload;
+                    if (myPlayer.misakiGrenadeMode) {
+                        getEl('cd-misaki-shoot').style.height = `${mr > 0 ? (mr / localCombat.misakiGrenade.reloadMax) * 100 : 0}%`;
+                        getEl('status-misaki-shoot').innerText = mr > 0 ? 'Reload ' + mr.toFixed(1) + 's' : 'Grenade';
+                    } else {
+                        getEl('cd-misaki-shoot').style.height = `${ms > 0 ? (ms / 1.8) * 100 : 0}%`;
+                        getEl('status-misaki-shoot').innerText = ms > 0 ? ms.toFixed(1) + 's' : 'Ready';
+                    }
                     let mg = localCombat.misakiGrapple.cd;
-                    getEl('cd-misaki-grapple').style.height = `${mg > 0 ? (mg / 6.0) * 100 : 0}%`;
-                    getEl('status-misaki-grapple').innerText = mg > 0 ? mg.toFixed(1) + 's' : (myPlayer.kisakiDeployed ? 'Ready' : 'Req. Deploy');
-                    getEl('ui-misaki-grapple').style.opacity = myPlayer.kisakiDeployed ? '1' : '0.4';
-                    let mf = localCombat.misakiFlare.cd;
-                    getEl('cd-misaki-flare').style.height = `${mf > 0 ? (mf / 10.0) * 100 : 0}%`;
-                    getEl('status-misaki-flare').innerText = mf > 0 ? mf.toFixed(1) + 's' : (myPlayer.kisakiMirrorOn ? 'Ready' : 'Req. Mirror');
-                    getEl('ui-misaki-flare').style.opacity = myPlayer.kisakiMirrorOn ? '1' : '0.4';
-                    getEl('status-misaki-kisaki').innerText = myPlayer.kisakiDeployed ? 'Deployed' : 'At Side';
-                    getEl('ui-misaki-kisaki').style.borderColor = myPlayer.kisakiDeployed ? '#dc2626' : '#52525b';
-                    getEl('status-misaki-mirror').innerText = myPlayer.kisakiMirrorOn ? 'On' : 'Off';
-                    getEl('ui-misaki-mirror').style.borderColor = myPlayer.kisakiMirrorOn ? '#06b6d4' : '#52525b';
-                    getEl('ui-misaki-mirror').style.opacity = getEl('ui-misaki-rotate').style.opacity = myPlayer.kisakiDeployed ? '1' : '0.4';
-                    getEl('ui-misaki-mirror').style.display = 'flex';
+                    getEl('cd-misaki-grapple').style.height = `${mg > 0 ? (mg / 10.0) * 100 : 0}%`;
+                    getEl('status-misaki-grapple').innerText = mg > 0 ? mg.toFixed(1) + 's' : 'Ready';
+                    let mq = localCombat.misakiGrenade.cd;
+                    getEl('cd-misaki-grenade').style.height = `${mq > 0 ? (mq / 1.5) * 100 : 0}%`;
+                    getEl('status-misaki-grenade').innerText = myPlayer.misakiGrenadeMode ? 'GRENADE' : 'Std Round';
+                    getEl('ui-misaki-grenade').style.borderColor = myPlayer.misakiGrenadeMode ? '#f97316' : '#52525b';
+                    let mb = localCombat.misakiBanana.cd;
+                    getEl('cd-misaki-banana').style.height = `${mb > 0 ? (mb / 10.0) * 100 : 0}%`;
+                    getEl('status-misaki-banana').innerText = mb > 0 ? mb.toFixed(1) + 's' : 'Ready';
+                    getEl('status-misaki-kisaki').innerText = myPlayer.kisakiAnchored ? 'Anchored' : 'Perched';
+                    getEl('ui-misaki-kisaki').style.borderColor = myPlayer.kisakiAnchored ? '#dc2626' : '#52525b';
                 } else if (myPlayer.heroClass === 'blitz') {
                     setVisibleAbilities(['blitz-primary', 'blitz-tp', 'blitz-grab']);
                     getEl('name-blitz-primary').innerText = myPlayer.blitzWeapon === 'handgun' ? 'Handgun' : 'Katana';
@@ -14311,6 +14683,10 @@
                 };
             }
             function _zonePlayerColor(p) {
+                if (p.isRoulette && p.rouletteSpinActive) {
+                    const hue = (Date.now() / 16) % 360;
+                    return `hsl(${hue},100%,55%)`;
+                }
                 return _zonePlayerFill(p).value;
             }
 
@@ -15008,6 +15384,9 @@
                 gameState.projectiles.forEach(p => {
                     if (!iV(p.x, p.y, 400))
                         return;
+                    // Kisaki + banana_peel are deferred to drawKisakisAndBananas() so they
+                    // layer ABOVE the hero player model.
+                    if (p.type === 'kisaki' || p.type === 'banana_peel') return;
                     // Universal black outline for projectiles is now handled by the
                     // shape-following post-process at the end of this file (matches the
                     // dynamic per-pixel outline used by players).
@@ -15401,106 +15780,31 @@
                             }
                         }
                         ctx.restore();
-                    } else if (p.type === 'kisaki') {
+                    } else if (p.type === 'misaki_grenade') {
+                        // Ground shadow
                         ctx.save();
-                        ctx.translate(p.x, p.y + Math.sin(Date.now() / 150) * 5);
-                        let o = gameState.players[p.ownerId]
-                          , kc = o?.customization?.kisakiColors || {
-                            body: '#dc2626',
-                            w2: '#eab308',
-                            w3: '#1d4ed8'
-                        };
-                        if (p.hasMirror && p.ownerId === myId && keys.e) {
-                            ctx.strokeStyle = 'rgba(6,182,212,0.4)';
-                            ctx.lineWidth = 2;
-                            ctx.beginPath();
-                            ctx.arc(0, 0, 45, 0, 6.28);
-                            ctx.stroke();
-                            ctx.beginPath();
-                            ctx.moveTo(0, 0);
-                            ctx.lineTo(Math.cos(p.mirrorAngle) * 45, Math.sin(p.mirrorAngle) * 45);
-                            ctx.stroke();
-                        }
-                        if (p.hasMirror) {
-                            ctx.save();
-                            ctx.rotate(p.mirrorAngle);
-                            ctx.translate(20, 0);
-                            ctx.fillStyle = '#e5e7eb';
-                            ctx.strokeStyle = '#9ca3af';
-                            ctx.lineWidth = 2;
-                            ctx.fillRect(-3, -25, 6, 50);
-                            ctx.strokeRect(-3, -25, 6, 50);
-                            ctx.fillStyle = 'rgba(6,182,212,0.8)';
-                            ctx.fillRect(-2, -24, 4, 48);
-                            ctx.fillStyle = '#475569';
-                            ctx.fillRect(-5, -4, 4, 8);
-                            ctx.restore();
-                        }
-                        ctx.save();
-                        ctx.rotate(p.angle);
-                        ctx.fillStyle = kc.body;
+                        ctx.fillStyle = 'rgba(0,0,0,0.35)';
                         ctx.beginPath();
-                        ctx.moveTo(-10, -5);
-                        ctx.lineTo(-40, 0);
-                        ctx.lineTo(-10, 5);
-                        ctx.fill();
-                        ctx.fillStyle = kc.w3;
-                        ctx.beginPath();
-                        ctx.moveTo(-25, -2);
-                        ctx.lineTo(-45, 0);
-                        ctx.lineTo(-25, 2);
-                        ctx.fill();
-                        let f = Math.sin(Date.now() / 40) * 0.5;
-                        ctx.save();
-                        ctx.rotate(f);
-                        ctx.fillStyle = kc.body;
-                        ctx.beginPath();
-                        ctx.ellipse(0, 12, 10, 5, 0, 0, 6.28);
-                        ctx.fill();
-                        ctx.fillStyle = kc.w2;
-                        ctx.beginPath();
-                        ctx.ellipse(-2, 15, 8, 4, -0.2, 0, 6.28);
-                        ctx.fill();
-                        ctx.fillStyle = kc.w3;
-                        ctx.beginPath();
-                        ctx.ellipse(-5, 18, 8, 3, -0.4, 0, 6.28);
+                        let shr = 9 * Math.max(0.3, 1 - (p.z || 0) / 220);
+                        ctx.ellipse(p.x, p.y, shr, shr * 0.4, 0, 0, 6.28);
                         ctx.fill();
                         ctx.restore();
+                        // Grenade
                         ctx.save();
-                        ctx.rotate(-f);
-                        ctx.fillStyle = kc.body;
+                        ctx.translate(p.x, p.y - (p.z || 0));
+                        ctx.rotate(p.t * 12);
+                        ctx.fillStyle = '#1f2937';
                         ctx.beginPath();
-                        ctx.ellipse(0, -12, 10, 5, 0, 0, 6.28);
+                        ctx.arc(0, 0, 8, 0, 6.28);
                         ctx.fill();
-                        ctx.fillStyle = kc.w2;
-                        ctx.beginPath();
-                        ctx.ellipse(-2, -15, 8, 4, 0.2, 0, 6.28);
-                        ctx.fill();
-                        ctx.fillStyle = kc.w3;
-                        ctx.beginPath();
-                        ctx.ellipse(-5, -18, 8, 3, 0.4, 0, 6.28);
-                        ctx.fill();
+                        ctx.strokeStyle = '#f97316';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        ctx.fillStyle = '#f97316';
+                        ctx.fillRect(-2, -11, 4, 4);
                         ctx.restore();
-                        ctx.fillStyle = kc.body;
-                        ctx.beginPath();
-                        ctx.ellipse(0, 0, 12, 7, 0, 0, 6.28);
-                        ctx.fill();
-                        ctx.fillStyle = '#f8fafc';
-                        ctx.beginPath();
-                        ctx.arc(8, 0, 6, 0, 6.28);
-                        ctx.fill();
-                        ctx.fillStyle = '#0f172a';
-                        ctx.beginPath();
-                        ctx.arc(10, 2, 1.5, 0, 6.28);
-                        ctx.arc(10, -2, 1.5, 0, 6.28);
-                        ctx.fill();
-                        ctx.beginPath();
-                        ctx.moveTo(12, -3);
-                        ctx.lineTo(20, 0);
-                        ctx.lineTo(12, 3);
-                        ctx.fill();
-                        ctx.restore();
-                        ctx.restore();
+                    // banana_peel + kisaki rendering is deferred to drawKisakisAndBananas()
+                    // so they layer above the hero player model.
                     } else if (p.type === 'kinetic_arrow') {
                         aId.add(p.id);
                         if (!arrowTrails[p.id])
@@ -16065,6 +16369,300 @@
                 }
             }
 
+            // Renders Kisaki birds and banana peels AFTER players so they layer on top.
+            function drawKisakisAndBananas() {
+                const _rs = (window.__RENDER_SCALE !== undefined) ? Math.max(0.05, window.__RENDER_SCALE) : 1;
+                const vW = (can.width / _rs) / cam.zoom
+                  , vH = (can.height / _rs) / cam.zoom;
+                const iV = (x, y, p=150) => (x > cam.x - p && x < cam.x + vW + p && y > cam.y - p && y < cam.y + vH + p);
+
+                // Banana peels first, Kisaki on top.
+                gameState.projectiles.forEach(p => {
+                    if (p.type !== 'banana_peel' || !iV(p.x, p.y, 200)) return;
+                    let dropZ = p.dropZ || 0;
+                    let alpha = p.triggered ? Math.max(0, p.fadeT / 0.4) : 1;
+                    // Shadow on ground (grows as it falls).
+                    ctx.save();
+                    ctx.globalAlpha = alpha * (0.25 + 0.25 * (1 - Math.min(1, dropZ / 80)));
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.ellipse(p.x, p.y + 6, 14 + dropZ * 0.05, 5 + dropZ * 0.02, 0, 0, 6.28);
+                    ctx.fill();
+                    ctx.restore();
+                    // Banana body
+                    ctx.save();
+                    ctx.translate(p.x, p.y - dropZ);
+                    ctx.globalAlpha = alpha;
+                    let spin = (p.dropT > 0) ? (p.dropT * 8) : Math.sin(Date.now() / 380) * 0.08 - 0.4;
+                    ctx.rotate(spin);
+                    // Crescent banana fruit (curved, bright yellow, brown tips)
+                    ctx.fillStyle = '#facc15';
+                    ctx.strokeStyle = '#713f12';
+                    ctx.lineWidth = 2;
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(-22, 8);
+                    ctx.bezierCurveTo(-26, -10, -8, -20, 10, -18);
+                    ctx.bezierCurveTo(22, -16, 26, -6, 24, 6);
+                    ctx.bezierCurveTo(18, 0, 6, 4, -4, 6);
+                    ctx.bezierCurveTo(-12, 8, -18, 10, -22, 8);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    // Inner highlight (lighter yellow along the top curve)
+                    ctx.fillStyle = '#fde68a';
+                    ctx.beginPath();
+                    ctx.moveTo(-15, -2);
+                    ctx.bezierCurveTo(-18, -12, -6, -16, 8, -14);
+                    ctx.bezierCurveTo(18, -12, 20, -6, 18, 0);
+                    ctx.bezierCurveTo(10, -4, 0, -2, -8, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    // Brown tip (stem)
+                    ctx.fillStyle = '#4d3b16';
+                    ctx.beginPath();
+                    ctx.ellipse(-22, 7, 4, 3, 0.3, 0, 6.28);
+                    ctx.fill();
+                    // Brown tip (blossom)
+                    ctx.fillStyle = '#4d3b16';
+                    ctx.beginPath();
+                    ctx.ellipse(24, 5, 3, 2.5, -0.3, 0, 6.28);
+                    ctx.fill();
+                    // Subtle ridge line down the back
+                    ctx.strokeStyle = 'rgba(120,80,20,0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(-18, 4);
+                    ctx.bezierCurveTo(-6, -2, 8, -2, 20, 2);
+                    ctx.stroke();
+                    ctx.restore();
+                });
+
+                // Kisaki birds (skip drawing the mirror when suppressed).
+                gameState.projectiles.forEach(p => {
+                    if (p.type !== 'kisaki' || !iV(p.x, p.y, 300)) return;
+                    let o = gameState.players[p.ownerId];
+                    let suppressed = o && (o.kisakiSuppressTimer || 0) > 0;
+                    // While owner is grappling, the bird rises into the z-axis (its perch lifts).
+                    // While owner is grappling, the bird rises with Misaki's z (no instant teleport).
+                    let _kZ = (o && (o.misakiGrappling || (o.z || 0) > 0)) ? (o.z || 0) : 0;
+                    // Ground shadow (grows softer/larger when the bird is elevated).
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0.18, 0.45 - _kZ / 280);
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.ellipse(p.x, p.y + 22, 18 + _kZ * 0.06, 6 + _kZ * 0.02, 0, 0, 6.28);
+                    ctx.fill();
+                    ctx.restore();
+                    ctx.save();
+                    ctx.translate(p.x, p.y - 14 - _kZ + Math.sin(Date.now() / 150) * 5);
+                    let kc = o?.customization?.kisakiColors || { body: '#dc2626', w2: '#eab308', w3: '#1d4ed8' };
+                    if (p.hasMirror && !suppressed) {
+                        ctx.save();
+                        ctx.rotate(p.mirrorAngle);
+                        ctx.translate(20, 0);
+                        ctx.fillStyle = '#e5e7eb';
+                        ctx.strokeStyle = '#9ca3af';
+                        ctx.lineWidth = 2;
+                        ctx.fillRect(-3, -25, 6, 50);
+                        ctx.strokeRect(-3, -25, 6, 50);
+                        ctx.fillStyle = 'rgba(6,182,212,0.8)';
+                        ctx.fillRect(-2, -24, 4, 48);
+                        ctx.fillStyle = '#475569';
+                        ctx.fillRect(-5, -4, 4, 8);
+                        ctx.restore();
+                    }
+                    // Placeholder flame hoop
+                    if (o && o.kisakiFlameHoopOn && !suppressed) {
+                        ctx.save();
+                        ctx.strokeStyle = '#f97316';
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([6, 4]);
+                        ctx.beginPath();
+                        ctx.arc(0, -28, 14, 0, 6.28);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.restore();
+                    }
+                    // Placeholder gong
+                    if (o && o.kisakiGongOn && !suppressed) {
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(202,138,4,0.85)';
+                        ctx.strokeStyle = '#713f12';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(0, 26, 11, 0, 6.28);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    ctx.save();
+                    ctx.rotate(p.angle);
+                    ctx.fillStyle = kc.body;
+                    ctx.beginPath(); ctx.moveTo(-10, -5); ctx.lineTo(-40, 0); ctx.lineTo(-10, 5); ctx.fill();
+                    ctx.fillStyle = kc.w3;
+                    ctx.beginPath(); ctx.moveTo(-25, -2); ctx.lineTo(-45, 0); ctx.lineTo(-25, 2); ctx.fill();
+                    let f = Math.sin(Date.now() / 40) * 0.5;
+                    ctx.save();
+                    ctx.rotate(f);
+                    ctx.fillStyle = kc.body;
+                    ctx.beginPath(); ctx.ellipse(0, 12, 10, 5, 0, 0, 6.28); ctx.fill();
+                    ctx.fillStyle = kc.w2;
+                    ctx.beginPath(); ctx.ellipse(-2, 15, 8, 4, -0.2, 0, 6.28); ctx.fill();
+                    ctx.fillStyle = kc.w3;
+                    ctx.beginPath(); ctx.ellipse(-5, 18, 8, 3, -0.4, 0, 6.28); ctx.fill();
+                    ctx.restore();
+                    ctx.save();
+                    ctx.rotate(-f);
+                    ctx.fillStyle = kc.body;
+                    ctx.beginPath(); ctx.ellipse(0, -12, 10, 5, 0, 0, 6.28); ctx.fill();
+                    ctx.fillStyle = kc.w2;
+                    ctx.beginPath(); ctx.ellipse(-2, -15, 8, 4, 0.2, 0, 6.28); ctx.fill();
+                    ctx.fillStyle = kc.w3;
+                    ctx.beginPath(); ctx.ellipse(-5, -18, 8, 3, 0.4, 0, 6.28); ctx.fill();
+                    ctx.restore();
+                    ctx.fillStyle = kc.body;
+                    ctx.beginPath(); ctx.ellipse(0, 0, 12, 7, 0, 0, 6.28); ctx.fill();
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.beginPath(); ctx.arc(8, 0, 6, 0, 6.28); ctx.fill();
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.arc(10, 2, 1.5, 0, 6.28);
+                    ctx.arc(10, -2, 1.5, 0, 6.28);
+                    ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(12, -3); ctx.lineTo(20, 0); ctx.lineTo(12, 3); ctx.fill();
+                    ctx.restore();
+                    ctx.restore();
+                });
+            }
+
+
+            // Drawn AFTER drawPlayers so the hero-outline post-process doesn't add
+            // a black border to the trajectory line. Solid line, red by default,
+            // green when it would hit an enemy. Reflects off walls AND Kisaki mirrors.
+            function drawMisakiAimPreview() {
+                let o = gameState.players[myId];
+                if (!o || o.heroClass !== 'misaki' || o.isDead) return;
+                let aimAng = Math.atan2(o.targetY - o.y, o.targetX - o.x);
+                let sx0 = o.x + Math.cos(aimAng) * 45;
+                let sy0 = o.y + Math.sin(aimAng) * 45;
+                let vxs = Math.cos(aimAng) * 2500;
+                let vys = Math.sin(aimAng) * 2500;
+                // Default: one wall bounce. Mirror reflections do NOT cost a bounce,
+                // and after a mirror reflection we refresh +1 wall bounce so the user
+                // sees up to two bounce segments when aiming at a mirror.
+                let wallBouncesLeft = 1;
+                let mirrorBouncesLeft = 1;
+                let usedMirrors = {};
+                let pts = [[sx0, sy0]];
+                let willHit = false;
+                let curX = sx0, curY = sy0;
+                const stepLen = 10;
+                const maxRange = 2500 * 2.0;
+                let traveled = 0;
+                const _walls = gameState.walls;
+                const _isNoclip = (typeof __isWallNoclippedFor === 'function') ? __isWallNoclippedFor : null;
+                let enemies = [];
+                for (let pid in gameState.players) {
+                    let pp = gameState.players[pid];
+                    if (pid === myId || pp.isDead || pp.isSpectator) continue;
+                    if (pp.team && o.team && pp.team === o.team) continue;
+                    enemies.push(pp);
+                }
+                let mirrors = gameState.projectiles.filter(k => k.type === 'kisaki' && k.hasMirror);
+                outer: while (traveled < maxRange) {
+                    let dirAng = Math.atan2(vys, vxs);
+                    let nx = curX + Math.cos(dirAng) * stepLen;
+                    let ny = curY + Math.sin(dirAng) * stepLen;
+                    // Enemy intersection — use closest point on the step segment to the
+                    // enemy circle so thin grazes never get skipped.
+                    for (let en of enemies) {
+                        let _r = (en.radius || 18) + 10;
+                        let sxd = nx - curX, syd = ny - curY;
+                        let segLen2 = sxd * sxd + syd * syd;
+                        let t = segLen2 > 0 ? ((en.x - curX) * sxd + (en.y - curY) * syd) / segLen2 : 0;
+                        t = Math.max(0, Math.min(1, t));
+                        let qx = curX + sxd * t, qy = curY + syd * t;
+                        if (Math.hypot(en.x - qx, en.y - qy) < _r) {
+                            willHit = true;
+                            pts.push([qx, qy]);
+                            break outer;
+                        }
+                    }
+                    let bounced = false;
+                    for (let k of mirrors) {
+                        if (usedMirrors[k.id]) continue;
+                        let mcx = k.x + Math.cos(k.mirrorAngle) * 20;
+                        let mcy = k.y + Math.sin(k.mirrorAngle) * 20;
+                        let tx_ = -Math.sin(k.mirrorAngle), ty_ = Math.cos(k.mirrorAngle);
+                        let rx = nx - mcx, ry = ny - mcy;
+                        let along = Math.max(-25, Math.min(25, rx * tx_ + ry * ty_));
+                        let cx = mcx + tx_ * along, cy = mcy + ty_ * along;
+                        if (Math.hypot(cx - nx, cy - ny) < 12) {
+                            pts.push([curX, curY]);
+                            if (mirrorBouncesLeft > 0) {
+                                mirrorBouncesLeft--;
+                                let nxn = Math.cos(k.mirrorAngle), nyn = Math.sin(k.mirrorAngle);
+                                let d2 = vxs * nxn + vys * nyn;
+                                vxs -= 2 * d2 * nxn;
+                                vys -= 2 * d2 * nyn;
+                                usedMirrors[k.id] = true;
+                                // Mirror reflection grants an extra wall bounce so the
+                                // trajectory keeps drawing past the mirror.
+                                wallBouncesLeft = Math.max(wallBouncesLeft, 1) + 1;
+                                bounced = true;
+                                break;
+                            } else { break outer; }
+                        }
+                    }
+                    if (bounced) continue;
+                    let hitW = null, wn = null;
+                    for (let w of _walls) {
+                        if (_isNoclip && _isNoclip(w, nx, ny)) continue;
+                        if (nx > w.x && nx < w.x + GRID && ny > w.y && ny < w.y + GRID) {
+                            hitW = w;
+                            wn = (curX <= w.x || curX >= w.x + GRID) ? {x:1,y:0} : {x:0,y:1};
+                            break;
+                        }
+                    }
+                    if (hitW) {
+                        pts.push([curX, curY]);
+                        if (wallBouncesLeft > 0) {
+                            wallBouncesLeft--;
+                            if (wn.x !== 0) vxs = -vxs;
+                            if (wn.y !== 0) vys = -vys;
+                        } else { break outer; }
+                    } else {
+                        curX = nx; curY = ny;
+                        traveled += stepLen;
+                    }
+                }
+                if (pts[pts.length - 1][0] !== curX || pts[pts.length - 1][1] !== curY) {
+                    pts.push([curX, curY]);
+                }
+                ctx.save();
+                ctx.strokeStyle = willHit ? 'rgba(34,197,94,1)' : 'rgba(239,68,68,0.6)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                for (let i = 0; i < pts.length; i++) {
+                    if (i === 0) ctx.moveTo(pts[i][0], pts[i][1]);
+                    else ctx.lineTo(pts[i][0], pts[i][1]);
+                }
+                ctx.stroke();
+                if (willHit) {
+                    let lp = pts[pts.length - 1];
+                    ctx.beginPath();
+                    ctx.arc(lp[0], lp[1], 10, 0, 6.28);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+
+
+
+
             function drawCorsairCannons() {
                 const _rs = (window.__RENDER_SCALE !== undefined) ? Math.max(0.05, window.__RENDER_SCALE) : 1;
                 const vW = (can.width / _rs) / cam.zoom
@@ -16393,20 +16991,57 @@
                         o.heroClass = o.rouletteSpinVisualHero;
                     }
 
-                    if (o.id === myId && o.heroClass === 'misaki' && localCombat.misakiGrapple.dTm > 0) {
-                        let k = gameState.projectiles.find(p => p.type === 'kisaki' && p.ownerId === myId);
-                        if (k) {
+                    if (o.id === myId && o.heroClass === 'misaki' && localCombat.misakiGrapple.phase && localCombat.misakiGrapple.phase !== 'idle' && localCombat.misakiGrapple.phase !== 'descent') {
+                        let _mg2 = localCombat.misakiGrapple;
+                        let _hx = _mg2.hookX, _hy = _mg2.hookY;
+                        // Cable (rope)
+                        ctx.save();
+                        ctx.strokeStyle = '#4b3a2a';
+                        ctx.lineWidth = 2.2;
+                        ctx.lineCap = 'round';
+                        ctx.globalAlpha = 0.95;
+                        ctx.beginPath();
+                        ctx.moveTo(e.x, e.y - (o.z || 0));
+                        ctx.lineTo(_hx, _hy - (o.z || 0));
+                        ctx.stroke();
+                        // Grappling hook head at cable endpoint (dark grey 3-prong, no outline).
+                        let _ha = Math.atan2(_hy - e.y, _hx - e.x);
+                        ctx.translate(_hx, _hy - (o.z || 0));
+                        ctx.rotate(_ha);
+                        ctx.fillStyle = '#3a3a3a';
+                        // Shank
+                        ctx.fillRect(-8, -1.6, 10, 3.2);
+                        // Eye ring at the back of the shank (where rope attaches)
+                        ctx.beginPath();
+                        ctx.arc(-8, 0, 2.6, 0, 6.28);
+                        ctx.fill();
+                        // Three curved prongs (claws) at the head
+                        const _drawProng = (rot) => {
                             ctx.save();
-                            ctx.strokeStyle = '#9ca3af';
-                            ctx.lineWidth = 2;
-                            ctx.globalAlpha = 0.5;
+                            ctx.rotate(rot);
                             ctx.beginPath();
-                            ctx.moveTo(e.x, e.y);
-                            ctx.lineTo(k.x, k.y);
-                            ctx.stroke();
+                            ctx.moveTo(2, 0);
+                            ctx.quadraticCurveTo(7, -1, 8, -6);
+                            ctx.lineTo(10, -6);
+                            ctx.quadraticCurveTo(9, -1, 4, 1);
+                            ctx.closePath();
+                            ctx.fill();
                             ctx.restore();
-                        }
+                        };
+                        _drawProng(-0.55);
+                        _drawProng(0);
+                        _drawProng(0.55);
+                        // Center spike
+                        ctx.beginPath();
+                        ctx.moveTo(2, 0);
+                        ctx.lineTo(11, -1.4);
+                        ctx.lineTo(11, 1.4);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
                     }
+                    // Misaki aim preview moved to drawMisakiAimPreview() (runs after drawPlayers so
+                    // the hero-outline post-process doesn't add a black border to the trajectory line).
                     if (o.id === myId && o.heroClass === 'bread' && localCombat.breadGrapple.phase !== 'idle') {
                         let bg = localCombat.breadGrapple;
                         let tx = bg.phase === 'firing' ? bg.curX : (bg.anchor ? bg.anchor.x : e.x);
@@ -16435,7 +17070,7 @@
                     ctx.save();
                     ctx.translate(e.x, e.y);
                     // Jubilee jump: draw shadow on the ground, then lift sprite up by z
-                    let _jubZ = ((o.heroClass === 'jubilee' || o.heroClass === 'nitro') && o.z) ? o.z : 0;
+                    let _jubZ = ((o.heroClass === 'jubilee' || o.heroClass === 'nitro' || o.heroClass === 'misaki') && o.z) ? o.z : 0;
                     if (_jubZ > 0) {
                         ctx.save();
                         let shAlpha = Math.max(0.15, 0.5 - _jubZ / 220);
@@ -16443,7 +17078,7 @@
                         ctx.globalAlpha = shAlpha;
                         ctx.fillStyle = '#000';
                         ctx.beginPath();
-                        ctx.ellipse(0, 6, 18 * shScale, 7 * shScale, 0, 0, 6.28);
+                        ctx.ellipse(0, 6, 54 * shScale, 21 * shScale, 0, 0, 6.28);
                         ctx.fill();
                         ctx.restore();
                         ctx.translate(0, -_jubZ);
@@ -18139,20 +18774,27 @@
                         drawHair(o);
                     }
 
-                    // === ROULETTE: Gold outline around the player ===
-                    if (!iC && o.isRoulette) {
+                    // === ROULETTE: Rainbow floor glow + outline while randomizing ===
+                    if (!iC && o.isRoulette && !o.rouletteSpinActive && (o.rouletteLockGlow && o.rouletteLockGlow > 0)) {
                         ctx.save();
-                        const goldPulse = 0.7 + Math.sin(Date.now() / 180) * 0.3;
-                        ctx.strokeStyle = '#fbbf24';
+                        const hue = (Date.now() / 40) % 360;
+                        const floorGrd = ctx.createRadialGradient(e.x, e.y + 18, 2, e.x, e.y + 18, 36);
+                        floorGrd.addColorStop(0, `hsla(${hue},100%,88%,0.72)`);
+                        floorGrd.addColorStop(0.45, `hsla(${(hue + 90) % 360},100%,78%,0.32)`);
+                        floorGrd.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = floorGrd;
+                        ctx.beginPath();
+                        ctx.ellipse(e.x, e.y + 18, 30, 12, 0, 0, 6.28);
+                        ctx.fill();
+                        ctx.strokeStyle = `hsl(${hue},100%,72%)`;
                         ctx.lineWidth = 3.5;
-                        ctx.globalAlpha = goldPulse;
-                        ctx.shadowColor = '#fbbf24';
-                        ctx.shadowBlur = 18;
+                        ctx.globalAlpha = 0.9;
+                        ctx.shadowColor = `hsl(${hue},100%,72%)`;
+                        ctx.shadowBlur = 20;
                         ctx.beginPath();
                         ctx.arc(e.x, e.y, 24, 0, 6.28);
                         ctx.stroke();
-                        // Inner thinner ring
-                        ctx.globalAlpha = goldPulse * 0.6;
+                        ctx.globalAlpha = 0.55;
                         ctx.lineWidth = 1.5;
                         ctx.beginPath();
                         ctx.arc(e.x, e.y, 28, 0, 6.28);
@@ -18210,7 +18852,7 @@
                     }
 
                     // === ROULETTE: One-Armed Bandit slot UI overhead ===
-                    if (!iC && o.isRoulette && (o.rouletteSpinActive || (o.rouletteLockGlow && o.rouletteLockGlow > 0))) {
+                    if (!iC && o.isRoulette && o.rouletteSpinActive) {
                         drawRouletteSlotUI(e.x, e.y - yO - 14, o);
                     }
 
@@ -19061,7 +19703,7 @@
                 tickRoulette(dt);
                 updateUI(t);
 
-                let isF = (Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y) > 10) || myPlayer.isFlying || localCombat.jubileeDash?.dTm > 0 || localCombat.misakiGrapple?.dTm > 0 || myPlayer.traceDashing;
+                let isF = (Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y) > 10) || myPlayer.isFlying || localCombat.jubileeDash?.dTm > 0 || (localCombat.misakiGrapple?.phase && localCombat.misakiGrapple.phase !== 'idle') || myPlayer.traceDashing;
                 // Nitro Stratosphere Launch: zoom out further while ascending/descending so the player can see the whole arena.
                 let _nvPhase = (myPlayer.heroClass === 'nitro' && localCombat.nitroVault) ? localCombat.nitroVault.phase : 'idle';
                 let _nvLaunching = (_nvPhase === 'ascending' || _nvPhase === 'descending');
@@ -19161,6 +19803,8 @@
                 drawHPs();
                 drawEnts();
                 drawPlayers();
+                drawKisakisAndBananas();
+                drawMisakiAimPreview();
                 drawAeroContextMenuWorld(ctx);
                 drawAeroGlobalCursor(ctx, cam);
                 drawVFX();
@@ -21123,86 +21767,87 @@
                 } catch (e) {}
             }
             ;
+
+            // Outline style: rainbow gradient whenever any Roulette OR Jubilee player is alive,
+            // otherwise solid black. Applied uniformly to heroes, projectiles, and VFX.
+            function getRouletteOutlineStyle(ctx) {
+                try {
+                    const players = (typeof gameState !== 'undefined' && gameState && gameState.players) || null;
+                    let hasRainbow = false;
+                    if (players) {
+                        const list = Object.values(players);
+                        for (let i = 0; i < list.length; i++) {
+                            const p = list[i];
+                            if (!p || p.isDead || p.isSpectator) continue;
+                            const hc = p.heroClass;
+                            if (hc === 'roulette' || hc === 'jubilee' || p.isRoulette) {
+                                hasRainbow = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!hasRainbow) return '#000';
+                    const hue = (Date.now() / 10) % 360;
+                    const grad = ctx.createLinearGradient(0, 0, 200, 0);
+                    grad.addColorStop(0, `hsl(${hue},100%,50%)`);
+                    grad.addColorStop(0.33, `hsl(${(hue + 90) % 360},100%,50%)`);
+                    grad.addColorStop(0.66, `hsl(${(hue + 180) % 360},100%,50%)`);
+                    grad.addColorStop(1, `hsl(${(hue + 270) % 360},100%,50%)`);
+                    return grad;
+                } catch (e) {
+                    return '#000';
+                }
+            }
+
             /* ===========================================================================
- * THICK BLACK OUTLINE (post-process)
- * ---------------------------------------------------------------------------
- * Wraps drawPlayers so every hero + prop (Nitro rocket ram, Excalibur sword,
- * Trace bow, Tim antenna/beam, etc.) gets a thick, pure-black outline.
- *
- * Strategy: render heroes to an offscreen layer, then draw that layer onto
- * an outline layer at 8 ring-offsets and tint the result solid black via
- * 'source-in'. This runs entirely on the GPU canvas pipeline — orders of
- * magnitude faster than per-pixel JS loops, eliminating the main render lag.
+ * HERO OUTLINE (post-process) — single outer ring tinted via getRouletteOutlineStyle.
  * =========================================================================*/
             (function installToonOutlinePostProcess() {
-                if (typeof window.drawPlayers !== 'function')
-                    return;
+                if (typeof window.drawPlayers !== 'function') return;
                 const _prev = window.drawPlayers;
-
                 const bgCv = document.createElement('canvas');
                 const heroCv = document.createElement('canvas');
                 const outCv = document.createElement('canvas');
                 const bgCtx = bgCv.getContext('2d');
                 const heroCtx = heroCv.getContext('2d');
                 const outCtx = outCv.getContext('2d');
-
-                // Outline thickness in screen pixels (before zoom). Thicker than the old 5px ring.
                 const BASE_R = 4;
 
-                window.drawPlayers = function() {
-                    const cw = can.width
-                      , ch = can.height;
-                    if (cw <= 0 || ch <= 0) {
-                        return _prev.apply(this, arguments);
-                    }
-
+                window.drawPlayers = function () {
+                    const cw = can.width, ch = can.height;
+                    if (cw <= 0 || ch <= 0) return _prev.apply(this, arguments);
                     if (bgCv.width !== cw || bgCv.height !== ch) {
                         bgCv.width = heroCv.width = outCv.width = cw;
                         bgCv.height = heroCv.height = outCv.height = ch;
                     }
-
-                    // 1) Snapshot whatever is currently on the main canvas (background + map + entities)
                     bgCtx.setTransform(1, 0, 0, 1, 0, 0);
                     bgCtx.clearRect(0, 0, cw, ch);
                     bgCtx.drawImage(can, 0, 0);
 
-                    // 2) Clear main canvas (identity), restore world transform, draw heroes.
-                    const prevTransform = ctx.getTransform();
+                    const prevT = ctx.getTransform();
                     ctx.save();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.clearRect(0, 0, cw, ch);
                     ctx.restore();
-                    ctx.setTransform(prevTransform);
+                    ctx.setTransform(prevT);
+                    try { _prev.apply(this, arguments); } catch (e) {}
 
-                    try {
-                        _prev.apply(this, arguments);
-                    } catch (e) {/* swallow & continue compositing */
-                    }
-
-                    // 3) Snapshot hero-only layer.
                     heroCtx.setTransform(1, 0, 0, 1, 0, 0);
                     heroCtx.clearRect(0, 0, cw, ch);
                     heroCtx.drawImage(can, 0, 0);
 
-                    // 4) Build a thick BLACK outline: draw the hero silhouette at 8 ring
-                    //    offsets onto the outline layer, then tint the whole layer solid
-                    //    black via source-in. Pure GPU work — fast & frame-independent.
                     outCtx.setTransform(1, 0, 0, 1, 0, 0);
                     outCtx.clearRect(0, 0, cw, ch);
-                    const R = Math.max(2, Math.round(BASE_R * cam.zoom));
-                    // Ring + diagonals for a smooth, rounded outline
-                    // Cardinal-only ring (4 offsets) — halves drawImage cost vs 8-offset version.
-                    // The diagonals add almost no visible thickness at typical R values.
-                    const offsets = [[R, 0], [-R, 0], [0, R], [0, -R]];
-                    for (let i = 0; i < offsets.length; i++) {
-                        outCtx.drawImage(heroCv, offsets[i][0], offsets[i][1]);
-                    }
+                    const zoom = (typeof cam !== 'undefined') ? cam.zoom : 1;
+                    const R = Math.max(2, Math.round(BASE_R * zoom));
+                    const offs = [[R, 0], [-R, 0], [0, R], [0, -R]];
+                    for (let i = 0; i < offs.length; i++)
+                        outCtx.drawImage(heroCv, offs[i][0], offs[i][1]);
                     outCtx.globalCompositeOperation = 'source-in';
-                    outCtx.fillStyle = '#000';
+                    outCtx.fillStyle = getRouletteOutlineStyle(outCtx);
                     outCtx.fillRect(0, 0, cw, ch);
                     outCtx.globalCompositeOperation = 'source-over';
 
-                    // 5) Recomposite: background → black outline → heroes (identity space)
                     ctx.save();
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.clearRect(0, 0, cw, ch);
@@ -21210,11 +21855,9 @@
                     ctx.drawImage(outCv, 0, 0);
                     ctx.drawImage(heroCv, 0, 0);
                     ctx.restore();
-                    ctx.setTransform(prevTransform);
-                }
-                ;
-            }
-            )();
+                    ctx.setTransform(prevT);
+                };
+            })();
 
             /* ===========================================================================
  * SHAPE-FOLLOWING BLACK OUTLINE FOR PROJECTILES (post-process)
@@ -21286,7 +21929,7 @@
                     for (let i = 0; i < offs.length; i++)
                         outCtx.drawImage(entCv, offs[i][0], offs[i][1]);
                     outCtx.globalCompositeOperation = 'source-in';
-                    outCtx.fillStyle = '#000';
+                    outCtx.fillStyle = getRouletteOutlineStyle(outCtx);
                     outCtx.fillRect(0, 0, cw, ch);
                     outCtx.globalCompositeOperation = 'source-over';
 
@@ -21343,6 +21986,7 @@
                     ctx.restore();
                     ctx.setTransform(prevT);
                     try { _prev.apply(this, arguments); } catch (e) {}
+
                     // 3) Snapshot vfx layer
                     fxCtx.setTransform(1, 0, 0, 1, 0, 0);
                     fxCtx.clearRect(0, 0, cw, ch);
@@ -21355,7 +21999,7 @@
                     for (let i = 0; i < offs.length; i++)
                         outCtx.drawImage(fxCv, offs[i][0], offs[i][1]);
                     outCtx.globalCompositeOperation = 'source-in';
-                    outCtx.fillStyle = '#000';
+                    outCtx.fillStyle = getRouletteOutlineStyle(outCtx);
                     outCtx.fillRect(0, 0, cw, ch);
                     outCtx.globalCompositeOperation = 'source-over';
                     // 5) Recomposite bg → outline → vfx
@@ -21412,6 +22056,18 @@
                     return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
                 }
 
+                function getForceVectorSide(rect, wx, wy) {
+                    const leftDist = Math.abs(wx - rect.x);
+                    const rightDist = Math.abs(wx - (rect.x + rect.w));
+                    const topDist = Math.abs(wy - rect.y);
+                    const bottomDist = Math.abs(wy - (rect.y + rect.h));
+                    const minDist = Math.min(leftDist, rightDist, topDist, bottomDist);
+                    if (minDist === leftDist) return { x: -1, y: 0 };
+                    if (minDist === rightDist) return { x: 1, y: 0 };
+                    if (minDist === topDist) return { x: 0, y: -1 };
+                    return { x: 0, y: 1 };
+                }
+
                 // ---- INPUT ----
                 can.addEventListener('mousedown', function (e) {
                     if (e.button !== 2) return;
@@ -21455,11 +22111,20 @@
                     if (document.activeElement && document.activeElement.id === 'chat-input') return;
                     if (ZONE_TYPES[e.key]) {
                         const t = ZONE_TYPES[e.key];
+                        let fvx = pending.dragVecX;
+                        let fvy = pending.dragVecY;
+                        if (t === 'forceVector') {
+                            const wx = (sMx / cam.zoom) + cam.x;
+                            const wy = (sMy / cam.zoom) + cam.y;
+                            const sideDir = getForceVectorSide(pending, wx, wy);
+                            fvx = sideDir.x * BALANCE.glitch.zoneForceStrength;
+                            fvy = sideDir.y * BALANCE.glitch.zoneForceStrength;
+                        }
                         sdEv({
                             type: 'glitch_zone',
                             zoneType: t,
                             x: pending.x, y: pending.y, w: pending.w, h: pending.h,
-                            fvx: pending.dragVecX, fvy: pending.dragVecY
+                            fvx, fvy
                         });
                         localCombat.glitchZone.cd = (activeServerMode === 'CHAOS') ? 0.05 : localCombat.glitchZone.maxCd;
                         applyShake(5, 0.15);
@@ -21545,21 +22210,25 @@
                             e.zoneInsideType = z.type;
 
                             if (z.type === 'overclock' && inside) {
-                                // Add an extra delta this frame -> ~2x effective speed
                                 e.x += dx * (BALANCE.glitch.zoneSpeedMul.overclock - 1);
                                 e.y += dy * (BALANCE.glitch.zoneSpeedMul.overclock - 1);
                             } else if (z.type === 'packetLoss' && inside) {
                                 e.x -= dx * (1 - BALANCE.glitch.zoneSpeedMul.packetLoss);
                                 e.y -= dy * (1 - BALANCE.glitch.zoneSpeedMul.packetLoss);
-                            } else if (z.type === 'arrayWrap' && prevInside) {
-                                if (e.x < z.x) e.x = z.x + z.w - (z.x - e.x);
-                                else if (e.x > z.x + z.w) e.x = z.x + (e.x - (z.x + z.w));
-                                if (e.y < z.y) e.y = z.y + z.h - (z.y - e.y);
-                                else if (e.y > z.y + z.h) e.y = z.y + (e.y - (z.y + z.h));
+                            } else if (z.type === 'arrayWrap' && prevInside && !inside) {
+                                const left = z.x, right = z.x + z.w, top = z.y, bottom = z.y + z.h;
+                                if (e.x < left)
+                                    e.x = right - (left - e.x);
+                                else if (e.x > right)
+                                    e.x = left + (e.x - right);
+                                if (e.y < top)
+                                    e.y = bottom - (top - e.y);
+                                else if (e.y > bottom)
+                                    e.y = top + (e.y - bottom);
                             } else if (z.type === 'forceVector' && inside) {
-                                e.x += z.fvx * dt;
-                                e.y += z.fvy * dt;
-                                // keep inside arena
+                                const forceScale = 0.25;
+                                e.x += z.fvx * dt * forceScale;
+                                e.y += z.fvy * dt * forceScale;
                                 e.x = Math.max(15, Math.min(W - 15, e.x));
                                 e.y = Math.max(15, Math.min(H - 15, e.y));
                             } else if (z.type === 'noclip' && inside) {
@@ -21638,31 +22307,33 @@
                 }
 
                 function drawZoneOverlaysAfterWalls() {
-                    if (!gameState.hackerZones || gameState.hackerZones.length === 0) return;
-                    const stroke = makeMatrixStroke();
-                    const t = performance.now() / 1000;
-                    for (const z of gameState.hackerZones) {
-                        // Replace block outlines for blocks inside this zone (or fully wireframe for noclip)
-                        for (const w of gameState.walls) {
-                            const inZ = w.x + GRID > z.x && w.x < z.x + z.w && w.y + GRID > z.y && w.y < z.y + z.h;
-                            if (!inZ) continue;
-                            ctx.save();
-                            if (z.type === 'noclip') {
-                                // Translucent wireframe replaces the wall
-                                ctx.globalCompositeOperation = 'destination-out';
-                                ctx.fillStyle = '#000';
-                                ctx.fillRect(w.x, w.y, GRID, GRID);
-                                ctx.restore();
+                    const hasZones = !!(gameState.hackerZones && gameState.hackerZones.length);
+                    if (hasZones) {
+                        const stroke = makeMatrixStroke();
+                        const t = performance.now() / 1000;
+                        for (const z of gameState.hackerZones) {
+                            // Replace block outlines for blocks inside this zone (or fully wireframe for noclip)
+                            for (const w of gameState.walls) {
+                                const inZ = w.x + GRID > z.x && w.x < z.x + z.w && w.y + GRID > z.y && w.y < z.y + z.h;
+                                if (!inZ) continue;
                                 ctx.save();
-                                ctx.fillStyle = 'rgba(34,197,94,0.18)';
-                                ctx.fillRect(w.x, w.y, GRID, GRID);
+                                if (z.type === 'noclip') {
+                                    // Translucent wireframe replaces the wall
+                                    ctx.globalCompositeOperation = 'destination-out';
+                                    ctx.fillStyle = '#000';
+                                    ctx.fillRect(w.x, w.y, GRID, GRID);
+                                    ctx.restore();
+                                    ctx.save();
+                                    ctx.fillStyle = 'rgba(34,197,94,0.18)';
+                                    ctx.fillRect(w.x, w.y, GRID, GRID);
+                                }
+                                ctx.lineWidth = 3;
+                                ctx.setLineDash([6, 4]);
+                                ctx.lineDashOffset = -((t * 40) % 10);
+                                ctx.strokeStyle = stroke;
+                                ctx.strokeRect(w.x + 1, w.y + 1, GRID - 2, GRID - 2);
+                                ctx.restore();
                             }
-                            ctx.lineWidth = 3;
-                            ctx.setLineDash([6, 4]);
-                            ctx.lineDashOffset = -((t * 40) % 10);
-                            ctx.strokeStyle = stroke;
-                            ctx.strokeRect(w.x + 1, w.y + 1, GRID - 2, GRID - 2);
-                            ctx.restore();
                         }
                     }
 
@@ -21678,6 +22349,7 @@
                         ctx.strokeRect(r.x, r.y, r.w, r.h);
                         ctx.restore();
                     } else if (pending) {
+                        const t = performance.now() / 1000;
                         ctx.save();
                         ctx.lineWidth = 4;
                         ctx.setLineDash([14, 6]);
