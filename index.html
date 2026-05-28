@@ -1429,7 +1429,7 @@
                 </div>
                 <div class="ability-slot" id="ui-tim-vents">
                     <div class="key">SPACE</div>
-                    <div class="name">Lateral Vents</div>
+                    <div class="name" id="name-tim-vents">Tractor Beam</div>
                     <div class="status" id="status-tim-vents">Ready</div>
                     <div class="cooldown-overlay" id="cd-tim-vents"></div>
                 </div>
@@ -1746,23 +1746,7 @@
                             </div>
                             <div id="tim-custom-panel" style="display:none;width:100%;">
                                 <div class="color-row">
-                                    <span>Skin</span>
-                                    <input type="color" id="timColorSkin">
-                                </div>
-                                <div class="color-row">
-                                    <span>Antenna</span>
-                                    <input type="color" id="timColorAntenna">
-                                </div>
-                                <div class="color-row">
-                                    <span>Eyes</span>
-                                    <input type="color" id="timColorEyes">
-                                </div>
-                                <div class="color-row">
-                                    <span>Cannon Color</span>
-                                    <input type="color" id="timColorCannon">
-                                </div>
-                                <div class="color-row">
-                                    <span>Beam Color</span>
+                                    <span>Energy Color</span>
                                     <input type="color" id="timColorBeam">
                                 </div>
                             </div>
@@ -2386,9 +2370,16 @@
             const BALANCE = {
                 tim: {
                     coreBeamMinDps: 100,
-                    // DPS at 0 charge
                     coreBeamMaxDps: 420,
-                    // DPS at full (4.0) charge
+                    tractorPulseDmg: 50,
+                    tractorPulseCd: 0.7,
+                    tractorPulseRange: 220,
+                    tractorPulseRadius: 110,
+                    tractorBeamDuration: 6.0,
+                    tractorBeamCd: 9.0,
+                    tractorBeamRadius: 200,
+                    tractorBeamLiftRadius: 70,
+                    tractorMicroPull: 38,
                 },
                 blitz: {
                     handgunCooldown: 0.2,
@@ -2806,13 +2797,13 @@
                     abilities: ['Draw Tab (Hold L-Click)', 'Close Tab (Edge Click)', 'Toggle Mode (1/2)', 'Copy (R-Click)', 'Paste (L-Click)']
                 },
                 tim: {
-                    name: 'Tiny Tim and the MK-77 Sub-Orbital Thermal Plasma Cosmic World-Burner Star-Splitter Tectonic-Disruption and Matter-Vaporization Disentigrator Particle Beam Orbital Lancer Beam Turret Cannon',
-                    role: 'Stance-Shifting Tank',
+                    name: 'Tiny Tim and the X-99 Trans-Dimensional Gravitic Saucer of Imperial Alien Annihilation',
+                    role: 'Hovering Saucer Pilot',
                     hp: 330,
                     speed: 'Variable',
                     color: '#1eff00',
-                    desc: 'Microscopic alien with a reality-warping cannon. Switch between slow apocalyptic Macro Mode and lightning-fast Micro Mode.',
-                    abilities: ['Quantum Condenser (Shift)', 'Core Beam / Pea-Shooter (L-Click)', 'Lateral Vents / Sprint (Space)', '[ULT] Sub-Orbital Discharge (Q)']
+                    desc: 'A tiny alien piloting a 2.5D flying saucer. Permanently hovers above the arena — his shadow is his hitbox. Toggle between fast Skirmish mode (tractor pulses + abduction beam) and slow Core Beam mode.',
+                    abilities: ['Mode Toggle (Shift)', 'Tractor Pulses / Core Beam (L-Click)', 'Tractor Beam (Space)']
                 },
                 rift: {
                     name: 'Rift',
@@ -2911,16 +2902,9 @@
             document.documentElement.style.setProperty('--kendoColorGlow', kndCol.glow);
             getEl('corsairColorTrim').value = crsCol.trim;
             let timCol = JSON.parse(localStorage.getItem('rivals_timColors')) || {
-                skin: '#22c55e',
-                antenna: '#00ff00',
-                eyes: '#000000',
-                cannon: '#fbbf24',
-                beam: '#ff6b6b'
+                beam: '#66ff00'
             };
-            getEl('timColorSkin').value = timCol.skin;
-            getEl('timColorAntenna').value = timCol.antenna;
-            getEl('timColorEyes').value = timCol.eyes;
-            getEl('timColorCannon').value = timCol.cannon;
+            if (!timCol.beam) timCol.beam = '#66ff00';
             getEl('timColorBeam').value = timCol.beam;
             let excCol = JSON.parse(localStorage.getItem('rivals_excaliburColors')) || {
                 blade: '#fbbf24',
@@ -2961,10 +2945,6 @@
                 localStorage.setItem('rivals_corsairColors', JSON.stringify(crsCol));
                 myPlayer.customization.corsairColors = crsCol;
                 timCol = {
-                    skin: getEl('timColorSkin').value,
-                    antenna: getEl('timColorAntenna').value,
-                    eyes: getEl('timColorEyes').value,
-                    cannon: getEl('timColorCannon').value,
                     beam: getEl('timColorBeam').value
                 };
                 localStorage.setItem('rivals_timColors', JSON.stringify(timCol));
@@ -2979,7 +2959,7 @@
                 updateLobbyState();
             }
             ;
-            ['tColorBow', 'tColorNeon', 'kColorBody', 'kColorW2', 'kColorW3', 'kendoColorPrimary', 'kendoColorGlow', 'corsairColorTrim', 'timColorSkin', 'timColorAntenna', 'timColorEyes', 'timColorCannon', 'timColorBeam', 'excaliburColorBlade', 'excaliburColorBody', 'excaliburColorHandle'].forEach(id => getEl(id).addEventListener('input', saveCols));
+            ['tColorBow', 'tColorNeon', 'kColorBody', 'kColorW2', 'kColorW3', 'kendoColorPrimary', 'kendoColorGlow', 'corsairColorTrim', 'timColorBeam', 'excaliburColorBlade', 'excaliburColorBody', 'excaliburColorHandle'].forEach(id => getEl(id).addEventListener('input', saveCols));
 
             // ===== Zone colors are now hardcoded in this file =====
             // To change a hero's zone (territory) color, edit HARDCODED_ZONE_COLORS below.
@@ -3086,7 +3066,12 @@
                 timBeamCollapseTimer: 0,
                 timTransitioning: false,
                 timTransitionTimer: 0,
-                timTransitionTargetStance: 'micro'
+                timTransitionTargetStance: 'micro',
+                timBeamFieldActive: false,
+                timBeamFieldTimer: 0,
+                liftedBy: null,
+                liftedTimer: 0,
+                hovers: false
             };
 
             let savedAeroBg = localStorage.getItem('rivals_aeroBg');
@@ -4401,7 +4386,8 @@
                     koth: gameState.koth,
                     ultOrb: gameState.ultOrb,
                     juggernautId: gameState.juggernautId ?? null,
-                    corsairCannons: gameState.corsairCannons || []
+                    corsairCannons: gameState.corsairCannons || [],
+                    hackerZones: gameState.hackerZones || []
                 };
             }
             // PERF: hot snapshot = data that changes every frame (players + projectiles). Sent at high rate.
@@ -4427,7 +4413,8 @@
                     koth: gameState.koth,
                     ultOrb: gameState.ultOrb,
                     juggernautId: gameState.juggernautId ?? null,
-                    corsairCannons: gameState.corsairCannons || []
+                    corsairCannons: gameState.corsairCannons || [],
+                    hackerZones: gameState.hackerZones || []
                 };
             }
             function getStatePacket(includeWalls=false) {
@@ -5166,15 +5153,17 @@
                 getEl('btn-' + id).classList.add('selected');
                 localStorage.setItem('rivals_lastHero', id);
 
-                // Roulette mode: pick a random base hero, but flag as roulette
+                // Roulette mode: pick a random base hero, but flag as roulette.
+                // We deliberately DO NOT reveal which hero was randomly selected — Roulette
+                // appears in the info panel and UIs simply as "Roulette".
                 if (id === 'roulette') {
                     const startHero = ROULETTE_POOL[Math.floor(Math.random() * ROULETTE_POOL.length)];
                     myPlayer.isRoulette = true;
                     myPlayer.rouletteTimer = 3.0;
                     myPlayer.rouletteSpin = null;
                     _applyHeroState(startHero, true);
-                    // Roulette-flavored panel info (overrides the per-hero text)
-                    getEl('info-name').innerText = '🎰 Roulette → ' + HERO_DATA[startHero].name;
+                    // Roulette-flavored panel info (hides the underlying random hero).
+                    getEl('info-name').innerText = 'Roulette';
                     getEl('info-role').innerText = HERO_DATA.roulette.role;
                     getEl('info-role').style.color = '#fbbf24';
                     getEl('info-stats').innerText = `${HERO_DATA.roulette.hp} HP • Variable`;
@@ -5290,8 +5279,8 @@
                     HERO_DATA[id].abilities.forEach(a => as += `<li>${a}</li>`);
                     getEl('info-abilities').innerHTML = as;
                 } else {
-                    // Update the small "→ HeroName" hint while keeping Roulette branding
-                    getEl('info-name').innerText = '🎰 Roulette → ' + HERO_DATA[id].name;
+                    // Keep Roulette branding — never reveal the underlying random hero name.
+                    getEl('info-name').innerText = 'Roulette';
                 }
             }
 
@@ -5436,7 +5425,8 @@
                 let l = getEl('lobby-player-list');
                 l.innerHTML = '';
                 const fs = p => {
-                    let s = `${p.name} <span style="color:#71717a;font-size:0.9em;">(${HERO_DATA[p.heroClass].name})</span>`;
+                    const heroLabel = p.isRoulette ? 'Roulette' : (HERO_DATA[p.heroClass] && HERO_DATA[p.heroClass].name) || p.heroClass;
+                    let s = `${p.name} <span style="color:#71717a;font-size:0.9em;">(${heroLabel})</span>`;
                     if (gameState.isTeamMode) {
                         if (p.team === 'red')
                             s += ` <span class="team-badge" style="background:#991b1b;color:#fff;padding:2px 5px;border-radius:4px;font-size:0.7em;">RED</span>`;
@@ -6823,6 +6813,8 @@
                     gameState.juggernautId = s.juggernautId;
                 if (s.corsairCannons)
                     gameState.corsairCannons = s.corsairCannons;
+                if (s.hackerZones)
+                    gameState.hackerZones = s.hackerZones;
             }
             function syncGS(s, hotOnly) {
                 gameState.projectiles = s.projectiles || [];
@@ -6849,6 +6841,8 @@
                         gameState.juggernautId = s.juggernautId;
                     if (s.corsairCannons)
                         gameState.corsairCannons = s.corsairCannons;
+                    if (s.hackerZones)
+                        gameState.hackerZones = s.hackerZones;
                 }
 
                 for (let id in gameState.players) {
@@ -7229,6 +7223,17 @@
                 let k = e.key.toLowerCase();
                 if (keys.hasOwnProperty(k))
                     keys[k] = true;
+
+                // Lifted by Tractor Beam — block movement abilities (dash, teleport, portal, jump)
+                if (myPlayer.liftedBy && myPlayer.liftedTimer > 0) {
+                    if (k === ' ' || k === 'shift' || k === 'q' || k === 'e' || k === 'r' || k === 'f') {
+                        // Allow Tim's own ability keys; block movement-style binds for non-Tim
+                        if (myPlayer.heroClass !== 'tim') {
+                            e.preventDefault();
+                            return;
+                        }
+                    }
+                }
 
                 // Spectator POV cycle: [ prev, ] next, \ free cam
                 if (myPlayer.isSpectator && (k === '[' || k === ']' || k === '\\')) {
@@ -7714,11 +7719,11 @@
                                 myPlayer.timBeamCharge = 0;
                                 myPlayer.timBeamDirectionAngle = myPlayer.angle;
                             } else if (myPlayer.timStance === 'micro' && localCombat.timPrimary.cd <= 0) {
-                                // Micro mode fires immediately
-                                localCombat.timPrimary.cd = (activeServerMode === 'CHAOS') ? 0.01 : 0.2;
-                                applyShake(2, 0.05);
+                                // Micro mode: Tractor Pulse — piercing gravity ring under the saucer
+                                localCombat.timPrimary.cd = (activeServerMode === 'CHAOS') ? 0.05 : BALANCE.tim.tractorPulseCd;
+                                applyShake(2, 0.06);
                                 sdEv({
-                                    type: 'tim_pea_shoot',
+                                    type: 'tim_tractor_pulse',
                                     x: myPlayer.x,
                                     y: myPlayer.y,
                                     angle: myPlayer.angle
@@ -8342,22 +8347,17 @@
                 }
             }
             function trTimVents() {
-                if (myPlayer.heroClass === 'tim' && localCombat.timVents.cd <= 0) {
-                    localCombat.timVents.cd = (activeServerMode === 'CHAOS') ? 0.05 : 2.0;
-                    let ventAngle = myPlayer.angle + 1.57;
-                    if (keys.a)
-                        ventAngle = myPlayer.angle + 3.14;
-                    else if (keys.d)
-                        ventAngle = myPlayer.angle;
-                    localCombat.dash.v.x = Math.cos(ventAngle) * 40;
-                    localCombat.dash.v.y = Math.sin(ventAngle) * 40;
-                    localCombat.dash.rec = 0.3;
-                    applyShake(5, 0.15);
+                // Tractor Beam ability — 6s lift field, 9s cooldown, click-to-fling
+                if (myPlayer.heroClass === 'tim' && localCombat.timVents.cd <= 0 && !myPlayer.timBeamFieldActive) {
+                    localCombat.timVents.cd = (activeServerMode === 'CHAOS') ? 0.05 : BALANCE.tim.tractorBeamCd;
+                    myPlayer.timBeamFieldActive = true;
+                    myPlayer.timBeamFieldTimer = BALANCE.tim.tractorBeamDuration;
+                    applyShake(4, 0.12);
                     sdEv({
-                        type: 'tim_vents',
-                        angle: ventAngle,
+                        type: 'tim_tractor_beam_start',
                         x: myPlayer.x,
-                        y: myPlayer.y
+                        y: myPlayer.y,
+                        dur: BALANCE.tim.tractorBeamDuration
                     });
                     sdUp();
                 }
@@ -9301,7 +9301,7 @@
                         vx: Math.cos(e.angle) * 900,
                         vy: Math.sin(e.angle) * 900,
                         life: 0.5,
-                        dmg: 18
+                        dmg: 15
                     });
                 }
                 else if (e.type === 'nitro_boost_start') {
@@ -10260,7 +10260,70 @@
                             life: 0.4,
                             maxLife: 0.4
                         });
+                } else if (e.type === 'tim_tractor_pulse') {
+                    // Spawn a piercing gravity ring under the saucer (Mode 1 primary)
+                    s.slashAnimTimer = 0.08;
+                    gameState.projectiles.push({
+                        type: 'tim_tractor_pulse',
+                        id: Math.random().toString(),
+                        ownerId: sId,
+                        x: e.x,
+                        y: e.y,
+                        r: 12,
+                        maxR: BALANCE.tim.tractorPulseRadius,
+                        life: 0.5,
+                        dmg: BALANCE.tim.tractorPulseDmg,
+                        hitIds: {}
+                    });
+                } else if (e.type === 'tim_tractor_beam_start') {
+                    s.timBeamFieldActive = true;
+                    // Remove any old field by this owner
+                    gameState.projectiles = gameState.projectiles.filter(p => !(p.type === 'tim_tractor_field' && p.ownerId === sId));
+                    gameState.projectiles.push({
+                        type: 'tim_tractor_field',
+                        id: Math.random().toString(),
+                        ownerId: sId,
+                        x: e.x,
+                        y: e.y,
+                        life: e.dur || BALANCE.tim.tractorBeamDuration,
+                        radius: BALANCE.tim.tractorBeamRadius
+                    });
+                } else if (e.type === 'tim_tractor_beam_tick') {
+                    let f = gameState.projectiles.find(p => p.type === 'tim_tractor_field' && p.ownerId === sId);
+                    if (f) { f.x = e.x; f.y = e.y; }
+                } else if (e.type === 'tim_tractor_beam_end') {
+                    s.timBeamFieldActive = false;
+                    gameState.projectiles = gameState.projectiles.filter(p => !(p.type === 'tim_tractor_field' && p.ownerId === sId));
+                    // Release any lifted units
+                    for (let id in gameState.players) {
+                        let t = gameState.players[id];
+                        if (t.liftedBy === sId) { t.liftedBy = null; t.liftedTimer = 0; }
+                    }
+                } else if (e.type === 'tim_tractor_fling') {
+                    // Send everything currently lifted by this Tim flying toward angle
+                    let flingSpd = 1500;
+                    for (let id in gameState.players) {
+                        let t = gameState.players[id];
+                        if (t.liftedBy === sId) {
+                            t.vx = (t.vx || 0) + Math.cos(e.angle) * flingSpd;
+                            t.vy = (t.vy || 0) + Math.sin(e.angle) * flingSpd;
+                            t.knockbackTimer = 0.4;
+                            t.liftedBy = null;
+                            t.liftedTimer = 0;
+                        }
+                    }
+                    // Fling projectiles caught in field too
+                    gameState.projectiles.forEach(p => {
+                        if (p._liftedBy === sId) {
+                            p.vx = Math.cos(e.angle) * 1800;
+                            p.vy = Math.sin(e.angle) * 1800;
+                            p._liftedBy = null;
+                        }
+                    });
+                    s.timBeamFieldActive = false;
+                    gameState.projectiles = gameState.projectiles.filter(p => !(p.type === 'tim_tractor_field' && p.ownerId === sId));
                 } else if (e.type === 'tim_ult_fire') {
+                    // (handlers for new Tim abilities continue below)
                     s.slashAnimTimer = 0.3;
                     gameState.projectiles.push({
                         type: 'tim_rainbow_beam',
@@ -11095,7 +11158,7 @@
                             myPlayer.isFlying = true;
                             myPlayer.invulnerable = true;
                             // air control
-                            let as = 3.4;
+                            let as = 6.8;
                             let mx = 0
                               , my = 0;
                             if (keys.w)
@@ -11130,7 +11193,7 @@
                             myPlayer.isFlying = true;
                             myPlayer.invulnerable = true;
                             // air control (slightly stronger near ground for last-moment landing adjust)
-                            let as = 3.0;
+                            let as = 6.0;
                             let mx = 0
                               , my = 0;
                             if (keys.w)
@@ -11256,12 +11319,12 @@
                         localCombat.jubileeDash.delay -= dt;
                         if (localCombat.jubileeDash.delay <= 0) {
                             myPlayer.isFlying = true;
-                            localCombat.jubileeDash.dTm = 0.4;
+                            localCombat.jubileeDash.dTm = 0.6;
                             localCombat.jubileeDash.spd = 1125;
                             localCombat.jubileeDash.ang = Math.atan2(myPlayer.targetY - myPlayer.y, myPlayer.targetX - myPlayer.x);
                             localCombat.jubileeDash.dr = 3;
-                            myPlayer.jumpTimer = 0.4;
-                            myPlayer.jumpDuration = 0.4;
+                            myPlayer.jumpTimer = 0.6;
+                            myPlayer.jumpDuration = 0.6;
                         }
                     }
                     if (localCombat.jubileeDash.dTm > 0) {
@@ -11296,18 +11359,24 @@
                     myPlayer.angle = a.angle;
                     md = wM = true;
                 } else {
+                    // Wall noclip: Tiny Tim always flies over walls. Nitro flies over walls while
+                    // the Stratosphere Launch is mid-flight (ascending/descending).
+                    const __nvPhase = (localCombat.nitroVault && localCombat.nitroVault.phase) || 'idle';
+                    const __nitroVaultFlying = myPlayer.heroClass === 'nitro' && (__nvPhase === 'ascending' || __nvPhase === 'descending');
+                    const __noClipWalls = (myPlayer.heroClass === 'tim') || __nitroVaultFlying;
+                    if (myPlayer.heroClass === 'tim') myPlayer.isFlying = true;
                     let wf = myPlayer.isFlying;
                     if (!localCombat.jubileeDash || localCombat.jubileeDash.dTm <= 0)
-                        myPlayer.isFlying = false;
+                        if (!__noClipWalls) myPlayer.isFlying = false;
 
-                    if (wf && !myPlayer.isFlying && !(myPlayer.heroClass === 'misaki' && localCombat.misakiGrapple.phase && localCombat.misakiGrapple.phase !== 'idle')) {
+                    if (wf && !myPlayer.isFlying && !__noClipWalls && !(myPlayer.heroClass === 'misaki' && localCombat.misakiGrapple.phase && localCombat.misakiGrapple.phase !== 'idle')) {
                         let s = gnV(myPlayer.x, myPlayer.y);
                         myPlayer.x = s.x;
                         myPlayer.y = s.y;
                         md = true;
                     }
 
-                    if (!myPlayer.isFlying && !(myPlayer.heroClass === 'misaki' && localCombat.misakiGrapple.phase && localCombat.misakiGrapple.phase !== 'idle') && !myPlayer.grabbedLocked) {
+                    if ((__noClipWalls || !myPlayer.isFlying) && !(myPlayer.heroClass === 'misaki' && localCombat.misakiGrapple.phase && localCombat.misakiGrapple.phase !== 'idle') && !myPlayer.grabbedLocked) {
                         let ds = Math.hypot(localCombat.dash.v.x, localCombat.dash.v.y);
                         if (localCombat.dash.rec > 0)
                             localCombat.dash.rec -= dt;
@@ -11323,11 +11392,11 @@
                         if (ds > 0.1) {
                             let nx = myPlayer.x + localCombat.dash.v.x
                               , ny = myPlayer.y + localCombat.dash.v.y;
-                            if (!iW(nx, myPlayer.y))
+                            if (__noClipWalls || !iW(nx, myPlayer.y))
                                 myPlayer.x = nx;
                             else
                                 localCombat.dash.v.x = 0;
-                            if (!iW(myPlayer.x, ny))
+                            if (__noClipWalls || !iW(myPlayer.x, ny))
                                 myPlayer.y = ny;
                             else
                                 localCombat.dash.v.y = 0;
@@ -11385,6 +11454,9 @@
 
                             if (myPlayer.speedBoost > 0)
                                 bs *= 1.3;
+                            // 2x movement speed while Stratosphere Launch is in flight.
+                            if (__nitroVaultFlying)
+                                bs *= 2.0;
 
                             // Framerate-independent walk: scale fixed-step movement to a 60fps baseline.
                             const __fStep = Math.min(3, dt * 60);
@@ -11399,12 +11471,12 @@
                             if (keys.d)
                                 mx += bs * __fStep;
 
-                            if (!iW(myPlayer.x + mx, myPlayer.y)) {
+                            if (__noClipWalls || !iW(myPlayer.x + mx, myPlayer.y)) {
                                 myPlayer.x += mx;
                                 if (mx !== 0)
                                     md = wM = true;
                             }
-                            if (!iW(myPlayer.x, myPlayer.y + my)) {
+                            if (__noClipWalls || !iW(myPlayer.x, myPlayer.y + my)) {
                                 myPlayer.y += my;
                                 if (my !== 0)
                                     md = wM = true;
@@ -11526,17 +11598,31 @@
                     }
                 }
 
-                // Tim's pea-shooter auto-fire in micro mode - ONLY pea shooter
+                // Tim's Tractor Pulse auto-fire in micro mode
                 if (myPlayer.heroClass === 'tim' && myPlayer.timStance === 'micro' && !myPlayer.timTransitioning && mDwn && localCombat.timPrimary.cd <= 0) {
-                    localCombat.timPrimary.cd = (activeServerMode === 'CHAOS') ? 0.01 : 0.2;
-                    applyShake(2, 0.05);
+                    localCombat.timPrimary.cd = (activeServerMode === 'CHAOS') ? 0.05 : BALANCE.tim.tractorPulseCd;
+                    applyShake(2, 0.06);
                     sdEv({
-                        type: 'tim_pea_shoot',
+                        type: 'tim_tractor_pulse',
                         x: myPlayer.x,
                         y: myPlayer.y,
                         angle: myPlayer.angle
                     });
                 }
+
+                // Tractor Beam: while active, mouse click flings everything caught
+                if (myPlayer.heroClass === 'tim' && myPlayer.timBeamFieldActive && mDwn && !myPlayer._timFlingSent) {
+                    myPlayer._timFlingSent = true;
+                    sdEv({
+                        type: 'tim_tractor_fling',
+                        x: myPlayer.x,
+                        y: myPlayer.y,
+                        angle: myPlayer.angle
+                    });
+                    myPlayer.timBeamFieldActive = false;
+                    myPlayer.timBeamFieldTimer = 0;
+                }
+                if (!mDwn) myPlayer._timFlingSent = false;
 
                 // Tim's Core Beam doing damage while being held down
                 if (myPlayer.heroClass === 'tim' && myPlayer.timBeamActive && myPlayer.timStance === 'macro' && !myPlayer.timTransitioning && mDwn) {
@@ -11575,6 +11661,25 @@
                     if (myPlayer.timBeamCollapseTimer <= 0) {
                         myPlayer.timBeamCollapsing = false;
                     }
+                }
+
+                // Tractor Beam field timer (auto-expire)
+                if (myPlayer.heroClass === 'tim' && myPlayer.timBeamFieldActive) {
+                    myPlayer.timBeamFieldTimer -= dt;
+                    if (myPlayer.timBeamFieldTimer <= 0) {
+                        myPlayer.timBeamFieldActive = false;
+                        sdEv({ type: 'tim_tractor_beam_end', x: myPlayer.x, y: myPlayer.y });
+                    } else {
+                        // Heartbeat so host keeps the field anchored on us
+                        sdEv({ type: 'tim_tractor_beam_tick', x: myPlayer.x, y: myPlayer.y });
+                    }
+                }
+
+                // If we're being lifted, lock movement velocity (gravity drag)
+                if (myPlayer.liftedBy && myPlayer.liftedTimer > 0) {
+                    myPlayer.liftedTimer -= dt;
+                    localCombat.dash.v.x *= 0.4;
+                    localCombat.dash.v.y *= 0.4;
                 }
 
                 // Tim stance transition animation
@@ -13243,43 +13348,87 @@
                             if (p.mode === 'copycat_cursor' && copycatHit)
                                 p.deactivated = true;
                         } else if (p.type === 'tim_pea_bullet') {
+                            // (legacy pea-shooter, kept for back-compat)
                             // Small pea-shooter bullets from Tim's micro mode
                             p.x += p.vx * sm * dt;
                             p.y += p.vy * sm * dt;
                             p.life -= dt;
-
-                            let hw = iW(p.x, p.y);
-                            let hit = false;
-
-                            if (!hw) {
+                        } else if (p.type === 'tim_tractor_pulse') {
+                            // Expanding gravity ring — pierces, applies micro-pull
+                            p.r += (p.maxR - 12) / 0.5 * dt;
+                            p.life -= dt;
+                            let owner = gameState.players[p.ownerId];
+                            for (let id in gameState.players) {
+                                let t = gameState.players[id];
+                                if (!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && !p.hitIds[id]) {
+                                    let d = Math.hypot(t.x - p.x, t.y - p.y);
+                                    if (d < p.r && d > p.r - 28) {
+                                        dmgTk(t, p.dmg, p.ownerId);
+                                        sendHitmarker(p.ownerId, t, p.dmg);
+                                        t.lastAttacker = p.ownerId;
+                                        t.lastHitTime = Date.now();
+                                        chD(t, id);
+                                        // Micro-pull toward Tim's shadow
+                                        if (owner) {
+                                            let pa = Math.atan2(owner.y - t.y, owner.x - t.x);
+                                            let pull = BALANCE.tim.tractorMicroPull;
+                                            t.x += Math.cos(pa) * pull;
+                                            t.y += Math.sin(pa) * pull;
+                                            t.vx = (t.vx || 0) + Math.cos(pa) * 280;
+                                            t.vy = (t.vy || 0) + Math.sin(pa) * 280;
+                                        }
+                                        p.hitIds[id] = true;
+                                    }
+                                }
+                            }
+                            if (p.life <= 0) gameState.projectiles.splice(i, 1);
+                        } else if (p.type === 'tim_tractor_field') {
+                            // 6s lift field anchored on owner
+                            p.life -= dt;
+                            let owner = gameState.players[p.ownerId];
+                            if (owner) { p.x = owner.x; p.y = owner.y; }
+                            for (let id in gameState.players) {
+                                let t = gameState.players[id];
+                                if (t.isDead || id === p.ownerId) continue;
+                                if (!cDm(p.ownerId, id)) continue;
+                                let d = Math.hypot(t.x - p.x, t.y - p.y);
+                                if (d < p.radius) {
+                                    // Pull toward center
+                                    let pa = Math.atan2(p.y - t.y, p.x - t.x);
+                                    let pullStrength = 380;
+                                    t.x += Math.cos(pa) * pullStrength * dt;
+                                    t.y += Math.sin(pa) * pullStrength * dt;
+                                    // Once close enough, mark as lifted
+                                    if (d < BALANCE.tim.tractorBeamLiftRadius * 1.4) {
+                                        t.liftedBy = p.ownerId;
+                                        t.liftedTimer = 0.25;
+                                    }
+                                }
+                            }
+                            // Pull nearby projectiles
+                            for (let pj of gameState.projectiles) {
+                                if (pj === p) continue;
+                                if (pj.type === 'tim_tractor_field' || pj.type === 'tim_tractor_pulse') continue;
+                                if (pj.ownerId === p.ownerId) continue;
+                                if (pj.x === undefined || pj.y === undefined) continue;
+                                let d = Math.hypot((pj.x || 0) - p.x, (pj.y || 0) - p.y);
+                                if (d < p.radius) {
+                                    let pa = Math.atan2(p.y - pj.y, p.x - pj.x);
+                                    if (pj.vx !== undefined) {
+                                        pj.vx = pj.vx * 0.9 + Math.cos(pa) * 400 * dt;
+                                        pj.vy = pj.vy * 0.9 + Math.sin(pa) * 400 * dt;
+                                    } else {
+                                        pj.x += Math.cos(pa) * 200 * dt;
+                                        pj.y += Math.sin(pa) * 200 * dt;
+                                    }
+                                    pj._liftedBy = p.ownerId;
+                                }
+                            }
+                            if (p.life <= 0) {
                                 for (let id in gameState.players) {
                                     let t = gameState.players[id];
-                                    if (!t.isDead && cDm(p.ownerId, id) && !t.invulnerable && Math.hypot(t.x - p.x, t.y - p.y) < 15) {
-                                        if (!p.hitIds[id]) {
-                                            dmgTk(t, p.dmg, p.ownerId);
-                                            sendHitmarker(p.ownerId, t, p.dmg);
-                                            t.lastAttacker = p.ownerId;
-                                            t.lastHitTime = Date.now();
-                                            chD(t, id);
-                                            p.hitIds[id] = true;
-                                            hit = true;
-                                        }
-                                    }
+                                    if (t.liftedBy === p.ownerId) { t.liftedBy = null; t.liftedTimer = 0; }
                                 }
-                            }
-
-                            for (let c of gameState.clones) {
-                                if (cDm(p.ownerId, c.ownerId) && !c.invulnerable && Math.hypot(c.x - p.x, c.y - p.y) < 15) {
-                                    if (!p.hitIds[c.id]) {
-                                        dmgTk(c, p.dmg, p.ownerId);
-                                        sendHitmarker(p.ownerId, c, p.dmg);
-                                        p.hitIds[c.id] = true;
-                                        hit = true;
-                                    }
-                                }
-                            }
-
-                            if (hw || hit || p.life <= 0 || p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > H + 100) {
                                 gameState.projectiles.splice(i, 1);
                             }
                         } else if (p.type === 'tim_core_beam') {
@@ -14094,9 +14243,11 @@
                         let c = p.team === 'red' ? '#ef4444' : (p.team === 'blue' ? '#3b82f6' : '#71717a');
                         d = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c};margin-right:8px;box-shadow:0 0 5px ${c};"></span>`;
                     }
-                    const hData = (typeof HERO_DATA !== 'undefined' && HERO_DATA[p.heroClass]) || null;
+                    // Roulette players always show as "Roulette" — never reveal the underlying random hero.
+                    const _isRoul = !!p.isRoulette;
+                    const hData = _isRoul ? (HERO_DATA.roulette || null) : ((typeof HERO_DATA !== 'undefined' && HERO_DATA[p.heroClass]) || null);
                     const hColor = (hData && hData.color) || p.color || '#a1a1aa';
-                    const hName = hData ? (hData.name.split(' ')[0]) : (p.heroClass || '');
+                    const hName = _isRoul ? 'Roulette' : (hData ? (hData.name.split(' ')[0]) : (p.heroClass || ''));
                     const heroDot = `<span title="${hName}" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${hColor};margin-right:6px;box-shadow:0 0 5px ${hColor};vertical-align:middle;"></span>`;
                     const heroTag = `<span style="color:${hColor};font-size:0.7vw;font-weight:700;margin-left:6px;opacity:0.85;">${hName}</span>`;
                     const specTag = p.isSpectator ? `<span style="color:#94a3b8;font-size:0.65vw;margin-left:6px;font-style:italic;">[SPEC]</span>` : '';
@@ -16097,7 +16248,47 @@
                         ctx.fill();
                         ctx.shadowBlur = 0;
                         ctx.restore();
+                    } else if (p.type === 'tim_tractor_pulse') {
+                        let _owner = gameState.players[p.ownerId];
+                        let _bc = _owner?.customization?.timColors?.beam || '#66ff00';
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        let _rgb = parseInt(_bc.slice(1), 16);
+                        let _r=(_rgb>>16)&255,_g=(_rgb>>8)&255,_b=_rgb&255;
+                        ctx.shadowBlur = 18; ctx.shadowColor = _bc;
+                        ctx.strokeStyle = `rgba(${_r},${_g},${_b},0.85)`;
+                        ctx.lineWidth = 6;
+                        ctx.beginPath();
+                        ctx.ellipse(0,0,p.r,p.r*0.45,0,0,6.28);
+                        ctx.stroke();
+                        ctx.strokeStyle = `rgba(${Math.min(_r+80,255)},${Math.min(_g+80,255)},${Math.min(_b+80,255)},1)`;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.ellipse(0,0,p.r*0.7,p.r*0.32,0,0,6.28);
+                        ctx.stroke();
+                        ctx.restore();
+                    } else if (p.type === 'tim_tractor_field') {
+                        let _owner = gameState.players[p.ownerId];
+                        let _bc = _owner?.customization?.timColors?.beam || '#66ff00';
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.globalAlpha = 0.18; ctx.fillStyle = _bc;
+                        ctx.beginPath();
+                        ctx.ellipse(0,0,p.radius,p.radius*0.45,0,0,6.28);
+                        ctx.fill();
+                        let _t = (Date.now()/250)%1;
+                        for (let i2=0;i2<5;i2++){
+                          let tt=((i2/5)+_t)%1;
+                          ctx.globalAlpha=(1-tt)*0.6;
+                          ctx.strokeStyle=_bc; ctx.lineWidth=2;
+                          ctx.beginPath();
+                          ctx.ellipse(0,0,p.radius*(1-tt),p.radius*(1-tt)*0.45,0,0,6.28);
+                          ctx.stroke();
+                        }
+                        ctx.restore();
                     } else if (p.type === 'tim_pea_bullet') {
+                        // (legacy)
+                        // Small bright laser bullet from micro mode - uses beam color from customization
                         // Small bright laser bullet from micro mode - uses beam color from customization
                         ctx.save();
                         ctx.translate(p.x, p.y);
@@ -17719,308 +17910,200 @@
                         ctx.stroke();
                         ctx.restore();
                     } else if (!iC && o.heroClass === 'tim') {
-                        // === TINY TIM: Green Alien (45% size, so scale is already in the transform) ===
-                        let timScale = 0.45;
-                        ctx.scale(timScale, timScale);
-                        ctx.translate(0, 0);
+                        // === TINY TIM: UFO Flying Saucer with glass dome (Rick & Morty style) ===
+                        // Saucer hovers, casts shadow on ground, ignores ground hazards.
+                        let timScale = 0.9;
+                        // Counter-rotate so saucer stays upright regardless of aim angle
+                        ctx.rotate(-o.angle);
 
-                        let skinC = o.customization?.timColors?.skin || '#00ff00';
-                        // Brighter, more green
-                        let antennaC = o.customization?.timColors?.antenna || '#00ff00';
-                        let eyeC = o.customization?.timColors?.eyes || '#000000';
+                        let hullC = o.customization?.timColors?.skin || '#9aa3b2';
+                        let rimC  = o.customization?.timColors?.antenna || '#cbd5e1';
+                        let eyeC  = o.customization?.timColors?.eyes || '#000000';
+                        let beamC = o.customization?.timColors?.beam || '#66ff00';
 
-                        // Helper: darken/lighten hex color
+                        // helper
                         let _shade = (hex, amt) => {
                             let n = parseInt(hex.slice(1), 16);
                             let r = Math.max(0, Math.min(255, ((n >> 16) & 255) + amt));
                             let g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amt));
                             let b = Math.max(0, Math.min(255, (n & 255) + amt));
                             return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
-                        }
-                        ;
-                        let skinDark = _shade(skinC, -50);
-                        let skinLight = _shade(skinC, 35);
-                        // Main body
-                        ctx.fillStyle = isImpactFlash ? '#000' : skinC;
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 16, 0, 6.28);
-                        ctx.fill();
-                        ctx.strokeStyle = isImpactFlash ? '#000' : skinDark;
-                        ctx.lineWidth = 1.5;
-                        ctx.stroke();
+                        };
+                        let hullDark = _shade(hullC, -60);
+                        let hullLight = _shade(hullC, 40);
 
-                        // Alien glyph/pattern on body
-                        ctx.fillStyle = isImpactFlash ? '#000' : skinLight;
-                        ctx.fillRect(-3, -2, 6, 1);
-                        ctx.fillRect(-2, 2, 4, 1);
+                        // hover bob
+                        let bob = Math.sin(Date.now() / 380 + (o.x * 0.013)) * 4;
+                        let hoverLift = -22 + bob; // saucer drawn this many px above shadow
 
-                        // Antennas
+                        ctx.scale(timScale, timScale);
+
+                        // ---- Ground shadow (drawn at "ground" position, i.e. no lift offset) ----
                         ctx.save();
-                        ctx.strokeStyle = isImpactFlash ? '#000' : antennaC;
-                        ctx.lineWidth = 2.5;
-                        ctx.lineCap = 'round';
-                        [-8, 8].forEach(ax => {
-                            ctx.beginPath();
-                            ctx.moveTo(ax, -16);
-                            ctx.quadraticCurveTo(ax + 3, -28, ax, -32);
-                            ctx.stroke();
-                            // Antenna balls
-                            ctx.fillStyle = isImpactFlash ? '#000' : antennaC;
-                            ctx.beginPath();
-                            ctx.arc(ax, -33, 2.5, 0, 6.28);
-                            ctx.fill();
-                        }
-                        );
+                        ctx.globalAlpha = 0.45;
+                        ctx.fillStyle = '#000';
+                        ctx.beginPath();
+                        ctx.ellipse(0, 6, 30, 9, 0, 0, 6.28);
+                        ctx.fill();
                         ctx.restore();
 
-                        // Beady black eyes - larger
-                        ctx.fillStyle = isImpactFlash ? '#000' : eyeC;
-                        [-6, 6].forEach(ex => {
-                            ctx.beginPath();
-                            ctx.arc(ex, -5, 3, 0, 6.28);
-                            ctx.fill();
-                        }
-                        );
+                        // Apply hover lift for the saucer itself
+                        ctx.translate(0, hoverLift);
 
-                        // Mouth - tinted line
-                        ctx.strokeStyle = isImpactFlash ? '#000' : skinDark;
-                        ctx.lineWidth = 1.5;
-                        ctx.lineCap = 'round';
-                        ctx.beginPath();
-                        ctx.moveTo(-4, 4);
-                        ctx.lineTo(4, 4);
-                        ctx.stroke();
-
-                        // Macro/Micro Mode Gun (drawn in Tim's rotated local space, so it rotates with him)
-                        let isTransitioning = o.timTransitioning;
-                        let transitionProgress = isTransitioning ? (1.2 - o.timTransitionTimer) / 1.2 : 0;
-                        // 0 to 1 during transition
-                        let targetStance = o.timTransitionTargetStance || (o.timStance === 'macro' ? 'micro' : 'macro');
-                        // Where we're transitioning to
-
-                        if (isTransitioning || o.timStance === 'macro') {
-                            // Draw macro gun - animate size during transition
+                        // ---- Tractor beam visual (if active) ----
+                        if (o.timBeamFieldActive) {
                             ctx.save();
-                            let baseOffset = 50;
-                            let baseScale = 1;
-
-                            if (isTransitioning) {
-                                if (targetStance === 'micro') {
-                                    // Shrinking from macro to micro
-                                    baseScale = 1 - transitionProgress * 0.6;
-                                    // Scale from 1 to 0.4
-                                    baseOffset = 50 - transitionProgress * 30;
-                                    // Offset from 50 to 20
-                                } else {
-                                    // Enlarging from micro to macro
-                                    baseScale = 0.4 + transitionProgress * 0.6;
-                                    // Scale from 0.4 to 1
-                                    baseOffset = 20 + transitionProgress * 30;
-                                    // Offset from 20 to 50
-                                }
-                            }
-
-                            ctx.scale(1 / timScale, 1 / timScale);
-                            // Unscale to draw cannon at normal size
-                            ctx.translate(baseOffset, 0);
-                            ctx.scale(baseScale, baseScale);
-
-                            // === HYPER-FUTURISTIC ALIEN ORBITAL CANNON (Macro) ===
-                            let cannonColor = o.customization?.timColors?.cannon || '#fbbf24';
-                            let beamColor = o.customization?.timColors?.beam || '#ff6b6b';
-                            let timPulse = 0.6 + Math.sin(Date.now() / 220) * 0.4;
-
-                            // Rear power core — alien orb chamber
-                            ctx.fillStyle = isImpactFlash ? '#000' : '#1a0a1f';
-                            ctx.beginPath();
-                            ctx.arc(-22, 0, 16, 0, 6.28);
-                            ctx.fill();
-                            ctx.strokeStyle = isImpactFlash ? '#000' : cannonColor;
-                            ctx.lineWidth = 2.5;
-                            ctx.beginPath();
-                            ctx.arc(-22, 0, 16, 0, 6.28);
-                            ctx.stroke();
-                            // Inner pulsing core (beam color)
-                            ctx.shadowBlur = 14;
-                            ctx.shadowColor = beamColor;
-                            ctx.fillStyle = isImpactFlash ? '#000' : beamColor;
-                            ctx.globalAlpha = 0.85;
-                            ctx.beginPath();
-                            ctx.arc(-22, 0, 7 * timPulse, 0, 6.28);
-                            ctx.fill();
-                            ctx.globalAlpha = 1;
-                            ctx.shadowBlur = 0;
-                            // Containment rings around core
-                            ctx.strokeStyle = isImpactFlash ? '#000' : cannonColor;
-                            ctx.lineWidth = 1.2;
-                            for (let r = 0; r < 3; r++) {
+                            ctx.globalCompositeOperation = 'lighter';
+                            let beamPulse = (Date.now() / 200) % 1;
+                            for (let i = 0; i < 4; i++) {
+                                let t = ((i / 4) + beamPulse) % 1;
+                                let yy = -hoverLift * t + 4;
+                                let rr = 14 + t * 36;
+                                ctx.strokeStyle = beamC;
+                                ctx.globalAlpha = (1 - t) * 0.7;
+                                ctx.lineWidth = 2.5;
                                 ctx.beginPath();
-                                ctx.arc(-22, 0, 9 + r * 2.5, 0, 6.28);
+                                ctx.ellipse(0, yy, rr, rr * 0.32, 0, 0, 6.28);
                                 ctx.stroke();
                             }
-
-                            // Main alien barrel — segmented organic-mech shape
-                            ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
+                            // soft cone
+                            ctx.globalAlpha = 0.18;
+                            ctx.fillStyle = beamC;
                             ctx.beginPath();
-                            ctx.moveTo(-10, -12);
-                            ctx.lineTo(20, -14);
-                            ctx.lineTo(38, -10);
-                            ctx.lineTo(46, -7);
-                            ctx.lineTo(48, -4);
-                            ctx.lineTo(48, 4);
-                            ctx.lineTo(46, 7);
-                            ctx.lineTo(38, 10);
-                            ctx.lineTo(20, 14);
-                            ctx.lineTo(-10, 12);
+                            ctx.moveTo(-14, 0);
+                            ctx.lineTo(14, 0);
+                            ctx.lineTo(48, -hoverLift + 4);
+                            ctx.lineTo(-48, -hoverLift + 4);
                             ctx.closePath();
                             ctx.fill();
-                            ctx.strokeStyle = isImpactFlash ? '#000' : '#6a6a6a';
-                            ctx.lineWidth = 2;
-                            ctx.stroke();
-
-                            // Top spine fins — alien biomech ridges
-                            ctx.fillStyle = isImpactFlash ? '#000' : '#6a6a6a';
-                            [0, 12, 24, 34].forEach(fx => {
-                                ctx.beginPath();
-                                ctx.moveTo(fx, -13);
-                                ctx.lineTo(fx + 3, -19);
-                                ctx.lineTo(fx + 6, -13);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                            );
-                            // Bottom matching fins
-                            [0, 12, 24, 34].forEach(fx => {
-                                ctx.beginPath();
-                                ctx.moveTo(fx, 13);
-                                ctx.lineTo(fx + 3, 19);
-                                ctx.lineTo(fx + 6, 13);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                            );
-
-                            // Energy conduit lines along barrel (beam color)
-                            ctx.strokeStyle = isImpactFlash ? '#000' : beamColor;
-                            ctx.lineWidth = 1.4;
-                            ctx.shadowBlur = 6;
-                            ctx.shadowColor = beamColor;
-                            ctx.beginPath();
-                            ctx.moveTo(-8, -6);
-                            ctx.lineTo(44, -3);
-                            ctx.stroke();
-                            ctx.beginPath();
-                            ctx.moveTo(-8, 6);
-                            ctx.lineTo(44, 3);
-                            ctx.stroke();
-                            ctx.shadowBlur = 0;
-
-                            // Cannon panel rivets / glyphs
-                            ctx.fillStyle = isImpactFlash ? '#000' : '#6a6a6a';
-                            [4, 16, 28, 40].forEach(rx => {
-                                ctx.beginPath();
-                                ctx.arc(rx, 0, 1.6, 0, 6.28);
-                                ctx.fill();
-                            }
-                            );
-
-                            // Front muzzle ring — wide alien aperture
-                            ctx.fillStyle = isImpactFlash ? '#000' : '#1a0a1f';
-                            ctx.beginPath();
-                            ctx.ellipse(48, 0, 5, 12, 0, 0, 6.28);
-                            ctx.fill();
-                            ctx.strokeStyle = isImpactFlash ? '#000' : cannonColor;
-                            ctx.lineWidth = 2;
-                            ctx.beginPath();
-                            ctx.ellipse(48, 0, 5, 12, 0, 0, 6.28);
-                            ctx.stroke();
-                            // Crystal prongs around muzzle
-                            ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
-                            [-12, -6, 0, 6, 12].forEach(py => {
-                                ctx.beginPath();
-                                ctx.moveTo(48, py);
-                                ctx.lineTo(56, py * 0.4);
-                                ctx.lineTo(48, py * 0.6);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                            );
-                            // Inner muzzle plasma
-                            ctx.shadowBlur = 12;
-                            ctx.shadowColor = beamColor;
-                            ctx.fillStyle = isImpactFlash ? '#000' : beamColor;
-                            ctx.globalAlpha = 0.7;
-                            ctx.beginPath();
-                            ctx.ellipse(48, 0, 3 * timPulse, 8 * timPulse, 0, 0, 6.28);
-                            ctx.fill();
-                            ctx.globalAlpha = 1;
-                            ctx.shadowBlur = 0;
-
-                            // Muzzle glow if charging
-                            if (o.timBeamActive) {
-                                let glowSize = 8 + o.timBeamCharge * 9;
-                                let glowIntensity = 0.3 + (o.timBeamCharge / 4.0) * 0.7;
-                                ctx.fillStyle = `${beamColor}${Math.round(glowIntensity * 255).toString(16).padStart(2, '0')}`;
-                                ctx.beginPath();
-                                ctx.arc(52, 0, glowSize, 0, 6.28);
-                                ctx.fill();
-                                ctx.fillStyle = `${beamColor}${Math.round(glowIntensity * 0.8 * 255).toString(16).padStart(2, '0')}`;
-                                ctx.beginPath();
-                                ctx.arc(52, 0, glowSize * 0.6, 0, 6.28);
-                                ctx.fill();
-                                // Charging crackle arcs
-                                ctx.strokeStyle = `${beamColor}cc`;
-                                ctx.lineWidth = 1;
-                                for (let a = 0; a < 4; a++) {
-                                    let ang = Math.random() * 6.28;
-                                    ctx.beginPath();
-                                    ctx.moveTo(52, 0);
-                                    ctx.lineTo(52 + Math.cos(ang) * glowSize * 1.4, Math.sin(ang) * glowSize * 1.4);
-                                    ctx.stroke();
-                                }
-                            }
-
                             ctx.restore();
-                        } else {
-                            // Draw micro pea-shooter — tiny alien sidearm
+                        }
+
+                        // ---- Saucer base disc (under) ----
+                        ctx.fillStyle = isImpactFlash ? '#000' : hullDark;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 4, 38, 11, 0, 0, 6.28);
+                        ctx.fill();
+
+                        // Bottom lights (tractor emitters)
+                        ctx.fillStyle = isImpactFlash ? '#000' : beamC;
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = beamC;
+                        [-24, -8, 8, 24].forEach(lx => {
+                            ctx.beginPath();
+                            ctx.arc(lx, 8, 2.2, 0, 6.28);
+                            ctx.fill();
+                        });
+                        ctx.shadowBlur = 0;
+
+                        // ---- Main hull body ----
+                        let hullGrad = ctx.createLinearGradient(0, -6, 0, 8);
+                        hullGrad.addColorStop(0, hullLight);
+                        hullGrad.addColorStop(1, hullC);
+                        ctx.fillStyle = isImpactFlash ? '#000' : hullGrad;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, 42, 12, 0, 0, 6.28);
+                        ctx.fill();
+                        ctx.strokeStyle = isImpactFlash ? '#000' : hullDark;
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+
+                        // Rim trim
+                        ctx.strokeStyle = isImpactFlash ? '#000' : rimC;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 2, 40, 10, 0, 0, 6.28);
+                        ctx.stroke();
+
+                        // ---- Glass dome ----
+                        ctx.save();
+                        // dome glass
+                        let domeGrad = ctx.createRadialGradient(-4, -10, 2, 0, -6, 18);
+                        domeGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+                        domeGrad.addColorStop(0.55, 'rgba(180,220,255,0.20)');
+                        domeGrad.addColorStop(1, 'rgba(120,160,210,0.10)');
+                        ctx.fillStyle = isImpactFlash ? '#111' : domeGrad;
+                        ctx.beginPath();
+                        ctx.ellipse(0, -4, 18, 16, 0, Math.PI, 0);
+                        ctx.fill();
+
+                        // Tiny Tim visible inside the dome
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.ellipse(0, -4, 17, 15, 0, Math.PI, 0);
+                        ctx.clip();
+                        // Tim body
+                        ctx.fillStyle = isImpactFlash ? '#000' : '#22c55e';
+                        ctx.beginPath();
+                        ctx.arc(0, -4, 8, 0, 6.28);
+                        ctx.fill();
+                        // eyes
+                        ctx.fillStyle = isImpactFlash ? '#000' : eyeC;
+                        ctx.beginPath(); ctx.arc(-3, -5, 1.6, 0, 6.28); ctx.fill();
+                        ctx.beginPath(); ctx.arc( 3, -5, 1.6, 0, 6.28); ctx.fill();
+                        // tiny antennae
+                        ctx.strokeStyle = isImpactFlash ? '#000' : '#16a34a';
+                        ctx.lineWidth = 1.2;
+                        ctx.beginPath(); ctx.moveTo(-4, -11); ctx.lineTo(-5, -15); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo( 4, -11); ctx.lineTo( 5, -15); ctx.stroke();
+                        ctx.restore();
+
+                        // Dome outline + highlight
+                        ctx.strokeStyle = isImpactFlash ? '#000' : 'rgba(200,230,255,0.9)';
+                        ctx.lineWidth = 1.4;
+                        ctx.beginPath();
+                        ctx.ellipse(0, -4, 18, 16, 0, Math.PI, 0);
+                        ctx.stroke();
+                        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+                        ctx.lineWidth = 1.2;
+                        ctx.beginPath();
+                        ctx.arc(-7, -10, 5, Math.PI * 1.05, Math.PI * 1.45);
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Mode indicator: small chevron showing facing
+                        ctx.save();
+                        ctx.rotate(o.angle);
+                        ctx.fillStyle = isImpactFlash ? '#000' : rimC;
+                        ctx.beginPath();
+                        ctx.moveTo(40, 0);
+                        ctx.lineTo(33, -4);
+                        ctx.lineTo(33, 4);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+
+                        // ---- Mode 1: Tractor Pulse emitter glow under saucer when micro ----
+                        if (o.timStance === 'micro') {
+                            let pulseT = (Date.now() / 700) % 1;
                             ctx.save();
-                            ctx.scale(1 / timScale, 1 / timScale);
-                            let cannonColor = o.customization?.timColors?.cannon || '#fbbf24';
-                            let beamColor = o.customization?.timColors?.beam || '#ff6b6b';
-                            // Mini barrel
-                            ctx.fillStyle = isImpactFlash ? '#000' : cannonColor;
+                            ctx.globalAlpha = (1 - pulseT) * 0.6;
+                            ctx.strokeStyle = beamC;
+                            ctx.lineWidth = 2;
                             ctx.beginPath();
-                            ctx.moveTo(0, -2.5);
-                            ctx.lineTo(16, -2);
-                            ctx.lineTo(20, -1.5);
-                            ctx.lineTo(20, 1.5);
-                            ctx.lineTo(16, 2);
-                            ctx.lineTo(0, 2.5);
-                            ctx.closePath();
-                            ctx.fill();
-                            ctx.strokeStyle = isImpactFlash ? '#000' : '#6a6a6a';
-                            ctx.lineWidth = 1;
+                            ctx.ellipse(0, 10, 14 + pulseT * 26, (14 + pulseT * 26) * 0.32, 0, 0, 6.28);
                             ctx.stroke();
-                            // Mini fin
-                            ctx.fillStyle = isImpactFlash ? '#000' : '#6a6a6a';
+                            ctx.restore();
+                        }
+
+                        // ---- Mode 2: Core beam muzzle glow (keep existing behavior) ----
+                        if (o.timStance === 'macro' && o.timBeamActive) {
+                            ctx.save();
+                            ctx.rotate(o.angle);
+                            let glowSize = 6 + (o.timBeamCharge || 0) * 6;
+                            ctx.shadowBlur = 16;
+                            ctx.shadowColor = beamC;
+                            ctx.fillStyle = beamC;
+                            ctx.globalAlpha = 0.85;
                             ctx.beginPath();
-                            ctx.moveTo(8, -2.5);
-                            ctx.lineTo(10, -5);
-                            ctx.lineTo(12, -2.5);
-                            ctx.closePath();
+                            ctx.arc(46, 0, glowSize, 0, 6.28);
                             ctx.fill();
-                            // Muzzle aperture
-                            ctx.fillStyle = isImpactFlash ? '#000' : beamColor;
-                            ctx.shadowBlur = 4;
-                            ctx.shadowColor = beamColor;
-                            ctx.beginPath();
-                            ctx.arc(20, 0, 1.6, 0, 6.28);
-                            ctx.fill();
-                            ctx.shadowBlur = 0;
                             ctx.restore();
                         }
 
                         ctx.scale(1 / timScale, 1 / timScale);
+                        ctx.translate(0, -hoverLift);
+                        ctx.rotate(o.angle);
 
                     } else if (!iC && o.heroClass === 'nitro') {
                         // ===== NITRO: pilot on side, MASSIVE rocket ram dominating center =====
@@ -19763,8 +19846,17 @@
                 }
                 let tX = Math.max(0, Math.min(W - LW / cam.zoom, _camFX - (LW / 2) / cam.zoom));
                 let tY = Math.max(0, Math.min(H - LH / cam.zoom, _camFY - (LH / 2) / cam.zoom));
-                cam.x += (tX - cam.x) * 10 * dt;
-                cam.y += (tY - cam.y) * 10 * dt;
+                // Allow a teleport (e.g. Hacker Zone arrayWrap) to snap the camera
+                // straight to the new target this frame, instead of lerping. The
+                // wrap handler sets window.__camSnapNext = true; we honour it once.
+                if (window.__camSnapNext) {
+                    cam.x = tX;
+                    cam.y = tY;
+                    window.__camSnapNext = false;
+                } else {
+                    cam.x += (tX - cam.x) * 10 * dt;
+                    cam.y += (tY - cam.y) * 10 * dt;
+                }
 
 
                 // Decrement impact flash timer (skipped entirely in low gfx)
@@ -21806,6 +21898,24 @@
                 maskCtx.setTransform(1, 0, 0, 1, 0, 0);
                 maskCtx.clearRect(0, 0, cw, ch);
                 maskCtx.fillStyle = '#fff';
+
+                // If ANY Roulette or Jubilee hero is alive in the match, the rainbow effect
+                // covers the entire map (not just a small radius around their projectiles/VFX).
+                const players = (typeof gameState !== 'undefined' && gameState && gameState.players) || null;
+                let anyRainbowHeroAlive = false;
+                if (players) {
+                    for (const id in players) {
+                        const pl = players[id];
+                        if (!pl || pl.isDead) continue;
+                        if (__isRainbowHero(pl)) { anyRainbowHeroAlive = true; break; }
+                    }
+                }
+                if (anyRainbowHeroAlive) {
+                    maskCtx.fillRect(0, 0, cw, ch);
+                    return true;
+                }
+
+                // Fallback (no rainbow hero present): legacy per-entity circles for stray VFX/projectiles.
                 const a = prevT.a, b = prevT.b, c = prevT.c, d = prevT.d, e = prevT.e, f = prevT.f;
                 const zoom = (typeof cam !== 'undefined') ? cam.zoom : 1;
                 const projs = (typeof gameState !== 'undefined' && gameState && gameState.projectiles) || [];
@@ -22284,22 +22394,35 @@
 
                 function updateHackerZones(dt) {
                     if (!gameState.hackerZones) gameState.hackerZones = [];
-                    if (!isHost) return;
+                    if (!gameState.hackerZones.length) return;
 
-                    // Lifetime
-                    for (let i = gameState.hackerZones.length - 1; i >= 0; i--) {
-                        gameState.hackerZones[i].life -= dt;
-                        if (gameState.hackerZones[i].life <= 0) gameState.hackerZones.splice(i, 1);
+                    // Lifetime is host-authoritative; clients receive lifetime
+                    // via state sync. Clients still need to APPLY zone effects
+                    // to their own local myPlayer every frame so the zones feel
+                    // responsive instead of waiting for host-driven state pushes.
+                    if (isHost) {
+                        for (let i = gameState.hackerZones.length - 1; i >= 0; i--) {
+                            gameState.hackerZones[i].life -= dt;
+                            if (gameState.hackerZones[i].life <= 0) gameState.hackerZones.splice(i, 1);
+                        }
                     }
 
-                    // Gather entities
+                    // Gather entities to apply effects to.
+                    //   Host: every player + clones + projectiles (authoritative)
+                    //   Client: just the local myPlayer (predicted effects)
                     const ents = [];
-                    for (const id in gameState.players) {
-                        const p = gameState.players[id];
-                        if (p && !p.isDead) ents.push(p);
+                    if (isHost) {
+                        for (const id in gameState.players) {
+                            const p = gameState.players[id];
+                            if (p && !p.isDead) ents.push(p);
+                        }
+                        if (gameState.clones) for (const c of gameState.clones) ents.push(c);
+                        if (gameState.projectiles) for (const p of gameState.projectiles) ents.push(p);
+                    } else if (myPlayer && !myPlayer.isDead && !myPlayer.isSpectator) {
+                        ents.push(myPlayer);
+                    } else {
+                        return;
                     }
-                    if (gameState.clones) for (const c of gameState.clones) ents.push(c);
-                    if (gameState.projectiles) for (const p of gameState.projectiles) ents.push(p);
 
                     for (const e of ents) {
                         if (e._zPrevX === undefined) {
@@ -22346,11 +22469,89 @@
                     }
                 }
 
-                // Hook updates: run after movement each frame
+                // --- LOCAL arrayWrap for myPlayer ---------------------------------
+                // Mirrors the rift-portal pattern (tryTeleportPlayerRiftPortal):
+                // detect the boundary crossing on the local client, mutate
+                // myPlayer.x/y immediately, and snap the camera so that
+                // mouse->world conversion (cam.x/cam.y), the aim ray, the
+                // crosshair indicators, and the projectile spawn origin all
+                // teleport in lock-step with the player model.
+                let _myWrapPrevX = null, _myWrapPrevY = null;
+                function _applyArrayWrapTo(e, prevX, prevY) {
+                    if (!gameState.hackerZones || gameState.hackerZones.length === 0) return false;
+                    let wrapped = false;
+                    for (const z of gameState.hackerZones) {
+                        if (z.type !== 'arrayWrap') continue;
+                        const inside = pointInZone(e.x, e.y, z);
+                        const prevInside = pointInZone(prevX, prevY, z);
+                        if (prevInside && !inside) {
+                            const left = z.x, right = z.x + z.w, top = z.y, bottom = z.y + z.h;
+                            if (e.x < left) e.x = right - (left - e.x);
+                            else if (e.x > right) e.x = left + (e.x - right);
+                            if (e.y < top) e.y = bottom - (top - e.y);
+                            else if (e.y > bottom) e.y = top + (e.y - bottom);
+                            // Clamp to playfield in case the wrap lands near an edge.
+                            e.x = Math.max(15, Math.min(W - 15, e.x));
+                            e.y = Math.max(15, Math.min(H - 15, e.y));
+                            wrapped = true;
+                        }
+                    }
+                    return wrapped;
+                }
+                function _tickLocalMyPlayerArrayWrap() {
+                    if (!myPlayer || myPlayer.isDead || myPlayer.isSpectator) {
+                        _myWrapPrevX = myPlayer ? myPlayer.x : null;
+                        _myWrapPrevY = myPlayer ? myPlayer.y : null;
+                        return;
+                    }
+                    if (_myWrapPrevX === null) {
+                        _myWrapPrevX = myPlayer.x;
+                        _myWrapPrevY = myPlayer.y;
+                        return;
+                    }
+                    let didWrap = false;
+                    // (a) Locally compute the wrap from our own movement this frame.
+                    if (_applyArrayWrapTo(myPlayer, _myWrapPrevX, _myWrapPrevY)) {
+                        didWrap = true;
+                    } else {
+                        // (b) Safety net for non-host clients: the host wrapped us
+                        //     and shipped the new position via state sync. The frame
+                        //     delta is much larger than any single-frame walk/dash
+                        //     and either the previous or new position sits inside
+                        //     an arrayWrap zone we know about — treat as a wrap.
+                        const ddx = myPlayer.x - _myWrapPrevX;
+                        const ddy = myPlayer.y - _myWrapPrevY;
+                        if (ddx * ddx + ddy * ddy > 80 * 80) {
+                            for (const z of gameState.hackerZones) {
+                                if (z.type !== 'arrayWrap') continue;
+                                if (pointInZone(_myWrapPrevX, _myWrapPrevY, z) ||
+                                    pointInZone(myPlayer.x, myPlayer.y, z)) {
+                                    didWrap = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (didWrap) {
+                        // Tell the render loop to snap cam.x/cam.y to target
+                        // on the next frame — that target is derived from
+                        // myPlayer.x/y, which we just teleported.
+                        window.__camSnapNext = true;
+                    }
+                    _myWrapPrevX = myPlayer.x;
+                    _myWrapPrevY = myPlayer.y;
+                }
+
+                // Hook updates: run after movement each frame.
+                // Order is important:
+                //   1. _umOrig(dt)             -> local input + movement + rift portals
+                //   2. updateHackerZones(dt)   -> host-authoritative zone effects
+                //   3. local myPlayer wrap     -> snap camera/aim on this client
                 const _umOrig = updateMovement;
                 updateMovement = function (dt) {
                     _umOrig(dt);
                     updateHackerZones(dt);
+                    _tickLocalMyPlayerArrayWrap();
                 };
 
                 // ---- NOCLIP HELPER (used by patched iW + projectile collisions) ----
@@ -22384,16 +22585,48 @@
                     } catch (_) { return '#22c55e'; }
                 }
 
+                // Strictly clamp any zone rectangle to the actual playable map bounds.
+                // Hacker Zones (overclock=speed, packetLoss=lag, arrayWrap) used to compute
+                // tile/array indices from the raw rect, which could let X/Y leak past the
+                // map edges and produce a horizontal wrap-around artifact. We now snap the
+                // rect to integer tile indices in [0, colsMax] / [0, rowsMax] BEFORE any
+                // array index calculation runs.
+                const __MAP_COLS = (W / GRID) | 0;
+                const __MAP_ROWS = (H / GRID) | 0;
+                function __zoneTileBounds(z) {
+                    // Convert world rect -> inclusive tile-index range, clamped to map.
+                    let c0 = Math.floor(z.x / GRID);
+                    let r0 = Math.floor(z.y / GRID);
+                    let c1 = Math.floor((z.x + z.w - 1) / GRID);
+                    let r1 = Math.floor((z.y + z.h - 1) / GRID);
+                    if (c0 < 0) c0 = 0;
+                    if (r0 < 0) r0 = 0;
+                    if (c1 > __MAP_COLS - 1) c1 = __MAP_COLS - 1;
+                    if (r1 > __MAP_ROWS - 1) r1 = __MAP_ROWS - 1;
+                    return { c0: c0, r0: r0, c1: c1, r1: r1 };
+                }
+                function __zoneClampedRect(z) {
+                    const tb = __zoneTileBounds(z);
+                    if (tb.c1 < tb.c0 || tb.r1 < tb.r0) return null;
+                    const x = tb.c0 * GRID;
+                    const y = tb.r0 * GRID;
+                    const w = (tb.c1 - tb.c0 + 1) * GRID;
+                    const h = (tb.r1 - tb.r0 + 1) * GRID;
+                    return { x: x, y: y, w: w, h: h };
+                }
+
                 function drawZoneFloorAndBorders() {
                     if (!gameState.hackerZones || gameState.hackerZones.length === 0) return;
                     const stroke = makeMatrixStroke();
                     const t = performance.now() / 1000;
                     for (const z of gameState.hackerZones) {
+                        const cr = __zoneClampedRect(z);
+                        if (!cr) continue;
                         // Black floor (under walls — walls will be drawn on top by drawWallsOverlay)
                         ctx.save();
                         ctx.fillStyle = '#000';
                         ctx.globalAlpha = 0.95;
-                        ctx.fillRect(z.x, z.y, z.w, z.h);
+                        ctx.fillRect(cr.x, cr.y, cr.w, cr.h);
                         ctx.restore();
                         // Animated matrix border
                         ctx.save();
@@ -22401,14 +22634,14 @@
                         ctx.setLineDash([18, 8]);
                         ctx.lineDashOffset = -((t * 60) % 26);
                         ctx.strokeStyle = stroke;
-                        ctx.strokeRect(z.x, z.y, z.w, z.h);
+                        ctx.strokeRect(cr.x, cr.y, cr.w, cr.h);
                         ctx.restore();
                         // Type label
                         ctx.save();
                         ctx.fillStyle = '#22c55e';
                         ctx.font = 'bold 14px monospace';
                         ctx.textAlign = 'left';
-                        ctx.fillText(ZONE_LABEL[z.type] + '  ' + z.life.toFixed(1) + 's', z.x + 6, z.y - 8);
+                        ctx.fillText(ZONE_LABEL[z.type] + '  ' + z.life.toFixed(1) + 's', cr.x + 6, cr.y - 8);
                         ctx.restore();
                     }
                 }
@@ -22418,28 +22651,41 @@
                     if (hasZones) {
                         const stroke = makeMatrixStroke();
                         const t = performance.now() / 1000;
+                        // Build a wall lookup by tile index so we can iterate tile-by-tile,
+                        // with X/Y strictly clamped to [0, MAP_COLS-1] / [0, MAP_ROWS-1].
+                        const wallByTile = new Map();
+                        const walls = gameState.walls || [];
+                        for (let i = 0; i < walls.length; i++) {
+                            const w = walls[i];
+                            const wc = Math.floor(w.x / GRID);
+                            const wr = Math.floor(w.y / GRID);
+                            if (wc < 0 || wr < 0 || wc > __MAP_COLS - 1 || wr > __MAP_ROWS - 1) continue;
+                            wallByTile.set(wc + ',' + wr, w);
+                        }
                         for (const z of gameState.hackerZones) {
-                            // Replace block outlines for blocks inside this zone (or fully wireframe for noclip)
-                            for (const w of gameState.walls) {
-                                const inZ = w.x + GRID > z.x && w.x < z.x + z.w && w.y + GRID > z.y && w.y < z.y + z.h;
-                                if (!inZ) continue;
-                                ctx.save();
-                                if (z.type === 'noclip') {
-                                    // Translucent wireframe replaces the wall
-                                    ctx.globalCompositeOperation = 'destination-out';
-                                    ctx.fillStyle = '#000';
-                                    ctx.fillRect(w.x, w.y, GRID, GRID);
-                                    ctx.restore();
+                            const tb = __zoneTileBounds(z);
+                            if (tb.c1 < tb.c0 || tb.r1 < tb.r0) continue;
+                            for (let rr = tb.r0; rr <= tb.r1; rr++) {
+                                for (let cc = tb.c0; cc <= tb.c1; cc++) {
+                                    const w = wallByTile.get(cc + ',' + rr);
+                                    if (!w) continue;
                                     ctx.save();
-                                    ctx.fillStyle = 'rgba(34,197,94,0.18)';
-                                    ctx.fillRect(w.x, w.y, GRID, GRID);
+                                    if (z.type === 'noclip') {
+                                        ctx.globalCompositeOperation = 'destination-out';
+                                        ctx.fillStyle = '#000';
+                                        ctx.fillRect(w.x, w.y, GRID, GRID);
+                                        ctx.restore();
+                                        ctx.save();
+                                        ctx.fillStyle = 'rgba(34,197,94,0.18)';
+                                        ctx.fillRect(w.x, w.y, GRID, GRID);
+                                    }
+                                    ctx.lineWidth = 3;
+                                    ctx.setLineDash([6, 4]);
+                                    ctx.lineDashOffset = -((t * 40) % 10);
+                                    ctx.strokeStyle = stroke;
+                                    ctx.strokeRect(w.x + 1, w.y + 1, GRID - 2, GRID - 2);
+                                    ctx.restore();
                                 }
-                                ctx.lineWidth = 3;
-                                ctx.setLineDash([6, 4]);
-                                ctx.lineDashOffset = -((t * 40) % 10);
-                                ctx.strokeStyle = stroke;
-                                ctx.strokeRect(w.x + 1, w.y + 1, GRID - 2, GRID - 2);
-                                ctx.restore();
                             }
                         }
                     }
